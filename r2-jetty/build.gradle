@@ -1,0 +1,5 @@
+dependencies {
+  compile project (':r2')
+  compile externalDependency.jetty
+  compile externalDependency.servletApi
+}

@@ -1,0 +1,4 @@
+dependencies {
+  compile project(':pegasus-common')
+  testCompile externalDependency.testng
+}

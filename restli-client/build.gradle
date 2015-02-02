@@ -1,0 +1,25 @@
+dependencies {
+  compile project(':data')
+  compile project(':data-transform')
+  compile project(':pegasus-common')
+  compile project(':r2')
+  compile project(':restli-common')
+  compile project(':li-jersey-uri')
+  compile externalDependency.mail
+  compile externalDependency.commonsLang
+  compile externalDependency.jacksonCore
+  compile externalDependency.parseq
+  testCompile project(path: ':restli-common', configuration: 'testArtifacts')
+  testCompile externalDependency.testng
+  testCompile externalDependency.easymock
+  testCompile externalDependency.commonsHttpClient
+  testCompile externalDependency.mockito
+  testRuntime externalDependency.cglib
+  testRuntime externalDependency.objenesis
+}
+
+apply from: "${buildScriptDirPath}/dataTemplate.gradle"
+
+test {
+  systemProperties['test.projectDir'] = projectDir.toString()
+}

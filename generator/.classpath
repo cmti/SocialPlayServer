@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="output" path="bin"/>
+	<classpathentry kind="src" path="src/main/java"/>
+	<classpathentry kind="src" path="src/main/resources"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER" exported="true"/>
+	<classpathentry kind="src" path="/data" exported="true"/>
+	<classpathentry kind="src" path="/r2" exported="true"/>
+	<classpathentry kind="src" path="/pegasus-common" exported="true"/>
+	<classpathentry kind="src" path="/log-test-config" exported="true"/>
+	<classpathentry sourcepath="/Users/jianli/.gradle/caches/modules-2/files-2.1/org.slf4j/slf4j-api/1.6.2/6b5f6572792e2192ecf714ea12ae894b0fbcf750/slf4j-api-1.6.2-sources.jar" kind="lib" path="/Users/jianli/.gradle/caches/modules-2/files-2.1/org.slf4j/slf4j-api/1.6.2/8619e95939167fb37245b5670135e4feb0ec7d50/slf4j-api-1.6.2.jar" exported="true"/>
+	<classpathentry sourcepath="/Users/jianli/.gradle/caches/modules-2/files-2.1/commons-io/commons-io/1.4/48753e43ff29409fbbeadfb36186cbe27e41b179/commons-io-1.4-sources.jar" kind="lib" path="/Users/jianli/.gradle/caches/modules-2/files-2.1/commons-io/commons-io/1.4/a8762d07e76cfde2395257a5da47ba7c1dbd3dce/commons-io-1.4.jar" exported="true"/>
+	<classpathentry sourcepath="/Users/jianli/.gradle/caches/modules-2/files-2.1/com.sun.codemodel/codemodel/2.2/340c64cd3c5bfe816fc90d8238a3a6863c248911/codemodel-2.2-sources.jar" kind="lib" path="/Users/jianli/.gradle/caches/modules-2/files-2.1/com.sun.codemodel/codemodel/2.2/220bdce6bf4571c42b9a5cd272503df168cbdb60/codemodel-2.2.jar" exported="true"/>
+	<classpathentry sourcepath="/Users/jianli/.gradle/caches/modules-2/files-2.1/org.slf4j/slf4j-log4j12/1.6.2/11c3fc1eac3b22742ad08899fd3ef4f4151592ba/slf4j-log4j12-1.6.2-sources.jar" kind="lib" path="/Users/jianli/.gradle/caches/modules-2/files-2.1/org.slf4j/slf4j-log4j12/1.6.2/7dd950c7eeb3004a91720ba8782aa0ded9037110/slf4j-log4j12-1.6.2.jar" exported="true"/>
+	<classpathentry sourcepath="/Users/jianli/.gradle/caches/modules-2/files-2.1/log4j/log4j/1.2.16/bf945d1dc995be7fe64923625f842fbb6bf443be/log4j-1.2.16-sources.jar" kind="lib" path="/Users/jianli/.gradle/caches/modules-2/files-2.1/log4j/log4j/1.2.16/7999a63bfccbc7c247a9aea10d83d4272bd492c6/log4j-1.2.16.jar" exported="true"/>
+</classpath>

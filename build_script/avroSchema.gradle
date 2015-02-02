@@ -1,0 +1,43 @@
+/*
+   Copyright (c) 2012 LinkedIn Corp.
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
+final Configuration dataAvroGeneratorConfig = project(':data-avro-generator').configurations.default
+final Configuration dataConfig = project(':data').configurations.default
+final Set<File> pluginResourcesDirs = project(':data-avro-generator').sourceSets.main.resources.srcDirs
+
+project.sourceSets.all { SourceSet sourceSet ->
+  final inputDataSchemaDirPath = "src${File.separatorChar}${sourceSet.name}${File.separatorChar}pegasus"
+  final FileTree inputDataSchemaFiles = project.fileTree(dir: inputDataSchemaDirPath, includes: ["**${File.separatorChar}*.pdsc"])
+  if (inputDataSchemaFiles.empty)
+  {
+    return;
+  }
+
+  final String outputDirPath = rootProject.ext.build.getAvroSchemaOutDirPath(project, sourceSet)
+  rootProject.ext.build.avroSchemaTasks[sourceSet] = project.task(sourceSet.name + 'GenerateAvroSchema', type: JavaExec) {
+    main = 'com.linkedin.data.avro.generator.AvroSchemaGenerator'
+    classpath dataAvroGeneratorConfig + dataAvroGeneratorConfig.allArtifacts.files + dataConfig + dataConfig.allArtifacts.files
+    classpath pluginResourcesDirs
+    args outputDirPath
+    args inputDataSchemaFiles
+    systemProperties(['generator.resolver.path': inputDataSchemaDirPath])
+    doFirst {
+      project.mkdir(outputDirPath)
+    }
+  }
+
+  project.tasks[sourceSet.getTaskName('', 'jar')].dependsOn(rootProject.ext.build.avroSchemaTasks[sourceSet])
+}

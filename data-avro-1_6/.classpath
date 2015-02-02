@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="output" path="bin"/>
+	<classpathentry kind="src" path="src/main/java"/>
+	<classpathentry kind="src" path="src/test/java"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER" exported="true"/>
+	<classpathentry kind="src" path="/data" exported="true"/>
+	<classpathentry kind="src" path="/data-avro" exported="true"/>
+	<classpathentry kind="src" path="/data-avro-generator" exported="true"/>
+	<classpathentry kind="src" path="/log-test-config" exported="true"/>
+	<classpathentry sourcepath="/Users/jianli/.gradle/caches/modules-2/files-2.1/org.codehaus.jackson/jackson-core-asl/1.8.8/65727779ffd6016d4076ebe6b62c887e35a95761/jackson-core-asl-1.8.8-sources.jar" kind="lib" path="/Users/jianli/.gradle/caches/modules-2/files-2.1/org.codehaus.jackson/jackson-core-asl/1.8.8/dd2e90bb710ea3bc4610e24299d6a4c8dac5049b/jackson-core-asl-1.8.8.jar" exported="true"/>
+	<classpathentry sourcepath="/Users/jianli/.gradle/caches/modules-2/files-2.1/org.apache.avro/avro/1.6.3/f92aec16d34949222a8ef78c4ef61849b0153217/avro-1.6.3-sources.jar" kind="lib" path="/Users/jianli/.gradle/caches/modules-2/files-2.1/org.apache.avro/avro/1.6.3/f21800d86a64eb064a5fa14eae25d7b91ae042f8/avro-1.6.3.jar" exported="true"/>
+	<classpathentry sourcepath="/Users/jianli/.gradle/caches/modules-2/files-2.1/org.testng/testng/6.4/ea3723f91d96f9a876749d86406ff5cf2fb948b7/testng-6.4-sources.jar" kind="lib" path="/Users/jianli/.gradle/caches/modules-2/files-2.1/org.testng/testng/6.4/780e5804ff5e2bcfa262c02ca9401456f682bbc5/testng-6.4.jar" exported="true"/>
+	<classpathentry sourcepath="/Users/jianli/.gradle/caches/modules-2/files-2.1/junit/junit/3.8.1/525753763e53f6f76da052b316d0f2e3bfa4d73/junit-3.8.1-sources.jar" kind="lib" path="/Users/jianli/.gradle/caches/modules-2/files-2.1/junit/junit/3.8.1/99129f16442844f6a4a11ae22fbbee40b14d774f/junit-3.8.1.jar" exported="true"/>
+	<classpathentry kind="lib" path="/Users/jianli/.gradle/caches/modules-2/files-2.1/org.beanshell/bsh/2.0b4/a05f0a0feefa8d8467ac80e16e7de071489f0d9c/bsh-2.0b4.jar" exported="true"/>
+	<classpathentry sourcepath="/Users/jianli/.gradle/caches/modules-2/files-2.1/com.beust/jcommander/1.12/b48b3ece6fb6272e00bd76c377fedb1bfa83fe59/jcommander-1.12-sources.jar" kind="lib" path="/Users/jianli/.gradle/caches/modules-2/files-2.1/com.beust/jcommander/1.12/7409692b48022f9eca7445861defbcdb9ee3c2a8/jcommander-1.12.jar" exported="true"/>
+	<classpathentry sourcepath="/Users/jianli/.gradle/caches/modules-2/files-2.1/org.yaml/snakeyaml/1.6/ad2f59fe7bbbf758ee5f7282de133f18d5d3eda3/snakeyaml-1.6-sources.jar" kind="lib" path="/Users/jianli/.gradle/caches/modules-2/files-2.1/org.yaml/snakeyaml/1.6/a1e23e31c424d566ee27382e373d73a28fdabd88/snakeyaml-1.6.jar" exported="true"/>
+	<classpathentry sourcepath="/Users/jianli/.gradle/caches/modules-2/files-2.1/org.codehaus.jackson/jackson-mapper-asl/1.8.8/188892732a773beb8ebc8d36de244157325287b7/jackson-mapper-asl-1.8.8-sources.jar" kind="lib" path="/Users/jianli/.gradle/caches/modules-2/files-2.1/org.codehaus.jackson/jackson-mapper-asl/1.8.8/1bb32d9d2527c083a56e234acca49a48d3c65c8/jackson-mapper-asl-1.8.8.jar" exported="true"/>
+	<classpathentry sourcepath="/Users/jianli/.gradle/caches/modules-2/files-2.1/com.thoughtworks.paranamer/paranamer/2.3/9bc5a204dec934bf2fbeb2d2c6fbcd5304a52fc7/paranamer-2.3-sources.jar" kind="lib" path="/Users/jianli/.gradle/caches/modules-2/files-2.1/com.thoughtworks.paranamer/paranamer/2.3/4a85963a752c0a2f715c3924bfc686865e7e1bc6/paranamer-2.3.jar" exported="true"/>
+	<classpathentry sourcepath="/Users/jianli/.gradle/caches/modules-2/files-2.1/org.xerial.snappy/snappy-java/1.0.4.1/554f1669655c76769bc7bdfbd28b70f8b39adcd0/snappy-java-1.0.4.1-sources.jar" kind="lib" path="/Users/jianli/.gradle/caches/modules-2/files-2.1/org.xerial.snappy/snappy-java/1.0.4.1/f88b89a5a21a466aeb0ecf0c063605bd584b4947/snappy-java-1.0.4.1.jar" exported="true"/>
+	<classpathentry sourcepath="/Users/jianli/.gradle/caches/modules-2/files-2.1/org.slf4j/slf4j-api/1.6.4/a045ecb292c2b2559e8e9778303a08c91f537c68/slf4j-api-1.6.4-sources.jar" kind="lib" path="/Users/jianli/.gradle/caches/modules-2/files-2.1/org.slf4j/slf4j-api/1.6.4/2396d74b12b905f780ed7966738bb78438e8371a/slf4j-api-1.6.4.jar" exported="true"/>
+</classpath>

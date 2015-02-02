@@ -1,0 +1,34 @@
+apply plugin: 'pegasus'
+
+ext.apiProject = null
+
+dependencies {
+  compile project(':restli-int-test-server')
+  compile project(':data')
+  compile project(':pegasus-common')
+  compile project(':r2')
+  compile project(':data-transform')
+  compile project(':restli-client')
+  compile project(':restli-server')
+  compile project(':restli-common')
+  compile project(':restli-extras')
+  compile project(':restli-tools')
+  compile project(':d2')
+  compile externalDependency.guava
+  compile externalDependency.commonsLang
+  compile externalDependency.javaxInject
+  compile externalDependency.parseq
+  runtime externalDependency.slf4jLog4j12
+  runtime externalDependency.log4j
+  testCompile project(path: ':restli-common', configuration: 'testArtifacts')
+  testCompile externalDependency.testng
+  testCompile externalDependency.mockito
+  testDataModel project(path: ':restli-int-test-api', configuration: 'dataTemplate')
+  testCompile project(path: ':restli-int-test-api', configuration: 'restClient')
+  testCompile project(path: project.path, configuration: 'testRestClient')
+  testCompile project(path: ':d2', configuration: 'testArtifacts')
+}
+
+test {
+  systemProperties['test.projectDir'] = project.projectDir.path
+}
