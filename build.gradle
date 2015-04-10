@@ -81,9 +81,9 @@ project.ext.externalDependency = [
 
   // for the RCS server
   'dropbox_core_sdk': 'com.dropbox.core:dropbox-core-sdk:1.7.7',
-  'aws_java_sdk_ses': 'com.amazonaws:aws-java-sdk-ses:1.9.4',
-  'aws_java_sdk_core': 'com.amazonaws:aws-java-sdk-core:1.9.4',
-  'aws_java_sdk': 'com.amazonaws:aws-java-sdk:1.9.4',
+  'aws_java_sdk_ses': 'com.amazonaws:aws-java-sdk-ses:1.9.30',
+  'aws_java_sdk_core': 'com.amazonaws:aws-java-sdk-core:1.9.30',
+  'aws_java_sdk': 'com.amazonaws:aws-java-sdk:1.9.30',
   'twilio_sdk': 'com.twilio.sdk:twilio-java-sdk:3.4.6',
   'kafka': 'org.apache.kafka:kafka_2.10:0.8.1.1',
   'apache_httpclient': 'org.apache.httpcomponents:httpclient:4.2.6',
