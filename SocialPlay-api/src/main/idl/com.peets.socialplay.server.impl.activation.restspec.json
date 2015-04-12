@@ -1,0 +1,28 @@
+{
+  "name" : "activation",
+  "namespace" : "com.peets.socialplay.server.impl",
+  "path" : "/activation",
+  "schema" : "com.peets.socialplay.server.ActivationRecord",
+  "doc" : "generated from: com.peets.socialplay.server.impl.ActivationResource",
+  "association" : {
+    "identifier" : "activationId",
+    "assocKeys" : [ {
+      "name" : "account",
+      "type" : "long"
+    }, {
+      "name" : "regType",
+      "type" : "string"
+    }, {
+      "name" : "verification",
+      "type" : "long"
+    } ],
+    "supports" : [ "get" ],
+    "methods" : [ {
+      "method" : "get",
+      "doc" : "get a list of Feeds by providing a compound key, consisting of a regType, and a sequence number\n any Feeds from the same group chat with a sequence number no less than the requested sequence number\n will be returned"
+    } ],
+    "entity" : {
+      "path" : "/activation/{activationId}"
+    }
+  }
+}

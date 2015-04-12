@@ -1,0 +1,64 @@
+{
+  "models" : [ {
+    "type" : "enum",
+    "name" : "IdentityType",
+    "namespace" : "com.peets.socialplay.server",
+    "doc" : "A type of an identity",
+    "symbols" : [ "EMAIL", "PHONE", "FB" ],
+    "symbolDocs" : {
+      "EMAIL" : "An identity associated with an email address.",
+      "PHONE" : "An identity associated with a phone number",
+      "FB" : "An identity associated with a FB account"
+    }
+  }, {
+    "type" : "record",
+    "name" : "ActivationRecord",
+    "namespace" : "com.peets.socialplay.server",
+    "doc" : "The record of activation after a user registers",
+    "fields" : [ {
+      "name" : "regType",
+      "type" : "IdentityType",
+      "doc" : "identity type used for registration"
+    }, {
+      "name" : "account",
+      "type" : "long",
+      "doc" : "the hash of the associated account ID"
+    }, {
+      "name" : "verification",
+      "type" : "long",
+      "doc" : "a system generated random integer for verification purpose"
+    }, {
+      "name" : "activated",
+      "type" : "boolean",
+      "doc" : "whether the account is activated"
+    } ]
+  } ],
+  "schema" : {
+    "schema" : "com.peets.socialplay.server.ActivationRecord",
+    "association" : {
+      "methods" : [ {
+        "doc" : "get a list of Feeds by providing a compound key, consisting of a regType, and a sequence number\n any Feeds from the same group chat with a sequence number no less than the requested sequence number\n will be returned",
+        "method" : "get"
+      } ],
+      "entity" : {
+        "path" : "/activation/{activationId}"
+      },
+      "supports" : [ "get" ],
+      "assocKeys" : [ {
+        "name" : "account",
+        "type" : "long"
+      }, {
+        "name" : "regType",
+        "type" : "string"
+      }, {
+        "name" : "verification",
+        "type" : "long"
+      } ],
+      "identifier" : "activationId"
+    },
+    "name" : "activation",
+    "doc" : "generated from: com.peets.socialplay.server.impl.ActivationResource",
+    "path" : "/activation",
+    "namespace" : "com.peets.socialplay.server.impl"
+  }
+}
