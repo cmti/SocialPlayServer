@@ -12,12 +12,14 @@
     "supports" : [ "create", "get" ],
     "methods" : [ {
       "method" : "create",
-      "doc" : "the Create method to create a new activity entry"
+      "doc" : "the Create method to create a new SocialPlayContext entry"
     }, {
-      "method" : "get"
+      "method" : "get",
+      "doc" : "retrieve SocialPlayContext by a specified contextId"
     } ],
     "actions" : [ {
       "name" : "findChatRoom",
+      "doc" : "action to find a chat room",
       "returns" : "string"
     } ],
     "entity" : {

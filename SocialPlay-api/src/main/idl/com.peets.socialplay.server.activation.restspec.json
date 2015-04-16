@@ -19,7 +19,7 @@
     "supports" : [ "get" ],
     "methods" : [ {
       "method" : "get",
-      "doc" : "get a list of Feeds by providing a compound key, consisting of a regType, and a sequence number\n any Feeds from the same group chat with a sequence number no less than the requested sequence number\n will be returned"
+      "doc" : "get the activation record by a compound key"
     } ],
     "entity" : {
       "path" : "/activation/{activationId}"

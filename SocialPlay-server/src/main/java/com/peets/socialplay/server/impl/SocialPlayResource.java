@@ -37,10 +37,10 @@ public class SocialPlayResource extends
 	private static final String USER_AGENT = "Mozilla/5.0";
 	private static String WEBRTC_URL = "https://apprtc.appspot.com";
 	/**
-	 * the Create method to create a new activity entry
+	 * the Create method to create a new SocialPlayContext entry
 	 * 
 	 * @param entity
-	 *            : the input activity
+	 *            : the input SocialPlayContext
 	 * @return
 	 */
 	@Override
@@ -74,6 +74,10 @@ public class SocialPlayResource extends
 	}
 
 	
+	/**
+	 * action to find a chat room
+	 * @return
+	 */
 	@Action(name = "findChatRoom", resourceLevel = ResourceLevel.COLLECTION)
 	public String findChatRoom() {
 		try {
@@ -86,6 +90,9 @@ public class SocialPlayResource extends
 		}
 	}
 	
+	/**
+	 * retrieve SocialPlayContext by a specified contextId
+	 */
 	@Override
 	public SocialPlayContext get(Long contextId)
 	{
@@ -113,6 +120,12 @@ public class SocialPlayResource extends
 		return result;
 	}
 	
+	/**
+	 * get response from a http GET request to a specified url
+	 * @param url
+	 * @return
+	 * @throws Exception
+	 */
 	private String getResponse(String url) throws Exception {
 		URL obj = new URL(url);
 		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
@@ -143,6 +156,11 @@ public class SocialPlayResource extends
 		return response.toString();
 	}
 	
+	/**
+	 * find a chat room
+	 * @return
+	 * @throws Exception
+	 */
 	private String findChatRoomNumber() throws Exception {
 		 
 		String retValue = "";

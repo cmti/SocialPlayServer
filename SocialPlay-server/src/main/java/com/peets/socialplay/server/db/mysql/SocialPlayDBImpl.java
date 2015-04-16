@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import com.peets.socialplay.server.ActivationRecord;
+import com.peets.socialplay.server.IdentityType;
 import com.peets.socialplay.server.db.SocialPlayDB;
 
 public class SocialPlayDBImpl implements SocialPlayDB {
@@ -18,12 +19,18 @@ public class SocialPlayDBImpl implements SocialPlayDB {
 				.getConnection(dbUrl, dbName, userName, password);
 	}
 
+	/**
+	 * retrieve the current value from sequence
+	 */
 	@Override
 	public Long getCurrentId() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
+	/**
+	 * from a verification hash string to retrieve the associated accountId
+	 */
 	@Override
 	public Long getAccountIdFromHash(String accountCode) {
 		PreparedStatement selectUser = null;
@@ -57,6 +64,9 @@ public class SocialPlayDBImpl implements SocialPlayDB {
 		return null;
 	}
 
+	/**
+	 * retrieve the activation record by specifying an accountId
+	 */
 	@Override
 	public ActivationRecord getActivationRecord(long accountId) {
 		PreparedStatement selectUser = null;
@@ -98,6 +108,52 @@ public class SocialPlayDBImpl implements SocialPlayDB {
 		return null;
 	}
 
+	/**
+	 * insert a new account record to DB
+	 */
+	@Override
+	public Long insertAccountRecord(IdentityType iType, String verification,
+			String userName, String identity, boolean activated) {
+		PreparedStatement updateUser = null;
+
+		String updateString = "insert into users (user_hash, user_type, user_status, user_name, identity, lastaccesstime) values (?, ?, ?, ?, ?, NOW())";
+
+		try {
+			conn.setAutoCommit(false);
+			updateUser = conn.prepareStatement(updateString);
+
+			updateUser.setString(1, verification);
+			updateUser.setString(2, DBUtilities.identityTypeToString(iType));
+			updateUser.setString(3, activated ? "y" : "n");
+			updateUser.setString(4, userName);
+			updateUser.setString(5, identity);
+			updateUser.executeUpdate();
+			conn.commit();
+
+			return getAccountIdFromHash(verification);
+		} catch (SQLException ex) {
+			System.out.println("SQLException: " + ex.getMessage());
+			System.out.println("SQLState: " + ex.getSQLState());
+			System.out.println("VendorError: " + ex.getErrorCode());
+		} finally {
+			try {
+				conn.setAutoCommit(true);
+				if (updateUser != null) {
+					updateUser.close();
+				}
+			} catch (SQLException ex) {
+				System.out.println("SQLException: " + ex.getMessage());
+				System.out.println("SQLState: " + ex.getSQLState());
+				System.out.println("VendorError: " + ex.getErrorCode());
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * update an activation record
+	 */
 	@Override
 	public boolean updateActivationRecord(long accountId,
 			ActivationRecord activationRecord) {
@@ -136,4 +192,80 @@ public class SocialPlayDBImpl implements SocialPlayDB {
 		return false;
 	}
 
+	/**
+	 * add a new friend
+	 */
+	@Override
+	public boolean invite(long invitorAccount, long inviteeAccount) {
+		PreparedStatement insertFriend = null;
+
+		String insertString = "insert into friends (invitor_id, invitee_id) values (?, ?)";
+
+		try {
+			conn.setAutoCommit(false);
+			insertFriend = conn.prepareStatement(insertString);
+
+			insertFriend.setLong(1, invitorAccount);
+			insertFriend.setLong(2, inviteeAccount);
+			insertFriend.executeUpdate();
+			conn.commit();
+
+			return true;
+		} catch (SQLException ex) {
+			System.out.println("SQLException: " + ex.getMessage());
+			System.out.println("SQLState: " + ex.getSQLState());
+			System.out.println("VendorError: " + ex.getErrorCode());
+		} finally {
+			try {
+				conn.setAutoCommit(true);
+				if (insertFriend != null) {
+					insertFriend.close();
+				}
+			} catch (SQLException ex) {
+				System.out.println("SQLException: " + ex.getMessage());
+				System.out.println("SQLState: " + ex.getSQLState());
+				System.out.println("VendorError: " + ex.getErrorCode());
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * update timestamp for user to keep live from client
+	 */
+	@Override
+	public boolean keepLive(long accountId) {
+		PreparedStatement updateUser = null;
+
+		String updateString = "update users set lastaccesstime=NOW() where user_id = ?";
+
+		try {
+			conn.setAutoCommit(false);
+			updateUser = conn.prepareStatement(updateString);
+
+			updateUser.setLong(1, accountId);
+			updateUser.executeUpdate();
+			conn.commit();
+
+			return true;
+		} catch (SQLException ex) {
+			System.out.println("SQLException: " + ex.getMessage());
+			System.out.println("SQLState: " + ex.getSQLState());
+			System.out.println("VendorError: " + ex.getErrorCode());
+		} finally {
+			try {
+				conn.setAutoCommit(true);
+				if (updateUser != null) {
+					updateUser.close();
+				}
+			} catch (SQLException ex) {
+				System.out.println("SQLException: " + ex.getMessage());
+				System.out.println("SQLState: " + ex.getSQLState());
+				System.out.println("VendorError: " + ex.getErrorCode());
+			}
+		}
+
+		return false;
+	}
 }

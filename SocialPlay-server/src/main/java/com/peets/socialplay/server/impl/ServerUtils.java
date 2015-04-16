@@ -4,17 +4,12 @@ import java.io.IOException;
 import java.lang.reflect.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.*;
-import java.util.SortedSet;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Set;
-import java.util.Date;
 
+import com.peets.socialplay.server.Identity;
 import com.peets.socialplay.server.IdentityType;
 import com.peets.socialplay.server.ActivationRecord;
+import com.peets.socialplay.server.ds.SocialPlayDataService;
+import com.peets.socialplay.server.ds.SocialPlayDataServiceImpl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +18,26 @@ public class ServerUtils {
 
 	public static String SEPERATOR = ":";
 
+	private static String dbName = "socialplay";
+	private static String dbUrl = "localhost";
+	private static String userName = "socialplay";
+	private static String password = "socialplay";
+	private SocialPlayDataService dataService = null;
+	
+	/**
+	 * lazy initialization
+	 * @param ds
+	 * @return
+	 */
+	public static SocialPlayDataService initService(SocialPlayDataService ds)
+	{
+		if(ds == null){
+			ds = new SocialPlayDataServiceImpl(dbUrl, dbName, userName, password);;
+		}
+		
+		return ds;
+	}
+	
 	/**
 	 * utility to verify the validity of a string presentation of an
 	 * IdentityType
@@ -39,6 +54,33 @@ public class ServerUtils {
 		return null;
 	}
 
+	/**
+	 * utility to verify the validity of a string presentation of an Identity
+	 * 
+	 * @param s
+	 * @return
+	 */
+	public static Identity isValidIdentity(String s) {
+		// expect the format as "TYPE:IDENTITY-STRING" such as
+		// "EMAIL:xxx@example.com"
+
+		String[] subs = s.toLowerCase().split(SEPERATOR);
+		if (subs == null || subs.length != 2) {
+			return null;
+		}
+		IdentityType it = isValidType(subs[0]);
+		if (it == null) {
+			return null;
+		}
+
+		return new Identity().setIdentityType(it).setIdentityStr(subs[1]);
+	}
+	
+	/**
+	 * utility to form query string from an activation record
+	 * @param activationRecord
+	 * @return
+	 */
 	public static String formQueryStringFromActivationRecord(
 			ActivationRecord activationRecord) {
 		if(activationRecord == null)
@@ -61,6 +103,13 @@ public class ServerUtils {
 		return sb.toString();
 	}
 	
+	/**
+	 * utility to form query string from an activation record using reflection
+	 * @param activationRecord
+	 * @return
+	 * @throws IllegalArgumentException
+	 * @throws IllegalAccessException
+	 */
 	public static String formQueryStringFromActivationRecordWithReflection(
 			ActivationRecord activationRecord) throws IllegalArgumentException,
 			IllegalAccessException {

@@ -31,28 +31,10 @@ public class ActivationResource extends AssociationResourceTemplate<ActivationRe
 {
 	Logger _log = LoggerFactory.getLogger(ActivationResource.class);
 	
-	private static String dbName = "socialplay";
-	private static String dbUrl = "localhost";
-	private static String userName = "socialplay";
-	private static String password = "socialplay";
-	private SocialPlayDataService dataService = null;
-	
-	private SocialPlayDataService initService()
-	{
-		if(dataService == null)
-		{
-			dataService = new SocialPlayDataServiceImpl(dbUrl, dbName, userName, password);
-		}
-		
-		return dataService;
-	}
+	private static SocialPlayDataService dataService = null;
 	
 	/**
-	 * get a list of Feeds by providing a compound key, consisting of a regType, and a sequence number
-	 * any Feeds from the same group chat with a sequence number no less than the requested sequence number
-	 * will be returned
-	 * @param key: the compound key used to query the Feeds
-	 * @return
+	 * get the activation record by a compound key
 	 */
 	@Override
 	public ActivationRecord get(CompoundKey key) {
@@ -80,10 +62,10 @@ public class ActivationResource extends AssociationResourceTemplate<ActivationRe
 					"Invalid verification!");			
 		}
 		
-		Long accountId = initService().getAccountIdFromHash(verification);
+		Long accountId = ServerUtils.initService(dataService).getAccountIdFromHash(verification);
 		if (accountId != null) {
 
-			ActivationRecord activationRecord = initService()
+			ActivationRecord activationRecord = ServerUtils.initService(dataService)
 					.getActivationRecord(accountId);
 
 			if (regType.equalsIgnoreCase(activationRecord.getRegType()
@@ -92,7 +74,7 @@ public class ActivationResource extends AssociationResourceTemplate<ActivationRe
 					&& activationRecord.getVerification().equals(verification)) {
 				activationRecord.setActivated(true);
 				
-				boolean result = initService().updateActivationRecord(accountId, activationRecord);
+				boolean result = ServerUtils.initService(dataService).updateActivationRecord(accountId, activationRecord);
 				
 				if(!result)
 				{

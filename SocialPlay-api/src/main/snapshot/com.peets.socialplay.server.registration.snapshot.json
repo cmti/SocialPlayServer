@@ -1,0 +1,120 @@
+{
+  "models" : [ {
+    "type" : "enum",
+    "name" : "IdentityType",
+    "namespace" : "com.peets.socialplay.server",
+    "doc" : "A type of an identity",
+    "symbols" : [ "EMAIL", "PHONE", "FB" ],
+    "symbolDocs" : {
+      "EMAIL" : "An identity associated with an email address.",
+      "PHONE" : "An identity associated with a phone number",
+      "FB" : "An identity associated with a FB account"
+    }
+  }, {
+    "type" : "record",
+    "name" : "Identity",
+    "namespace" : "com.peets.socialplay.server",
+    "doc" : "Identity data schema",
+    "fields" : [ {
+      "name" : "identityStr",
+      "type" : "string",
+      "doc" : "a string representation of an identity, could be a phone number, an email address or a FB account"
+    }, {
+      "name" : "identityType",
+      "type" : "IdentityType",
+      "doc" : "type of the identity"
+    } ]
+  }, {
+    "type" : "record",
+    "name" : "Account",
+    "namespace" : "com.peets.socialplay.server",
+    "doc" : "Account data schema",
+    "fields" : [ {
+      "name" : "accountId",
+      "type" : "long",
+      "doc" : "ID of an account"
+    }, {
+      "name" : "name",
+      "type" : "string",
+      "doc" : "account holder's name"
+    }, {
+      "name" : "identity",
+      "type" : "Identity",
+      "doc" : "the associated identity of an account"
+    } ]
+  }, {
+    "type" : "record",
+    "name" : "ActivationRecord",
+    "namespace" : "com.peets.socialplay.server",
+    "doc" : "The record of activation after a user registers",
+    "fields" : [ {
+      "name" : "regType",
+      "type" : "IdentityType",
+      "doc" : "identity type used for registration"
+    }, {
+      "name" : "account",
+      "type" : "long",
+      "doc" : "the hash of the associated account ID"
+    }, {
+      "name" : "verification",
+      "type" : "string",
+      "doc" : "a system generated random string for verification purpose"
+    }, {
+      "name" : "activated",
+      "type" : "boolean",
+      "doc" : "whether the account is activated"
+    } ]
+  } ],
+  "schema" : {
+    "schema" : "com.peets.socialplay.server.Account",
+    "name" : "registration",
+    "doc" : "generated from: com.peets.socialplay.server.impl.RegistrationResource",
+    "path" : "/registration",
+    "collection" : {
+      "methods" : [ {
+        "doc" : "create an account",
+        "method" : "create"
+      }, {
+        "doc" : "get the account information that is associated with an identity",
+        "method" : "get"
+      } ],
+      "entity" : {
+        "path" : "/registration/{registrationId}"
+      },
+      "supports" : [ "create", "get" ],
+      "identifier" : {
+        "name" : "registrationId",
+        "type" : "string"
+      },
+      "actions" : [ {
+        "name" : "getActivationRecord",
+        "doc" : "action to retrieve an activation record associated with an accountId",
+        "returns" : "com.peets.socialplay.server.ActivationRecord",
+        "parameters" : [ {
+          "name" : "accountId",
+          "type" : "long"
+        } ]
+      }, {
+        "name" : "invite",
+        "doc" : "add a friend by accountId",
+        "returns" : "boolean",
+        "parameters" : [ {
+          "name" : "invitor",
+          "type" : "long"
+        }, {
+          "name" : "invitee",
+          "type" : "long"
+        } ]
+      }, {
+        "name" : "keepLive",
+        "doc" : "keep live from client",
+        "returns" : "boolean",
+        "parameters" : [ {
+          "name" : "accountId",
+          "type" : "long"
+        } ]
+      } ]
+    },
+    "namespace" : "com.peets.socialplay.server"
+  }
+}

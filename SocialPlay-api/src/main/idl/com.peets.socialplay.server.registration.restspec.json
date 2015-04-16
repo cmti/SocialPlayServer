@@ -1,0 +1,52 @@
+{
+  "name" : "registration",
+  "namespace" : "com.peets.socialplay.server",
+  "path" : "/registration",
+  "schema" : "com.peets.socialplay.server.Account",
+  "doc" : "generated from: com.peets.socialplay.server.impl.RegistrationResource",
+  "collection" : {
+    "identifier" : {
+      "name" : "registrationId",
+      "type" : "string"
+    },
+    "supports" : [ "create", "get" ],
+    "methods" : [ {
+      "method" : "create",
+      "doc" : "create an account"
+    }, {
+      "method" : "get",
+      "doc" : "get the account information that is associated with an identity"
+    } ],
+    "actions" : [ {
+      "name" : "getActivationRecord",
+      "doc" : "action to retrieve an activation record associated with an accountId",
+      "parameters" : [ {
+        "name" : "accountId",
+        "type" : "long"
+      } ],
+      "returns" : "com.peets.socialplay.server.ActivationRecord"
+    }, {
+      "name" : "invite",
+      "doc" : "add a friend by accountId",
+      "parameters" : [ {
+        "name" : "invitor",
+        "type" : "long"
+      }, {
+        "name" : "invitee",
+        "type" : "long"
+      } ],
+      "returns" : "boolean"
+    }, {
+      "name" : "keepLive",
+      "doc" : "keep live from client",
+      "parameters" : [ {
+        "name" : "accountId",
+        "type" : "long"
+      } ],
+      "returns" : "boolean"
+    } ],
+    "entity" : {
+      "path" : "/registration/{registrationId}"
+    }
+  }
+}

@@ -40,9 +40,10 @@
     "path" : "/socialPlay",
     "collection" : {
       "methods" : [ {
-        "doc" : "the Create method to create a new activity entry",
+        "doc" : "the Create method to create a new SocialPlayContext entry",
         "method" : "create"
       }, {
+        "doc" : "retrieve SocialPlayContext by a specified contextId",
         "method" : "get"
       } ],
       "entity" : {
@@ -55,6 +56,7 @@
       },
       "actions" : [ {
         "name" : "findChatRoom",
+        "doc" : "action to find a chat room",
         "returns" : "string"
       } ]
     },

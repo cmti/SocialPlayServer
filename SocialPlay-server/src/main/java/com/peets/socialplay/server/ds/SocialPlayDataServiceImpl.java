@@ -1,6 +1,7 @@
 package com.peets.socialplay.server.ds;
 
 import com.peets.socialplay.server.db.SocialPlayDB;
+import com.peets.socialplay.server.Account;
 import com.peets.socialplay.server.ActivationRecord;
 import com.peets.socialplay.server.db.mysql.SocialPlayDBImpl;
 
@@ -46,6 +47,21 @@ public class SocialPlayDataServiceImpl implements SocialPlayDataService{
 		
 		return db.updateActivationRecord(accountId, activationRecord);
 	}
-	
+
+	@Override
+	public Long insertAccount(Account account) {
+		return db.insertAccountRecord(account.getIdentity().getIdentityType(), "", account.getName(), account.getIdentity().getIdentityStr(), false);
+	}
+
+	@Override
+	public boolean invite(long invitorAccount, long inviteeAccount) {
+		return db.invite(invitorAccount, inviteeAccount);
+	}
+
+	@Override
+	public boolean keepLive(long accountId)
+	{
+		return db.keepLive(accountId);
+	}
 
 }

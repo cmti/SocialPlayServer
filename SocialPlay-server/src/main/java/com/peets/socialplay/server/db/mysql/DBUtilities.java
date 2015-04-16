@@ -10,6 +10,14 @@ public class DBUtilities {
 	private static Connection conn = null;
 	private static int port = 3306;		// default port for mysql
 
+	/**
+	 * create a DB connection to mysql
+	 * @param dbUrl
+	 * @param dbName
+	 * @param userName
+	 * @param password
+	 * @return
+	 */
 	public static Connection getConnection(String dbUrl, String dbName,
 			String userName, String password) {
 
@@ -28,6 +36,11 @@ public class DBUtilities {
 		return conn;
 	}
 	
+	/**
+	 * utility to convert from DB column 'user_type' to IdentityType
+	 * @param regType
+	 * @return
+	 */
 	public static IdentityType toIdentityType(char regType)
 	{
 		switch (regType) {
@@ -42,6 +55,30 @@ public class DBUtilities {
 		}
 	}
 	
+	/**
+	 * utility to convert from IdentityType to the corresponding value for the DB column 'user_type'
+	 * @param iType
+	 * @return
+	 */
+	public static String identityTypeToString(IdentityType iType)
+	{
+		switch (iType) {
+		case PHONE:
+			return "p";
+		case FB:
+			return "f";
+		case EMAIL:
+			return "e";
+		default:
+			return "u";
+		}
+	}
+	
+	/**
+	 * convert 'y', or 'n' to boolean
+	 * @param c
+	 * @return
+	 */
 	public static Boolean toBoolean(char c) {
 		switch (c) {
 		case 'y':
