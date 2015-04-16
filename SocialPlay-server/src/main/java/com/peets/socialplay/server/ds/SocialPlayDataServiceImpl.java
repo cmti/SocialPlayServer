@@ -29,7 +29,7 @@ public class SocialPlayDataServiceImpl implements SocialPlayDataService{
 	}
 
 	@Override
-	public Long getAccountIdFromHash(long accountCode) {
+	public Long getAccountIdFromHash(String accountCode) {
 
 		return db.getAccountIdFromHash(accountCode);
 	}

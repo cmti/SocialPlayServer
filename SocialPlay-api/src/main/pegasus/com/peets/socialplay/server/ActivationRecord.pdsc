@@ -16,8 +16,8 @@
     },    
     {
       "name": "verification",
-      "type": "long",
-      "doc": "a system generated random integer for verification purpose"    
+      "type": "string",
+      "doc": "a system generated random string for verification purpose"    
     },
     {
       "name": "activated",

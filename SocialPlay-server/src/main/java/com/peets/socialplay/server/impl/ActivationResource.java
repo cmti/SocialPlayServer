@@ -22,10 +22,10 @@ import com.peets.socialplay.server.ActivationRecord;
 import com.peets.socialplay.server.ds.SocialPlayDataService;
 import com.peets.socialplay.server.ds.SocialPlayDataServiceImpl;
 
-@RestLiAssociation(name = "activation", namespace = "com.peets.socialplay.server.impl", assocKeys = {
+@RestLiAssociation(name = "activation", namespace = "com.peets.socialplay.server", assocKeys = {
 		@Key(name = "regType", type = String.class),
 		@Key(name = "account", type = Long.class),
-		@Key(name = "verification", type = Long.class) })
+		@Key(name = "verification", type = String.class) })
 
 public class ActivationResource extends AssociationResourceTemplate<ActivationRecord>
 {
@@ -73,27 +73,36 @@ public class ActivationResource extends AssociationResourceTemplate<ActivationRe
 					"Invalid account!");			
 		}
 		
-		Long verification = key.getPartAsLong("verification");
+		String verification = key.getPartAsString("verification");
 		if(verification == null)
 		{
 			throw new RestLiServiceException(HttpStatus.S_400_BAD_REQUEST,
 					"Invalid verification!");			
 		}
 		
-		Long accountId = initService().getAccountIdFromHash(account);
-		if(accountId == null)
-			return null;
-		
-		ActivationRecord activationRecord = initService().getActivationRecord(accountId);
-		
-		if(regType.equalsIgnoreCase(activationRecord.getRegType().toString())
-				&& activationRecord.getAccount().equals(account)
-				&& activationRecord.getVerification().equals(verification))
-		{
-			activationRecord.setActivated(true);
-			return activationRecord;
+		Long accountId = initService().getAccountIdFromHash(verification);
+		if (accountId != null) {
+
+			ActivationRecord activationRecord = initService()
+					.getActivationRecord(accountId);
+
+			if (regType.equalsIgnoreCase(activationRecord.getRegType()
+					.toString())
+					&& activationRecord.getAccount().equals(account)
+					&& activationRecord.getVerification().equals(verification)) {
+				activationRecord.setActivated(true);
+				
+				boolean result = initService().updateActivationRecord(accountId, activationRecord);
+				
+				if(!result)
+				{
+					throw new RestLiServiceException(HttpStatus.S_500_INTERNAL_SERVER_ERROR,
+							"Failed to activate!");			
+				}
+				return activationRecord;
+			}
 		}
-		return null;
+		return new ActivationRecord();
 	}
 
 }

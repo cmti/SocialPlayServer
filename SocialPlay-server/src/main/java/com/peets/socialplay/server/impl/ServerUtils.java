@@ -39,7 +39,6 @@ public class ServerUtils {
 		return null;
 	}
 
-
 	public static String formQueryStringFromActivationRecord(
 			ActivationRecord activationRecord) {
 		if(activationRecord == null)
