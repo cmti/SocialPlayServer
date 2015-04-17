@@ -50,7 +50,7 @@ public class SocialPlayDataServiceImpl implements SocialPlayDataService{
 
 	@Override
 	public Long insertAccount(Account account) {
-		return db.insertAccountRecord(account.getIdentity().getIdentityType(), "", account.getName(), account.getIdentity().getIdentityStr(), false);
+		return db.insertAccountRecord(account.getIdentity().getIdentityType(), account.getName(), account.getIdentity().getIdentityStr(), false);
 	}
 
 	@Override

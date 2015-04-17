@@ -112,7 +112,7 @@ public class SocialPlayDBImpl implements SocialPlayDB {
 	 * insert a new account record to DB
 	 */
 	@Override
-	public Long insertAccountRecord(IdentityType iType, String verification,
+	public Long insertAccountRecord(IdentityType iType, 
 			String userName, String identity, boolean activated) {
 		PreparedStatement updateUser = null;
 
@@ -122,6 +122,14 @@ public class SocialPlayDBImpl implements SocialPlayDB {
 			conn.setAutoCommit(false);
 			updateUser = conn.prepareStatement(updateString);
 
+			String verification = null;
+			try{
+				verification = SymmetricEncryptionUtility.encrypt(userName + ":" + iType + ":" + identity);
+			}catch(Exception e)
+			{
+				System.out.println("SymmetricEncryptionUtility exception: " + e.getMessage());
+				return null;
+			}
 			updateUser.setString(1, verification);
 			updateUser.setString(2, DBUtilities.identityTypeToString(iType));
 			updateUser.setString(3, activated ? "y" : "n");

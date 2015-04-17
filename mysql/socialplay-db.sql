@@ -8,7 +8,7 @@ CREATE TABLE `users` (
   `user_status` varchar(1) NOT NULL,
   `user_name` varchar(50) NOT NULL,
   `identity` varchar(50) NOT NULL,
-  `lastaccesstime` int(8) NOT NULL,
+  `lastaccesstime` bigint NOT NULL,
   PRIMARY KEY (`user_id`)
 ) 
 AUTO_INCREMENT=1234567;

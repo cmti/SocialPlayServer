@@ -9,7 +9,7 @@ import com.peets.socialplay.server.IdentityType;
 // interface for the SocialPlay Database access
 public interface SocialPlayDB {
 	public Long getCurrentId();
-	public Long insertAccountRecord(IdentityType iType, String verification, String userName, String identity, boolean activated);
+	public Long insertAccountRecord(IdentityType iType, String userName, String identity, boolean activated);
 	public Long getAccountIdFromHash(String accountCode);
 	public ActivationRecord getActivationRecord(long accountId);
 	public boolean updateActivationRecord(long accountId, ActivationRecord activationRecord);
