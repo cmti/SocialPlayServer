@@ -11,4 +11,5 @@ public interface SocialPlayDataService {
 	public Long insertAccount(Account account);
 	public boolean invite(long invitorAccount, long inviteeAccount);
 	public boolean keepLive(long accountId);
+	public boolean inviteToChat(long invitorAccount, long inviteeAccount, String roomId);
 }

@@ -1,4 +1,5 @@
 DROP TABLE IF EXISTS `friends`;
+DROP TABLE IF EXISTS `chat_invitation`;
 DROP TABLE IF EXISTS `users`;
 
 CREATE TABLE `users` (
@@ -15,11 +16,20 @@ AUTO_INCREMENT=1234567;
 ALTER TABLE users ADD UNIQUE INDEX (user_hash);
 insert into users (user_hash, user_type, user_status, user_name, identity, lastaccesstime) values ('0', 'p', 'n', 'povi test', '4089876543', NOW());
 
-DROP TABLE IF EXISTS `friends`;
-
 CREATE TABLE `friends` (
   `invitor_id` int(8) NOT NULL,
   `invitee_id` int(8) NOT NULL,
+  PRIMARY KEY (`invitor_id`, `invitee_id`),
+  FOREIGN KEY(invitor_id) REFERENCES users(user_id),
+  FOREIGN KEY(invitee_id) REFERENCES users(user_id)
+);
+
+CREATE TABLE `chat_invitation` (
+  `invitor_id` int(8) NOT NULL,
+  `invitee_id` int(8) NOT NULL,
+  `room_id` varchar(15) NOT NULL,
+  `started` varchar(1) NOT NULL,
+  `invite_time` bigint NOT NULL,
   PRIMARY KEY (`invitor_id`, `invitee_id`),
   FOREIGN KEY(invitor_id) REFERENCES users(user_id),
   FOREIGN KEY(invitee_id) REFERENCES users(user_id)

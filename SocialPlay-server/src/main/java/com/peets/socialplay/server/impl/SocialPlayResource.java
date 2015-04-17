@@ -25,6 +25,7 @@ import com.linkedin.restli.server.annotations.Action;
 import com.linkedin.restli.server.annotations.ActionParam;
 import com.linkedin.restli.server.annotations.RestLiCollection;
 import com.peets.socialplay.server.SocialPlayContext;
+import com.peets.socialplay.server.ds.SocialPlayDataService;
 
 @RestLiCollection(name = "socialPlay", namespace = "com.peets.socialplay.server")
 public class SocialPlayResource extends
@@ -36,6 +37,9 @@ public class SocialPlayResource extends
 
 	private static final String USER_AGENT = "Mozilla/5.0";
 	private static String WEBRTC_URL = "https://apprtc.appspot.com";
+	
+	private static SocialPlayDataService dataService = null;
+	
 	/**
 	 * the Create method to create a new SocialPlayContext entry
 	 * 
@@ -73,6 +77,31 @@ public class SocialPlayResource extends
 		return new CreateResponse(entity.getTimestamp());
 	}
 
+	/**
+	 * action to find a chat room
+	 * @return
+	 */
+	@Action(name = "inviteToChat", resourceLevel = ResourceLevel.COLLECTION)
+	public String inviteToChat(@ActionParam("invitor") Long invitorAccount,
+			@ActionParam("invitee") Long inviteeAccount) {
+		try {
+			String roomId = String.format("%09d", _random.nextInt(999999999));
+			
+			System.out.println("Invitor: " + invitorAccount + " tries to invite invitee: " + inviteeAccount + " to join room: " + roomId);
+			if(ServerUtils.initService(dataService).inviteToChat(invitorAccount, inviteeAccount, roomId))
+				return roomId; 
+			else
+			{
+				throw new RestLiServiceException(
+						HttpStatus.S_500_INTERNAL_SERVER_ERROR,
+						"Can't find a chat room: ");
+			}
+		} catch (Exception ex) {
+			throw new RestLiServiceException(
+					HttpStatus.S_500_INTERNAL_SERVER_ERROR,
+					"Can't find a chat room: " + ex.getMessage());
+		}
+	}
 	
 	/**
 	 * action to find a chat room

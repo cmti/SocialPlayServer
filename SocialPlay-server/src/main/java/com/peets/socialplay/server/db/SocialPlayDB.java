@@ -15,4 +15,5 @@ public interface SocialPlayDB {
 	public boolean updateActivationRecord(long accountId, ActivationRecord activationRecord);
 	public boolean invite(long invitorAccount, long inviteeAccount);
 	public boolean keepLive(long accountId);
+	public boolean inviteToChat(long invitorAccount, long inviteeAccount, String roomId);
 }

@@ -21,6 +21,17 @@
       "name" : "findChatRoom",
       "doc" : "action to find a chat room",
       "returns" : "string"
+    }, {
+      "name" : "inviteToChat",
+      "doc" : "action to find a chat room",
+      "parameters" : [ {
+        "name" : "invitor",
+        "type" : "long"
+      }, {
+        "name" : "invitee",
+        "type" : "long"
+      } ],
+      "returns" : "string"
     } ],
     "entity" : {
       "path" : "/socialPlay/{socialPlayId}"

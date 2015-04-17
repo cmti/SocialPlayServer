@@ -64,4 +64,10 @@ public class SocialPlayDataServiceImpl implements SocialPlayDataService{
 		return db.keepLive(accountId);
 	}
 
+	@Override
+	public boolean inviteToChat(long invitorAccount, long inviteeAccount,
+			String roomId) {
+		return db.inviteToChat(invitorAccount, inviteeAccount, roomId);
+	}
+
 }
