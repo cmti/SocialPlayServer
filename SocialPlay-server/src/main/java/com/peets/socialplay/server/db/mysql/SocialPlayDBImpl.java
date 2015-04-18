@@ -7,6 +7,7 @@ import java.sql.SQLException;
 
 import com.peets.socialplay.server.ActivationRecord;
 import com.peets.socialplay.server.IdentityType;
+import com.peets.socialplay.server.SocialPlayContext;
 import com.peets.socialplay.server.db.SocialPlayDB;
 
 public class SocialPlayDBImpl implements SocialPlayDB {
@@ -288,7 +289,7 @@ public class SocialPlayDBImpl implements SocialPlayDB {
 		PreparedStatement insertFriend = null;
 
 		String insertString = "insert into chat_invitation (invitor_id, invitee_id, room_id, started, invite_time) values (?, ?, ?, ?, NOW())";
-		String updateString = "update chat_invitation set room_id = ?, started = ?, invite_time = NOW() where invitor_id = ? and invitee_id = ?)";
+		String updateString = "update chat_invitation set room_id = ?, started = ?, invite_time = NOW() where invitor_id = ? and invitee_id = ?";
 		try {
 			conn.setAutoCommit(false);
 			if (!hasPreviousInviteToChatRecord(invitorAccount, inviteeAccount)) {
@@ -339,41 +340,44 @@ public class SocialPlayDBImpl implements SocialPlayDB {
 	 */
 	private boolean hasPreviousInviteToChatRecord(long invitorAccount,
 			long inviteeAccount) {
-		ResultSet rs = getInviteToChatRecord(invitorAccount, inviteeAccount);
+		SocialPlayContext context = getInviteToChatRecord(invitorAccount,
+				inviteeAccount);
 
-		try {
-			if (rs != null && rs.next())
-				return true;
-		} catch (SQLException ex) {
-			System.out.println("SQLException: " + ex.getMessage());
-			System.out.println("SQLState: " + ex.getSQLState());
-			System.out.println("VendorError: " + ex.getErrorCode());
+		if (context != null && context.hasChatRoomId()) {
+			return true;
 		}
 
 		return false;
 	}
 
 	/**
-	 * method to retrieve a previous chat invitation record from
-	 * the specified (invitor, invitee) pair
+	 * method to retrieve a previous chat invitation record from the specified
+	 * (invitor, invitee) pair
 	 * 
 	 * @param invitorAccount
 	 * @param inviteeAccount
 	 * @return
 	 */
-	private ResultSet getInviteToChatRecord(long invitorAccount,
+	private SocialPlayContext getInviteToChatRecord(long invitorAccount,
 			long inviteeAccount) {
 		PreparedStatement selectUser = null;
 
-		String selectString = "select room_id, started, invited_time from chat_invitation where invitor_id = ? and invitee_id = ?)";
+		String selectString = "select room_id, started from chat_invitation where invitor_id = ? and invitee_id = ?";
 
+		SocialPlayContext context = new SocialPlayContext();
 		try {
 			selectUser = conn.prepareStatement(selectString);
 
 			selectUser.setLong(1, invitorAccount);
 			selectUser.setLong(2, inviteeAccount);
 			ResultSet rs = selectUser.executeQuery();
-			return rs;
+			while (rs.next()) {
+				context.setChatRoomId(rs.getString(1));
+				context.setStarted(DBUtilities.toBoolean(rs.getString(2)
+						.charAt(0)));
+
+				return context;
+			}
 		} catch (SQLException ex) {
 			System.out.println("SQLException: " + ex.getMessage());
 			System.out.println("SQLState: " + ex.getSQLState());
@@ -390,6 +394,132 @@ public class SocialPlayDBImpl implements SocialPlayDB {
 			}
 		}
 
-		return null;
+		return context;
+	}
+
+	/**
+	 * check whether the participant joins the specified chat room
+	 */
+	@Override
+	public boolean findParticipantJoined(long invitorAccount,
+			long inviteeAccount, String roomId) {
+		SocialPlayContext context = getInviteToChatRecord(invitorAccount,
+				inviteeAccount);
+
+		if (context != null && context.hasStarted() && context.isStarted()) {
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * find whether there's existing record that matches (invitorAccount,
+	 * inviteeAccount, roomId)
+	 * 
+	 * @param invitorAccount
+	 * @param inviteeAccount
+	 * @param roomId
+	 * @return
+	 */
+	private boolean hasRecord(long invitorAccount, long inviteeAccount,
+			String roomId) {
+		SocialPlayContext context = getInviteToChatRecord(invitorAccount,
+				inviteeAccount);
+
+		if (context != null && context.hasChatRoomId()
+				&& context.getChatRoomId().equalsIgnoreCase(roomId)) {
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * update the participant join status
+	 */
+	@Override
+	public boolean updateParticipantJoined(long invitorAccount,
+			long inviteeAccount, String roomId, Boolean joined) {
+		if (hasRecord(invitorAccount, inviteeAccount, roomId)) {
+			PreparedStatement updateUser = null;
+
+			String updateString = "update chat_invitation set room_id = ?, started = ? where invitor_id = ? and invitee_id = ?";
+
+			try {
+				conn.setAutoCommit(false);
+				updateUser = conn.prepareStatement(updateString);
+
+				updateUser.setString(1, roomId);
+				updateUser.setString(2, joined ? "y" : "n");
+				updateUser.setLong(3, invitorAccount);
+				updateUser.setLong(4, inviteeAccount);
+				updateUser.executeUpdate();
+				conn.commit();
+
+				return true;
+			} catch (SQLException ex) {
+				System.out.println("SQLException: " + ex.getMessage());
+				System.out.println("SQLState: " + ex.getSQLState());
+				System.out.println("VendorError: " + ex.getErrorCode());
+			} finally {
+				try {
+					conn.setAutoCommit(true);
+					if (updateUser != null) {
+						updateUser.close();
+					}
+				} catch (SQLException ex) {
+					System.out.println("SQLException: " + ex.getMessage());
+					System.out.println("SQLState: " + ex.getSQLState());
+					System.out.println("VendorError: " + ex.getErrorCode());
+				}
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * find out if there's any incoming invitation for the invitee
+	 */
+	@Override
+	public SocialPlayContext findIncomingInvitation(long inviteeAccount) {
+		PreparedStatement selectUser = null;
+
+		String selectString = "select u.user_name, c.room_id, c.started, c.invite_time from users u, chat_invitation c where u.user_id = c.invitor_id and c.invitee_id= ? and c.started = ? order by c.invite_time desc limit 1";
+
+		SocialPlayContext context = new SocialPlayContext();
+		
+		try {
+			selectUser = conn.prepareStatement(selectString);
+
+			selectUser.setLong(1, inviteeAccount);
+			selectUser.setString(2, "n");
+			ResultSet rs = selectUser.executeQuery();
+			while (rs.next()) {
+				context.setChatRoomId(rs.getString(2));
+				context.setStarted(DBUtilities.toBoolean(rs.getString(3)
+						.charAt(0)));
+				context.setInitator(rs.getString(1));
+
+				return context;
+			}
+		} catch (SQLException ex) {
+			System.out.println("SQLException: " + ex.getMessage());
+			System.out.println("SQLState: " + ex.getSQLState());
+			System.out.println("VendorError: " + ex.getErrorCode());
+		} finally {
+			try {
+				if (selectUser != null) {
+					selectUser.close();
+				}
+			} catch (SQLException ex) {
+				System.out.println("SQLException: " + ex.getMessage());
+				System.out.println("SQLState: " + ex.getSQLState());
+				System.out.println("VendorError: " + ex.getErrorCode());
+			}
+		}
+
+		return context;
 	}
 }

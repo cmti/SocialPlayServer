@@ -10,7 +10,7 @@ import com.linkedin.data.schema.PathSpec;
 import com.linkedin.data.template.DataTemplateUtil;
 import com.linkedin.data.template.WrappingArrayTemplate;
 
-@Generated(value = "com.linkedin.pegasus.generator.PegasusDataTemplateGenerator", comments = "LinkedIn Data Template. Generated from /Users/jianli/workspaces/SocialPlayServer/restli-common/src/main/pegasus/com/linkedin/restli/restspec/AssociationSchema.pdsc.", date = "Wed Jan 14 22:36:03 PST 2015")
+@Generated(value = "com.linkedin.pegasus.generator.PegasusDataTemplateGenerator", comments = "LinkedIn Data Template. Generated from /Users/jianli/git/SocialPlayServer/restli-common/src/main/pegasus/com/linkedin/restli/restspec/AssociationSchema.pdsc.", date = "Fri Apr 17 15:52:47 PDT 2015")
 public class FinderSchemaArray
     extends WrappingArrayTemplate<FinderSchema>
 {

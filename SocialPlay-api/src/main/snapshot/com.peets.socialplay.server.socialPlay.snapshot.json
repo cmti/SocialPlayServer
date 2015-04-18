@@ -59,6 +59,27 @@
         "doc" : "action to find a chat room",
         "returns" : "string"
       }, {
+        "name" : "findIncomingInvitation",
+        "returns" : "com.peets.socialplay.server.SocialPlayContext",
+        "parameters" : [ {
+          "name" : "invitee",
+          "type" : "long"
+        } ]
+      }, {
+        "name" : "findParticipantJoined",
+        "doc" : "action to figure out whether the invitee joins the specified chat room",
+        "returns" : "boolean",
+        "parameters" : [ {
+          "name" : "invitor",
+          "type" : "long"
+        }, {
+          "name" : "invitee",
+          "type" : "long"
+        }, {
+          "name" : "roomId",
+          "type" : "string"
+        } ]
+      }, {
         "name" : "inviteToChat",
         "doc" : "action to find a chat room",
         "returns" : "string",
@@ -68,6 +89,23 @@
         }, {
           "name" : "invitee",
           "type" : "long"
+        } ]
+      }, {
+        "name" : "updateParticipantJoined",
+        "doc" : "update the participation status",
+        "returns" : "boolean",
+        "parameters" : [ {
+          "name" : "invitor",
+          "type" : "long"
+        }, {
+          "name" : "invitee",
+          "type" : "long"
+        }, {
+          "name" : "roomId",
+          "type" : "string"
+        }, {
+          "name" : "joined",
+          "type" : "boolean"
         } ]
       } ]
     },

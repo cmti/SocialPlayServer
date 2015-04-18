@@ -3,6 +3,7 @@ package com.peets.socialplay.server.ds;
 import com.peets.socialplay.server.db.SocialPlayDB;
 import com.peets.socialplay.server.Account;
 import com.peets.socialplay.server.ActivationRecord;
+import com.peets.socialplay.server.SocialPlayContext;
 import com.peets.socialplay.server.db.mysql.SocialPlayDBImpl;
 
 public class SocialPlayDataServiceImpl implements SocialPlayDataService{
@@ -68,6 +69,23 @@ public class SocialPlayDataServiceImpl implements SocialPlayDataService{
 	public boolean inviteToChat(long invitorAccount, long inviteeAccount,
 			String roomId) {
 		return db.inviteToChat(invitorAccount, inviteeAccount, roomId);
+	}
+
+	@Override
+	public boolean findParticipantJoined(long invitorAccount,
+			long inviteeAccount, String roomId) {
+		return db.findParticipantJoined(invitorAccount, inviteeAccount, roomId);
+	}
+
+	@Override
+	public boolean updateParticipantJoined(long invitorAccount,
+			long inviteeAccount, String roomId, Boolean joined) {
+		return db.updateParticipantJoined(invitorAccount, inviteeAccount, roomId, joined);
+	}
+
+	@Override
+	public SocialPlayContext findIncomingInvitation(long inviteeAccount) {
+		return db.findIncomingInvitation(inviteeAccount);
 	}
 
 }

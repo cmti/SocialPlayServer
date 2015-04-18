@@ -49,7 +49,6 @@ public class SocialPlayResource extends
 	 */
 	@Override
 	public CreateResponse create(SocialPlayContext entity) {
-		System.out.println("received request!");
 		if (!entity.hasChatRoomId()) {
 			throw new RestLiServiceException(HttpStatus.S_400_BAD_REQUEST,
 					"Chat Room ID must present in request");
@@ -116,6 +115,58 @@ public class SocialPlayResource extends
 			throw new RestLiServiceException(
 					HttpStatus.S_500_INTERNAL_SERVER_ERROR,
 					"Can't find a chat room: " + ex.getMessage());
+		}
+	}
+	
+	/**
+	 * action to figure out whether the invitee joins the specified chat room
+	 * @param invitorAccount
+	 * @param inviteeAccount
+	 * @param roomId
+	 * @return
+	 */
+	@Action(name = "findParticipantJoined", resourceLevel = ResourceLevel.COLLECTION)
+	public Boolean findParticipantJoined(@ActionParam("invitor") Long invitorAccount,
+			@ActionParam("invitee") Long inviteeAccount, @ActionParam("roomId") String roomId) {
+		try {
+			return ServerUtils.initService(dataService).findParticipantJoined(invitorAccount, inviteeAccount, roomId);
+		} catch (Exception ex) {
+			throw new RestLiServiceException(
+					HttpStatus.S_500_INTERNAL_SERVER_ERROR,
+					"Can't find out whether participant: " + inviteeAccount + " joined chat room: " + roomId + " with error:" + ex.getMessage());
+		}
+	}
+	
+	@Action(name = "findIncomingInvitation", resourceLevel = ResourceLevel.COLLECTION)
+	public SocialPlayContext findIncomingInvitation(
+			@ActionParam("invitee") Long inviteeAccount) {
+		try {
+			return ServerUtils.initService(dataService).findIncomingInvitation(inviteeAccount);
+		} catch (Exception ex) {
+			throw new RestLiServiceException(
+					HttpStatus.S_500_INTERNAL_SERVER_ERROR,
+					"Can't find out whether there's invitation to: " + inviteeAccount + " with error: " + ex.getMessage());
+		}
+	}
+	
+	/**
+	 * update the participation status
+	 * @param invitorAccount
+	 * @param inviteeAccount
+	 * @param roomId
+	 * @param joined
+	 * @return
+	 */
+	@Action(name = "updateParticipantJoined", resourceLevel = ResourceLevel.COLLECTION)
+	public Boolean updateParticipantJoined(@ActionParam("invitor") Long invitorAccount,
+			@ActionParam("invitee") Long inviteeAccount, @ActionParam("roomId") String roomId,
+			@ActionParam("joined") Boolean joined) {
+		try {
+			return ServerUtils.initService(dataService).updateParticipantJoined(invitorAccount, inviteeAccount, roomId, joined);
+		} catch (Exception ex) {
+			throw new RestLiServiceException(
+					HttpStatus.S_500_INTERNAL_SERVER_ERROR,
+					"Can't update for participant: " + inviteeAccount + " status on chat room: " + roomId + " with error:" + ex.getMessage());
 		}
 	}
 	

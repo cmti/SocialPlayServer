@@ -16,7 +16,7 @@ import com.linkedin.data.template.SetMode;
  * A generic ErrorResponse
  * 
  */
-@Generated(value = "com.linkedin.pegasus.generator.PegasusDataTemplateGenerator", comments = "LinkedIn Data Template. Generated from /Users/jianli/workspaces/SocialPlayServer/restli-common/src/main/pegasus/com/linkedin/restli/common/ErrorResponse.pdsc.", date = "Wed Jan 14 22:36:03 PST 2015")
+@Generated(value = "com.linkedin.pegasus.generator.PegasusDataTemplateGenerator", comments = "LinkedIn Data Template. Generated from /Users/jianli/git/SocialPlayServer/restli-common/src/main/pegasus/com/linkedin/restli/common/ErrorResponse.pdsc.", date = "Fri Apr 17 15:52:47 PDT 2015")
 public class ErrorResponse
     extends RecordTemplate
 {

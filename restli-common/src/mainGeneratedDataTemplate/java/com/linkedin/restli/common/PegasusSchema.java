@@ -14,7 +14,7 @@ import com.linkedin.data.template.RecordTemplate;
  * A "marker" data schema for data that is itself a data schema (a "PDSC for PDSCs"). Because PDSC is not expressive enough to describe it's own format, this is only a marker, and has no fields. Despite having no fields, it is required that data marked with this schema be non-empty. Specifically, is required that data marked as using this schema fully conform to the PDSC format (https://github.com/linkedin/rest.li/wiki/DATA-Data-Schema-and-Templates#schema-definition).
  * 
  */
-@Generated(value = "com.linkedin.pegasus.generator.PegasusDataTemplateGenerator", comments = "LinkedIn Data Template. Generated from /Users/jianli/workspaces/SocialPlayServer/restli-common/src/main/pegasus/com/linkedin/restli/common/PegasusSchema.pdsc.", date = "Wed Jan 14 22:36:03 PST 2015")
+@Generated(value = "com.linkedin.pegasus.generator.PegasusDataTemplateGenerator", comments = "LinkedIn Data Template. Generated from /Users/jianli/git/SocialPlayServer/restli-common/src/main/pegasus/com/linkedin/restli/common/PegasusSchema.pdsc.", date = "Fri Apr 17 15:52:47 PDT 2015")
 public class PegasusSchema
     extends RecordTemplate
 {
