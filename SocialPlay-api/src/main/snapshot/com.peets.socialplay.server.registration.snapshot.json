@@ -113,6 +113,13 @@
           "name" : "accountId",
           "type" : "long"
         } ]
+      }, {
+        "name" : "registerAccount",
+        "returns" : "com.peets.socialplay.server.Account",
+        "parameters" : [ {
+          "name" : "entity",
+          "type" : "com.peets.socialplay.server.Account"
+        } ]
       } ]
     },
     "namespace" : "com.peets.socialplay.server"

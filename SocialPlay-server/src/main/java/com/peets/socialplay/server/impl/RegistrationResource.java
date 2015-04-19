@@ -108,6 +108,43 @@ public class RegistrationResource extends
 		System.out.println("newId: " + newId);
 		return new CreateResponse(newId);
 	}
+	
+	@Action(name = "registerAccount", resourceLevel = ResourceLevel.COLLECTION)
+	public Account registerAccount(@ActionParam("entity") Account entity)
+	{
+		if (entity.hasAccountId()) {
+			throw new RestLiServiceException(HttpStatus.S_400_BAD_REQUEST,
+					"Account ID is not acceptable in request");
+		}
+
+		if (!entity.hasIdentity() || !entity.getIdentity().hasIdentityStr()
+				|| !entity.getIdentity().hasIdentityType()) {
+			throw new RestLiServiceException(
+					HttpStatus.S_400_BAD_REQUEST,
+					"Identity is not acceptable in request: identity has to have both type and a value");
+		}
+
+		if (!entity.hasName()) {
+			throw new RestLiServiceException(HttpStatus.S_400_BAD_REQUEST,
+					"Account name must present in request");
+		}
+		Long newId = ServerUtils.initService(dataService).insertAccount(entity);
+		if (newId == null) {
+			System.out.println("Failed to provision account: "
+					+ entity.getIdentity());
+			throw new RestLiServiceException(
+					HttpStatus.S_500_INTERNAL_SERVER_ERROR,
+					"Failed to provision account!");
+		}
+
+		sendActivationNotification(entity.getIdentity(), newId);
+
+		// grant it the account ID
+		entity.setAccountId(newId);
+
+		System.out.println("newId: " + newId);
+		return entity;
+	}
 
 	/**
 	 * Based on the user's identity type, send out activation url via SMS or

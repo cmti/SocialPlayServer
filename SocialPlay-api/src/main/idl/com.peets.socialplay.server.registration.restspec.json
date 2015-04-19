@@ -44,6 +44,13 @@
         "type" : "long"
       } ],
       "returns" : "boolean"
+    }, {
+      "name" : "registerAccount",
+      "parameters" : [ {
+        "name" : "entity",
+        "type" : "com.peets.socialplay.server.Account"
+      } ],
+      "returns" : "com.peets.socialplay.server.Account"
     } ],
     "entity" : {
       "path" : "/registration/{registrationId}"

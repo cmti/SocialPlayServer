@@ -119,46 +119,51 @@ public class SocialPlayDBImpl implements SocialPlayDB {
 
 		String updateString = "insert into users (user_hash, user_type, user_status, user_name, identity, lastaccesstime) values (?, ?, ?, ?, ?, NOW())";
 
+		String verification = null;
 		try {
-			conn.setAutoCommit(false);
-			updateUser = conn.prepareStatement(updateString);
+			verification = SymmetricEncryptionUtility.encrypt(userName + ":"
+					+ iType + ":" + identity);
+		} catch (Exception e) {
+			System.out.println("SymmetricEncryptionUtility exception: "
+					+ e.getMessage());
+			return null;
+		}
 
-			String verification = null;
+		Long accountId = getAccountIdFromHash(verification);	// already registered, just return the accountId
+		if (accountId == null) {
 			try {
-				verification = SymmetricEncryptionUtility.encrypt(userName
-						+ ":" + iType + ":" + identity);
-			} catch (Exception e) {
-				System.out.println("SymmetricEncryptionUtility exception: "
-						+ e.getMessage());
-				return null;
-			}
-			updateUser.setString(1, verification);
-			updateUser.setString(2, DBUtilities.identityTypeToString(iType));
-			updateUser.setString(3, activated ? "y" : "n");
-			updateUser.setString(4, userName);
-			updateUser.setString(5, identity);
-			updateUser.executeUpdate();
-			conn.commit();
+				conn.setAutoCommit(false);
+				updateUser = conn.prepareStatement(updateString);
 
-			return getAccountIdFromHash(verification);
-		} catch (SQLException ex) {
-			System.out.println("SQLException: " + ex.getMessage());
-			System.out.println("SQLState: " + ex.getSQLState());
-			System.out.println("VendorError: " + ex.getErrorCode());
-		} finally {
-			try {
-				conn.setAutoCommit(true);
-				if (updateUser != null) {
-					updateUser.close();
-				}
+				updateUser.setString(1, verification);
+				updateUser
+						.setString(2, DBUtilities.identityTypeToString(iType));
+				updateUser.setString(3, activated ? "y" : "n");
+				updateUser.setString(4, userName);
+				updateUser.setString(5, identity);
+				updateUser.executeUpdate();
+				conn.commit();
+
+				accountId = getAccountIdFromHash(verification);
 			} catch (SQLException ex) {
 				System.out.println("SQLException: " + ex.getMessage());
 				System.out.println("SQLState: " + ex.getSQLState());
 				System.out.println("VendorError: " + ex.getErrorCode());
+			} finally {
+				try {
+					conn.setAutoCommit(true);
+					if (updateUser != null) {
+						updateUser.close();
+					}
+				} catch (SQLException ex) {
+					System.out.println("SQLException: " + ex.getMessage());
+					System.out.println("SQLState: " + ex.getSQLState());
+					System.out.println("VendorError: " + ex.getErrorCode());
+				}
 			}
 		}
 
-		return null;
+		return accountId;
 	}
 
 	/**
@@ -489,7 +494,7 @@ public class SocialPlayDBImpl implements SocialPlayDB {
 		String selectString = "select u.user_name, c.room_id, c.started, c.invite_time from users u, chat_invitation c where u.user_id = c.invitor_id and c.invitee_id= ? and c.started = ? order by c.invite_time desc limit 1";
 
 		SocialPlayContext context = new SocialPlayContext();
-		
+
 		try {
 			selectUser = conn.prepareStatement(selectString);
 
