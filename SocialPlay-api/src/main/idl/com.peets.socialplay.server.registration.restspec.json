@@ -18,6 +18,13 @@
       "doc" : "get the account information that is associated with an identity"
     } ],
     "actions" : [ {
+      "name" : "findOnlineFriends",
+      "parameters" : [ {
+        "name" : "accountId",
+        "type" : "long"
+      } ],
+      "returns" : "{ \"type\" : \"array\", \"items\" : \"com.peets.socialplay.server.Account\" }"
+    }, {
       "name" : "getActivationRecord",
       "doc" : "action to retrieve an activation record associated with an accountId",
       "parameters" : [ {

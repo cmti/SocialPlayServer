@@ -283,4 +283,14 @@ public class RegistrationResource extends
 
 		return true;
 	}
+	
+	@Action(name = "findOnlineFriends", resourceLevel = ResourceLevel.COLLECTION)
+	public Account[] findOnlineFriends(
+			@ActionParam("accountId") Long accountId) {
+		Account[] result = ServerUtils.initService(dataService).findOnlineFriends(accountId);
+		if (result == null)
+			return new Account[0];
+		else
+			return result;		
+	}
 }

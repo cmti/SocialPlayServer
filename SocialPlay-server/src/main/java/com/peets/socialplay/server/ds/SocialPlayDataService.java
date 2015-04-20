@@ -16,4 +16,5 @@ public interface SocialPlayDataService {
 	public boolean findParticipantJoined(long invitorAccount, long inviteeAccount, String roomId);
 	public boolean updateParticipantJoined(long invitorAccount, long inviteeAccount, String roomId, Boolean joined);
 	public SocialPlayContext findIncomingInvitation(long inviteeAccount);
+	public Account[] findOnlineFriends(long accountId);
 }

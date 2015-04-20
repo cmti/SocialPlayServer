@@ -4,10 +4,13 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.peets.socialplay.server.ActivationRecord;
 import com.peets.socialplay.server.IdentityType;
 import com.peets.socialplay.server.SocialPlayContext;
+import com.peets.socialplay.server.Account;
 import com.peets.socialplay.server.db.SocialPlayDB;
 
 public class SocialPlayDBImpl implements SocialPlayDB {
@@ -526,5 +529,42 @@ public class SocialPlayDBImpl implements SocialPlayDB {
 		}
 
 		return context;
+	}
+
+	@Override
+	public Account[] findOnlineFriends(long accountId) {
+		PreparedStatement selectUser = null;
+
+		String selectString = "select u.user_name, f.invitee_id, u.lastaccesstime from users u, friends f where u.user_id = f.invitee_id and f.invitor_id= ?";
+
+		List<Account> accounts = new ArrayList<Account>();
+
+		try {
+			selectUser = conn.prepareStatement(selectString);
+
+			selectUser.setLong(1, accountId);
+			ResultSet rs = selectUser.executeQuery();
+			while (rs.next()) {
+				Account account = new Account();
+				account.setAccountId(rs.getLong(2));
+				account.setName(rs.getString(1));
+				accounts.add(account);
+			}
+		} catch (SQLException ex) {
+			System.out.println("SQLException: " + ex.getMessage());
+			System.out.println("SQLState: " + ex.getSQLState());
+			System.out.println("VendorError: " + ex.getErrorCode());
+		} finally {
+			try {
+				if (selectUser != null) {
+					selectUser.close();
+				}
+			} catch (SQLException ex) {
+				System.out.println("SQLException: " + ex.getMessage());
+				System.out.println("SQLState: " + ex.getSQLState());
+				System.out.println("VendorError: " + ex.getErrorCode());
+			}
+		}
+		return accounts.toArray(new Account[0]);
 	}
 }

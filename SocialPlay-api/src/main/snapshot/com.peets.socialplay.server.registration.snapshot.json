@@ -87,6 +87,13 @@
         "type" : "string"
       },
       "actions" : [ {
+        "name" : "findOnlineFriends",
+        "returns" : "{ \"type\" : \"array\", \"items\" : \"com.peets.socialplay.server.Account\" }",
+        "parameters" : [ {
+          "name" : "accountId",
+          "type" : "long"
+        } ]
+      }, {
         "name" : "getActivationRecord",
         "doc" : "action to retrieve an activation record associated with an accountId",
         "returns" : "com.peets.socialplay.server.ActivationRecord",

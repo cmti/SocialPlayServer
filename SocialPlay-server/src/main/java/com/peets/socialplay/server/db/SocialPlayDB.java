@@ -6,6 +6,7 @@ import java.util.Set;
 import com.peets.socialplay.server.ActivationRecord;
 import com.peets.socialplay.server.IdentityType;
 import com.peets.socialplay.server.SocialPlayContext;
+import com.peets.socialplay.server.Account;
 
 // interface for the SocialPlay Database access
 public interface SocialPlayDB {
@@ -20,4 +21,5 @@ public interface SocialPlayDB {
 	public boolean findParticipantJoined(long invitorAccount, long inviteeAccount, String roomId);
 	public boolean updateParticipantJoined(long invitorAccount, long inviteeAccount, String roomId, Boolean joined);
 	public SocialPlayContext findIncomingInvitation(long inviteeAccount);
+	public Account[] findOnlineFriends(long accountId);
 }

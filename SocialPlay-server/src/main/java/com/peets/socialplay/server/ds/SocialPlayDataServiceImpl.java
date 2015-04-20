@@ -88,4 +88,9 @@ public class SocialPlayDataServiceImpl implements SocialPlayDataService{
 		return db.findIncomingInvitation(inviteeAccount);
 	}
 
+	@Override
+	public Account[] findOnlineFriends(
+			long accountId) {
+		return db.findOnlineFriends(accountId);
+	}
 }
