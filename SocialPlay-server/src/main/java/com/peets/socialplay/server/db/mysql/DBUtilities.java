@@ -23,7 +23,7 @@ public class DBUtilities {
 
 		if (conn == null) {
 			try {
-				String connString = "jdbc:mysql://" + dbUrl + ":" + port + "/" + dbName;
+				String connString = "jdbc:mysql://" + dbUrl + ":" + port + "/" + dbName + "?autoReconnect=true";
 				conn = DriverManager.getConnection(connString, userName, password);
 			} catch (SQLException ex) {
 				// handle any errors

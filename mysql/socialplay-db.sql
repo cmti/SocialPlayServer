@@ -1,5 +1,6 @@
 DROP TABLE IF EXISTS `friends`;
 DROP TABLE IF EXISTS `chat_invitation`;
+DROP TABLE IF EXISTS `events`;
 DROP TABLE IF EXISTS `users`;
 
 CREATE TABLE `users` (
@@ -14,7 +15,7 @@ CREATE TABLE `users` (
 ) 
 AUTO_INCREMENT=1234567;
 ALTER TABLE users ADD UNIQUE INDEX (user_hash);
-insert into users (user_hash, user_type, user_status, user_name, identity, lastaccesstime) values ('0', 'p', 'n', 'povi test', '4089876543', NOW());
+insert into users (user_hash, user_type, user_status, user_name, identity, lastaccesstime) values ('zllo5/Rd6gzaZhKAUC3VSa4fDH/WD0EgvI0e99UuV1A=', 'p', 'n', 'povi test', '4089876543', NOW());
 
 CREATE TABLE `friends` (
   `invitor_id` int(8) NOT NULL,
@@ -33,4 +34,13 @@ CREATE TABLE `chat_invitation` (
   PRIMARY KEY (`invitor_id`, `invitee_id`),
   FOREIGN KEY(invitor_id) REFERENCES users(user_id),
   FOREIGN KEY(invitee_id) REFERENCES users(user_id)
+);
+
+CREATE TABLE `events` (
+  `user_id` int(8) NOT NULL,
+  `event_tye` varchar(2) NOT NULL,
+  `timestamp` bigint NOT NULL,
+  `eventdetails` blob NOT NULL,
+  PRIMARY KEY(`timestamp`, `user_id`),
+  FOREIGN KEY(user_id) REFERENCES users(user_id)
 );
