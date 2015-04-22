@@ -296,8 +296,8 @@ public class SocialPlayDBImpl implements SocialPlayDB {
 			String roomId) {
 		PreparedStatement insertFriend = null;
 
-		String insertString = "insert into chat_invitation (invitor_id, invitee_id, room_id, started, invite_time) values (?, ?, ?, ?, NOW())";
-		String updateString = "update chat_invitation set room_id = ?, started = ?, invite_time = NOW() where invitor_id = ? and invitee_id = ?";
+		String insertString = "insert into chat_invitation (invitor_id, invitee_id, room_id, started, invite_time) values (?, ?, ?, ?, utc_timestamp())";
+		String updateString = "update chat_invitation set room_id = ?, started = ?, invite_time = utc_timestamp() where invitor_id = ? and invitee_id = ?";
 		try {
 			conn.setAutoCommit(false);
 			if (!hasPreviousInviteToChatRecord(invitorAccount, inviteeAccount)) {
@@ -494,7 +494,8 @@ public class SocialPlayDBImpl implements SocialPlayDB {
 	public SocialPlayContext findIncomingInvitation(long inviteeAccount) {
 		PreparedStatement selectUser = null;
 
-		String selectString = "select u.user_name, c.room_id, c.started, c.invite_time from users u, chat_invitation c where u.user_id = c.invitor_id and c.invitee_id= ? and c.started = ? order by c.invite_time desc limit 1";
+		// only select the incoming connection that is within 2 minutes
+		String selectString = "select u.user_name, c.room_id, c.started, c.invite_time from users u, chat_invitation c where u.user_id = c.invitor_id and c.invitee_id= ? and c.started = ? and utc_timestamp() - c.invite_time < 200 order by c.invite_time desc limit 1";
 
 		SocialPlayContext context = new SocialPlayContext();
 
