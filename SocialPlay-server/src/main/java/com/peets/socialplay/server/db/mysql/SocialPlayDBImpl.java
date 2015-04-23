@@ -495,7 +495,7 @@ public class SocialPlayDBImpl implements SocialPlayDB {
 		PreparedStatement selectUser = null;
 
 		// only select the incoming connection that is within 2 minutes
-		String selectString = "select u.user_name, c.room_id, c.started, c.invite_time from users u, chat_invitation c where u.user_id = c.invitor_id and c.invitee_id= ? and c.started = ? and utc_timestamp() - c.invite_time < 200 order by c.invite_time desc limit 1";
+		String selectString = "select u.user_name, c.room_id, c.started, c.invite_time, u.user_id from users u, chat_invitation c where u.user_id = c.invitor_id and c.invitee_id= ? and c.started = ? and utc_timestamp() - c.invite_time < 200 order by c.invite_time desc limit 1";
 
 		SocialPlayContext context = new SocialPlayContext();
 
@@ -510,6 +510,8 @@ public class SocialPlayDBImpl implements SocialPlayDB {
 				context.setStarted(DBUtilities.toBoolean(rs.getString(3)
 						.charAt(0)));
 				context.setInitator(rs.getString(1));
+				context.setInitatorId(rs.getLong(5));
+				context.setParticipantId(inviteeAccount);
 
 				return context;
 			}

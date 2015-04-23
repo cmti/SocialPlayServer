@@ -10,10 +10,18 @@
       "doc" : "initiator of the social play",
       "optional" : true
     }, {
+      "name" : "initatorId",
+      "type" : "long",
+      "doc" : "accountId of the initiator of the social play"
+    }, {
       "name" : "participant",
       "type" : "string",
       "doc" : "the party that joins the initator's social play",
       "optional" : true
+    }, {
+      "name" : "participantId",
+      "type" : "long",
+      "doc" : "the accountId of the party that joins the initator's social play"
     }, {
       "name" : "theme",
       "type" : "string",
