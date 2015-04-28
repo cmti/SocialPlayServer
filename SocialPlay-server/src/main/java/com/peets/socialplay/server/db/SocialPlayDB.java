@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.peets.socialplay.server.ActivationRecord;
+import com.peets.socialplay.server.Event;
 import com.peets.socialplay.server.IdentityType;
 import com.peets.socialplay.server.SocialPlayContext;
 import com.peets.socialplay.server.Account;
@@ -22,4 +23,5 @@ public interface SocialPlayDB {
 	public boolean updateParticipantJoined(long invitorAccount, long inviteeAccount, String roomId, Boolean joined);
 	public SocialPlayContext findIncomingInvitation(long inviteeAccount);
 	public Account[] findOnlineFriends(long accountId);
+	public Long insertEvent(Event event);
 }

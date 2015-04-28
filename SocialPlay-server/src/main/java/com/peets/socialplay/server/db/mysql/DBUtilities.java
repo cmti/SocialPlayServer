@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
+import com.peets.socialplay.server.EventType;
 import com.peets.socialplay.server.IdentityType;
 
 public class DBUtilities {
@@ -74,6 +75,32 @@ public class DBUtilities {
 		}
 	}
 	
+	/**
+	 * utility to convert an EventType enum to a 2-letter string to be saved in DB
+	 * @param eType
+	 * @return
+	 */
+	public static String eventTypeToString(EventType eType)
+	{
+		switch(eType) {
+		case LOGIN:
+			return "LN";
+		case REGISTRATION:
+			return "RG";
+		case LOGOUT:
+			return "LO";
+		case READING:
+			return "RD";
+		case REMOTEPLAY:
+			return "RP";
+		case PHYSICAL:
+			return "PH";
+		case TABLET:
+			return "TB";
+			default:
+				return "UN";
+		}
+	}
 	/**
 	 * convert 'y', or 'n' to boolean
 	 * @param c

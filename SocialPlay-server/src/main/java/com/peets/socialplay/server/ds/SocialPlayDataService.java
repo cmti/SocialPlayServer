@@ -2,6 +2,7 @@ package com.peets.socialplay.server.ds;
 
 import com.peets.socialplay.server.Account;
 import com.peets.socialplay.server.ActivationRecord;
+import com.peets.socialplay.server.Event;
 import com.peets.socialplay.server.SocialPlayContext;
 
 public interface SocialPlayDataService {
@@ -17,4 +18,5 @@ public interface SocialPlayDataService {
 	public boolean updateParticipantJoined(long invitorAccount, long inviteeAccount, String roomId, Boolean joined);
 	public SocialPlayContext findIncomingInvitation(long inviteeAccount);
 	public Account[] findOnlineFriends(long accountId);
+	public Long insertEvent(Event event);
 }

@@ -3,6 +3,7 @@ package com.peets.socialplay.server.ds;
 import com.peets.socialplay.server.db.SocialPlayDB;
 import com.peets.socialplay.server.Account;
 import com.peets.socialplay.server.ActivationRecord;
+import com.peets.socialplay.server.Event;
 import com.peets.socialplay.server.SocialPlayContext;
 import com.peets.socialplay.server.db.mysql.SocialPlayDBImpl;
 
@@ -92,5 +93,10 @@ public class SocialPlayDataServiceImpl implements SocialPlayDataService{
 	public Account[] findOnlineFriends(
 			long accountId) {
 		return db.findOnlineFriends(accountId);
+	}
+
+	@Override
+	public Long insertEvent(Event event) {
+		return db.insertEvent(event);
 	}
 }

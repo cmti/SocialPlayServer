@@ -1,3 +1,4 @@
+DROP TABLE IF EXISTS `events`;
 DROP TABLE IF EXISTS `friends`;
 DROP TABLE IF EXISTS `chat_invitation`;
 DROP TABLE IF EXISTS `events`;
@@ -37,10 +38,14 @@ CREATE TABLE `chat_invitation` (
 );
 
 CREATE TABLE `events` (
+  `event_id` int(8) NOT NULL AUTO_INCREMENT,
   `user_id` int(8) NOT NULL,
   `event_tye` varchar(2) NOT NULL,
   `timestamp` bigint NOT NULL,
-  `eventdetails` blob NOT NULL,
-  PRIMARY KEY(`timestamp`, `user_id`),
+  `duration` int NOT NULL,
+  `eventdetails` varchar(400) NOT NULL,
+  PRIMARY KEY(`event_id`),
   FOREIGN KEY(user_id) REFERENCES users(user_id)
-);
+)
+AUTO_INCREMENT=10000001;
+ALTER TABLE events ADD UNIQUE INDEX (timestamp, user_id);

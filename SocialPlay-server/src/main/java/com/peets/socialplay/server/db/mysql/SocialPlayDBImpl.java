@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.peets.socialplay.server.ActivationRecord;
+import com.peets.socialplay.server.Event;
 import com.peets.socialplay.server.IdentityType;
 import com.peets.socialplay.server.SocialPlayContext;
 import com.peets.socialplay.server.Account;
@@ -569,5 +570,42 @@ public class SocialPlayDBImpl implements SocialPlayDB {
 			}
 		}
 		return accounts.toArray(new Account[0]);
+	}
+
+	@Override
+	public Long insertEvent(Event event) {
+		PreparedStatement insertUser = null;
+
+		String insertString = "insert into events (user_id, event_type, timestamp, duration, eventdetails) values (?, ?, utc_timestamp(), ?, ?)";
+
+		try {
+			conn.setAutoCommit(false);
+			insertUser = conn.prepareStatement(insertString);
+
+			insertUser.setLong(1, event.getUserId());
+			insertUser.setString(2,
+					DBUtilities.eventTypeToString(event.getEventType()));
+			insertUser.setInt(3, event.hasDuration() ? event.getDuration() : 0);
+			insertUser.setString(4, event.getDetails());
+			insertUser.executeUpdate();
+			conn.commit();
+		} catch (SQLException ex) {
+			System.out.println("SQLException: " + ex.getMessage());
+			System.out.println("SQLState: " + ex.getSQLState());
+			System.out.println("VendorError: " + ex.getErrorCode());
+		} finally {
+			try {
+				conn.setAutoCommit(true);
+				if (insertUser != null) {
+					insertUser.close();
+				}
+			} catch (SQLException ex) {
+				System.out.println("SQLException: " + ex.getMessage());
+				System.out.println("SQLState: " + ex.getSQLState());
+				System.out.println("VendorError: " + ex.getErrorCode());
+			}
+		}
+
+		return null;
 	}
 }
