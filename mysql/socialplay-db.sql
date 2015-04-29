@@ -40,7 +40,7 @@ CREATE TABLE `chat_invitation` (
 CREATE TABLE `events` (
   `event_id` int(8) NOT NULL AUTO_INCREMENT,
   `user_id` int(8) NOT NULL,
-  `event_tye` varchar(2) NOT NULL,
+  `event_type` varchar(2) NOT NULL,
   `timestamp` bigint NOT NULL,
   `duration` int NOT NULL,
   `eventdetails` varchar(400) NOT NULL,

@@ -1,0 +1,20 @@
+{
+  "name" : "eventTracking",
+  "namespace" : "com.peets.socialplay.server",
+  "path" : "/eventTracking",
+  "schema" : "com.peets.socialplay.server.Event",
+  "doc" : "generated from: com.peets.socialplay.server.impl.EventTrackingResource",
+  "collection" : {
+    "identifier" : {
+      "name" : "eventTrackingId",
+      "type" : "long"
+    },
+    "supports" : [ "create" ],
+    "methods" : [ {
+      "method" : "create"
+    } ],
+    "entity" : {
+      "path" : "/eventTracking/{eventTrackingId}"
+    }
+  }
+}

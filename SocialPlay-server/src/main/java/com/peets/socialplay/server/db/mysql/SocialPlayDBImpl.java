@@ -17,6 +17,7 @@ import com.peets.socialplay.server.db.SocialPlayDB;
 public class SocialPlayDBImpl implements SocialPlayDB {
 
 	private Connection conn;
+	private final String SELECT_LAST_ID = "SELECT LAST_INSERT_ID()";
 
 	public SocialPlayDBImpl(String dbUrl, String dbName, String userName,
 			String password) {
@@ -589,6 +590,14 @@ public class SocialPlayDBImpl implements SocialPlayDB {
 			insertUser.setString(4, event.getDetails());
 			insertUser.executeUpdate();
 			conn.commit();
+			
+			PreparedStatement selectLastId = conn.prepareStatement(SELECT_LAST_ID);
+			ResultSet rs = selectLastId.executeQuery();
+			while(rs.next())
+			{
+				Long eventId = rs.getLong(1);
+				return eventId;
+			}
 		} catch (SQLException ex) {
 			System.out.println("SQLException: " + ex.getMessage());
 			System.out.println("SQLState: " + ex.getSQLState());
