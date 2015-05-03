@@ -3,5 +3,5 @@
   "name" : "EventType",
   "namespace" : "com.peets.socialplay.server",
   "doc" : "A type of an event",
-  "symbols" : [ "LOGIN", "REGISTRATION", "LOGOUT", "READING", "REMOTEPLAY", "PHYSICAL", "TABLET" ] 
+  "symbols" : [ "LOGIN", "REGISTRATION", "LOGOUT", "READING", "REMOTEPLAY", "PHYSICAL", "TABLET", "COMMENT", "BROWSERINGTIPS" ]
 }

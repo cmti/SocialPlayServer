@@ -1,0 +1,62 @@
+{
+  "models" : [ {
+    "type" : "record",
+    "name" : "ParentingTipId",
+    "namespace" : "com.peets.socialplay.server",
+    "doc" : "ParentingTipId data schema",
+    "fields" : [ {
+      "name" : "tipResourceId",
+      "type" : "int",
+      "doc" : "resourceId of the tip it belongs to"
+    }, {
+      "name" : "tipSequenceId",
+      "type" : "int",
+      "doc" : "sequence ID of the tip within a given resource"
+    } ]
+  }, {
+    "type" : "enum",
+    "name" : "ParentingTipType",
+    "namespace" : "com.peets.socialplay.server",
+    "doc" : "A type of an event",
+    "symbols" : [ "QUESTION" ]
+  }, {
+    "type" : "record",
+    "name" : "ParentingTip",
+    "namespace" : "com.peets.socialplay.server",
+    "doc" : "ParentingTip data schema",
+    "fields" : [ {
+      "name" : "tipDetail",
+      "type" : "string",
+      "doc" : "details of the tip"
+    }, {
+      "name" : "tipId",
+      "type" : "ParentingTipId",
+      "doc" : "Id of the parenting tip"
+    }, {
+      "name" : "tipType",
+      "type" : "ParentingTipType",
+      "doc" : "type of the Parenting Tip"
+    } ]
+  } ],
+  "schema" : {
+    "schema" : "com.peets.socialplay.server.ParentingTip",
+    "name" : "parentingTip",
+    "doc" : "generated from: com.peets.socialplay.server.impl.ParentingTipResource",
+    "path" : "/parentingTip",
+    "collection" : {
+      "methods" : [ {
+        "method" : "get"
+      } ],
+      "entity" : {
+        "path" : "/parentingTip/{parentingTipId}"
+      },
+      "supports" : [ "get" ],
+      "identifier" : {
+        "name" : "parentingTipId",
+        "params" : "com.peets.socialplay.server.ParentingTipId",
+        "type" : "com.peets.socialplay.server.ParentingTipId"
+      }
+    },
+    "namespace" : "com.peets.socialplay.server"
+  }
+}

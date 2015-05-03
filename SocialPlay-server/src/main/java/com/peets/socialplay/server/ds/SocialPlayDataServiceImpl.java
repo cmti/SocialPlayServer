@@ -4,6 +4,9 @@ import com.peets.socialplay.server.db.SocialPlayDB;
 import com.peets.socialplay.server.Account;
 import com.peets.socialplay.server.ActivationRecord;
 import com.peets.socialplay.server.Event;
+import com.peets.socialplay.server.ParentingComment;
+import com.peets.socialplay.server.ParentingTip;
+import com.peets.socialplay.server.ParentingTipId;
 import com.peets.socialplay.server.SocialPlayContext;
 import com.peets.socialplay.server.db.mysql.SocialPlayDBImpl;
 
@@ -98,5 +101,23 @@ public class SocialPlayDataServiceImpl implements SocialPlayDataService{
 	@Override
 	public Long insertEvent(Event event) {
 		return db.insertEvent(event);
+	}
+
+	@Override
+	public ParentingTip getTip(ParentingTipId tipId) {
+		return db.getTip(tipId);
+	}
+
+	@Override
+	public ParentingComment[] getComments(ParentingTipId tipId, Long timestamp,
+			Integer count, Boolean chronicleOrder, Long lastTimestamp) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Long createComment(ParentingComment entry) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

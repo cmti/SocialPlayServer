@@ -1,0 +1,43 @@
+{
+  "name" : "parentingComment",
+  "namespace" : "com.peets.socialplay.server",
+  "path" : "/parentingComment",
+  "schema" : "com.peets.socialplay.server.ParentingComment",
+  "doc" : "generated from: com.peets.socialplay.server.impl.ParentingTipCommentResource",
+  "collection" : {
+    "identifier" : {
+      "name" : "parentingCommentId",
+      "type" : "com.peets.socialplay.server.ParentingTipId",
+      "params" : "com.peets.socialplay.server.ParentingTipId"
+    },
+    "supports" : [ "create", "get" ],
+    "methods" : [ {
+      "method" : "create"
+    }, {
+      "method" : "get"
+    } ],
+    "actions" : [ {
+      "name" : "getCommentsPaged",
+      "parameters" : [ {
+        "name" : "tipId",
+        "type" : "com.peets.socialplay.server.ParentingTipId"
+      }, {
+        "name" : "timestamp",
+        "type" : "long"
+      }, {
+        "name" : "count",
+        "type" : "int"
+      }, {
+        "name" : "chronicleOrder",
+        "type" : "boolean"
+      }, {
+        "name" : "lastTimestamp",
+        "type" : "long"
+      } ],
+      "returns" : "{ \"type\" : \"array\", \"items\" : \"com.peets.socialplay.server.ParentingComment\" }"
+    } ],
+    "entity" : {
+      "path" : "/parentingComment/{parentingCommentId}"
+    }
+  }
+}

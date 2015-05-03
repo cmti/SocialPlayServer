@@ -1,0 +1,21 @@
+{
+  "name" : "parentingTip",
+  "namespace" : "com.peets.socialplay.server",
+  "path" : "/parentingTip",
+  "schema" : "com.peets.socialplay.server.ParentingTip",
+  "doc" : "generated from: com.peets.socialplay.server.impl.ParentingTipResource",
+  "collection" : {
+    "identifier" : {
+      "name" : "parentingTipId",
+      "type" : "com.peets.socialplay.server.ParentingTipId",
+      "params" : "com.peets.socialplay.server.ParentingTipId"
+    },
+    "supports" : [ "get" ],
+    "methods" : [ {
+      "method" : "get"
+    } ],
+    "entity" : {
+      "path" : "/parentingTip/{parentingTipId}"
+    }
+  }
+}

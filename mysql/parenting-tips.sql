@@ -1,3 +1,4 @@
+DROP TABLE IF EXISTS `parenting_tips_comments`;
 DROP TABLE IF EXISTS `parenting_tips`;
 DROP TABLE IF EXISTS `parenting_resources`;
 
@@ -69,3 +70,17 @@ insert into parenting_tips values (1, 45, 'Is it possible to help somebody you\'
 insert into parenting_tips values (1, 46, 'If you could live in another country for 1 year, where would you live?', 'q', 'y');
 insert into parenting_tips values (1, 47, 'Is it better to have too much of something or not enough of something?', 'q', 'y');
 insert into parenting_tips values (1, 48, 'Who is the most important person in the world?', 'q', 'y');
+
+CREATE TABLE `parenting_tips_comments` (
+  `comment_id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int(8) NOT NULL,
+  `timestamp` int(8) NOT NULL,
+  `resource_id` int NOT NULL,
+  `tip_id` int NOT NULL,
+  `comments` varchar(400) NOT NULL,
+  PRIMARY KEY (`comment_id`),
+  FOREIGN KEY(resource_id) REFERENCES parenting_resources(resource_id),
+  FOREIGN KEY(tip_id) REFERENCES parenting_resources(tip_id),
+  FOREIGN KEY(user_id) REFERENCES users(user_id)
+)
+AUTO_INCREMENT=10001;

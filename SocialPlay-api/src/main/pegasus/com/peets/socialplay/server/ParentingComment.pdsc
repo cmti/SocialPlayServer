@@ -1,0 +1,29 @@
+{
+  "type": "record",
+  "name": "ParentingComment",
+  "namespace": "com.peets.socialplay.server",
+  "doc": "ParentingTip data schema",
+  "fields": [
+    {
+      "name": "commentDetail",
+      "type": "string",
+      "doc": "details of the comment"
+    },
+    {
+      "name": "tipId",
+      "type": "ParentingTipId",
+      "doc": "Id of the parenting tip",
+      "optional" : true
+    },  
+    {
+      "name": "timestamp",
+      "type": "long",
+      "doc": "timestamp of when the event occurs"
+    },            
+    {
+      "name": "tipType",
+      "type": "ParentingTipType",
+      "doc": "type of the Parenting Tip"
+    }
+  ]
+}

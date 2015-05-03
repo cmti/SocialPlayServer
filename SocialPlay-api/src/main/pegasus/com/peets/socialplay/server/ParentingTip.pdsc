@@ -1,0 +1,23 @@
+{
+  "type": "record",
+  "name": "ParentingTip",
+  "namespace": "com.peets.socialplay.server",
+  "doc": "ParentingTip data schema",
+  "fields": [
+    {
+      "name": "tipDetail",
+      "type": "string",
+      "doc": "details of the tip"
+    },
+    {
+      "name": "tipId",
+      "type": "ParentingTipId",
+      "doc": "Id of the parenting tip"
+    },         
+    {
+      "name": "tipType",
+      "type": "ParentingTipType",
+      "doc": "type of the Parenting Tip"
+    }
+  ]
+}
