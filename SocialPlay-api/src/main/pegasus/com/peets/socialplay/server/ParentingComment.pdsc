@@ -18,12 +18,12 @@
     {
       "name": "timestamp",
       "type": "long",
-      "doc": "timestamp of when the event occurs"
-    },            
+      "doc": "timestamp of when the comment occurs"
+    },     
     {
-      "name": "tipType",
-      "type": "ParentingTipType",
-      "doc": "type of the Parenting Tip"
+      "name": "userId",
+      "type": "long",
+      "doc": "userId of whom commented"
     }
   ]
 }

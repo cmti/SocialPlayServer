@@ -622,11 +622,78 @@ public class SocialPlayDBImpl implements SocialPlayDB {
 	}
 	
 	@Override
-	public ParentingTip getTip(ParentingTipId tipId)
+	public ParentingTip getTip(ParentingTipId tipId, Long accountId)
 	{
-		return null;
+		PreparedStatement selectUser = null;
+
+		String selectString = "select content from parenting_tips where resource_id = ? and tip_id = ?";
+
+		try {
+			selectUser = conn.prepareStatement(selectString);
+
+			selectUser.setInt(1, tipId.getTipResourceId());
+			selectUser.setInt(2, tipId.getTipSequenceId());
+			ResultSet rs = selectUser.executeQuery();
+			while (rs.next()) {
+				ParentingTip tip = new ParentingTip();
+				tip.setTipDetail(rs.getString(1)).setTipId(tipId);
+				insertTipHistory(tipId, accountId);
+				return tip;
+			}
+		} catch (SQLException ex) {
+			System.out.println("SQLException: " + ex.getMessage());
+			System.out.println("SQLState: " + ex.getSQLState());
+			System.out.println("VendorError: " + ex.getErrorCode());
+		} finally {
+			try {
+				if (selectUser != null) {
+					selectUser.close();
+				}
+			} catch (SQLException ex) {
+				System.out.println("SQLException: " + ex.getMessage());
+				System.out.println("SQLState: " + ex.getSQLState());
+				System.out.println("VendorError: " + ex.getErrorCode());
+			}
+		}
+		
+		return new ParentingTip();
 	}
 
+	private boolean insertTipHistory(ParentingTipId tipId, Long accountId)
+	{
+		PreparedStatement insertUser = null;
+
+		String insertString = "insert into parenting_tips_history (user_id, timestamp, resource_id, tip_id) values (?, utc_timestamp(), ?, ?)";
+
+		try {
+			conn.setAutoCommit(false);
+			insertUser = conn.prepareStatement(insertString);
+
+			insertUser.setLong(1, accountId);
+			insertUser.setInt(2, tipId.getTipResourceId());
+			insertUser.setInt(3, tipId.getTipSequenceId());
+			insertUser.executeUpdate();
+			conn.commit();
+			return true;
+		} catch (SQLException ex) {
+			System.out.println("SQLException: " + ex.getMessage());
+			System.out.println("SQLState: " + ex.getSQLState());
+			System.out.println("VendorError: " + ex.getErrorCode());
+		} finally {
+			try {
+				conn.setAutoCommit(true);
+				if (insertUser != null) {
+					insertUser.close();
+				}
+			} catch (SQLException ex) {
+				System.out.println("SQLException: " + ex.getMessage());
+				System.out.println("SQLState: " + ex.getSQLState());
+				System.out.println("VendorError: " + ex.getErrorCode());
+			}
+		}
+		return false;
+	}
+	
 	@Override
 	public ParentingComment[] getComments(ParentingTipId tipId, Long timestamp,
 			Integer count, Boolean chronicleOrder, Long lastTimestamp) {
@@ -636,7 +703,45 @@ public class SocialPlayDBImpl implements SocialPlayDB {
 
 	@Override
 	public Long createComment(ParentingComment entry) {
-		// TODO Auto-generated method stub
+		PreparedStatement insertUser = null;
+
+		String insertString = "insert into parenting_tips_comments (user_id, timestamp, resource_id, tip_id, comments) values (?, utc_timestamp(), ?, ?, ?)";
+
+		try {
+			conn.setAutoCommit(false);
+			insertUser = conn.prepareStatement(insertString);
+
+			insertUser.setLong(1, entry.getUserId());
+			insertUser.setInt(2, entry.hasTipId() ? (entry.getTipId().hasTipResourceId() ? entry.getTipId().getTipResourceId() : 0) : 0);
+			insertUser.setInt(3, entry.hasTipId() ? (entry.getTipId().hasTipSequenceId() ? entry.getTipId().getTipSequenceId() : 0) : 0);
+			insertUser.setString(4, entry.getCommentDetail());
+			insertUser.executeUpdate();
+			conn.commit();
+			
+			PreparedStatement selectLastId = conn.prepareStatement(SELECT_LAST_ID);
+			ResultSet rs = selectLastId.executeQuery();
+			while(rs.next())
+			{
+				Long commentId = rs.getLong(1);
+				return commentId;
+			}
+		} catch (SQLException ex) {
+			System.out.println("SQLException: " + ex.getMessage());
+			System.out.println("SQLState: " + ex.getSQLState());
+			System.out.println("VendorError: " + ex.getErrorCode());
+		} finally {
+			try {
+				conn.setAutoCommit(true);
+				if (insertUser != null) {
+					insertUser.close();
+				}
+			} catch (SQLException ex) {
+				System.out.println("SQLException: " + ex.getMessage());
+				System.out.println("SQLState: " + ex.getSQLState());
+				System.out.println("VendorError: " + ex.getErrorCode());
+			}
+		}
+
 		return null;
 	}
 }

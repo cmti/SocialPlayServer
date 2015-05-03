@@ -104,20 +104,20 @@ public class SocialPlayDataServiceImpl implements SocialPlayDataService{
 	}
 
 	@Override
-	public ParentingTip getTip(ParentingTipId tipId) {
-		return db.getTip(tipId);
+	public ParentingTip getTip(ParentingTipId tipId, Long accountId) {
+		return db.getTip(tipId, accountId);
 	}
 
 	@Override
 	public ParentingComment[] getComments(ParentingTipId tipId, Long timestamp,
 			Integer count, Boolean chronicleOrder, Long lastTimestamp) {
-		// TODO Auto-generated method stub
-		return null;
+
+		return db.getComments(tipId, timestamp, count, chronicleOrder, lastTimestamp);
 	}
 
 	@Override
 	public Long createComment(ParentingComment entry) {
-		// TODO Auto-generated method stub
-		return null;
+
+		return db.createComment(entry);
 	}
 }

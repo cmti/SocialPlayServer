@@ -1,3 +1,4 @@
+DROP TABLE IF EXISTS `parenting_tips_history`;
 DROP TABLE IF EXISTS `parenting_tips_comments`;
 DROP TABLE IF EXISTS `parenting_tips`;
 DROP TABLE IF EXISTS `parenting_resources`;
@@ -125,7 +126,7 @@ insert into parenting_tips values (1, 48, 'Who is the most important person in t
 CREATE TABLE `parenting_tips_comments` (
   `comment_id` int NOT NULL AUTO_INCREMENT,
   `user_id` int(8) NOT NULL,
-  `timestamp` int(8) NOT NULL,
+  `timestamp` bigint NOT NULL,
   `resource_id` int NOT NULL,
   `tip_id` int NOT NULL,
   `comments` varchar(400) NOT NULL,
@@ -134,3 +135,13 @@ CREATE TABLE `parenting_tips_comments` (
   FOREIGN KEY(user_id) REFERENCES users(user_id)
 )
 AUTO_INCREMENT=10001;
+
+CREATE TABLE `parenting_tips_history` (
+  `user_id` int(8) NOT NULL,
+  `timestamp` bigint NOT NULL,
+  `resource_id` int NOT NULL,
+  `tip_id` int NOT NULL,
+  PRIMARY KEY (`user_id`, `timestamp`),
+  FOREIGN KEY(resource_id) REFERENCES parenting_resources(resource_id),
+  FOREIGN KEY(user_id) REFERENCES users(user_id)
+);

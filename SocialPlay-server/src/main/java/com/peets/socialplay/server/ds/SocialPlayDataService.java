@@ -22,7 +22,7 @@ public interface SocialPlayDataService {
 	public SocialPlayContext findIncomingInvitation(long inviteeAccount);
 	public Account[] findOnlineFriends(long accountId);
 	public Long insertEvent(Event event);
-	public ParentingTip getTip(ParentingTipId tipId);
+	public ParentingTip getTip(ParentingTipId tipId, Long accountId);
 	public ParentingComment[] getComments(ParentingTipId tipId, Long timestamp, Integer count, Boolean chronicleOrder, Long lastTimestamp);
 	public Long createComment(ParentingComment entry);
 }

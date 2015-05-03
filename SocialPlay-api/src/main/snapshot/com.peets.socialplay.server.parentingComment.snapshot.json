@@ -14,12 +14,6 @@
       "doc" : "sequence ID of the tip within a given resource"
     } ]
   }, {
-    "type" : "enum",
-    "name" : "ParentingTipType",
-    "namespace" : "com.peets.socialplay.server",
-    "doc" : "A type of an event",
-    "symbols" : [ "QUESTION" ]
-  }, {
     "type" : "record",
     "name" : "ParentingComment",
     "namespace" : "com.peets.socialplay.server",
@@ -36,11 +30,11 @@
     }, {
       "name" : "timestamp",
       "type" : "long",
-      "doc" : "timestamp of when the event occurs"
+      "doc" : "timestamp of when the comment occurs"
     }, {
-      "name" : "tipType",
-      "type" : "ParentingTipType",
-      "doc" : "type of the Parenting Tip"
+      "name" : "userId",
+      "type" : "long",
+      "doc" : "userId of whom commented"
     } ]
   } ],
   "schema" : {

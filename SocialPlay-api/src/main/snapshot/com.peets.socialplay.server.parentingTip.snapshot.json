@@ -37,6 +37,49 @@
       "type" : "ParentingTipType",
       "doc" : "type of the Parenting Tip"
     } ]
+  }, {
+    "type" : "enum",
+    "name" : "IdentityType",
+    "namespace" : "com.peets.socialplay.server",
+    "doc" : "A type of an identity",
+    "symbols" : [ "EMAIL", "PHONE", "FB" ],
+    "symbolDocs" : {
+      "EMAIL" : "An identity associated with an email address.",
+      "PHONE" : "An identity associated with a phone number",
+      "FB" : "An identity associated with a FB account"
+    }
+  }, {
+    "type" : "record",
+    "name" : "Identity",
+    "namespace" : "com.peets.socialplay.server",
+    "doc" : "Identity data schema",
+    "fields" : [ {
+      "name" : "identityStr",
+      "type" : "string",
+      "doc" : "a string representation of an identity, could be a phone number, an email address or a FB account"
+    }, {
+      "name" : "identityType",
+      "type" : "IdentityType",
+      "doc" : "type of the identity"
+    } ]
+  }, {
+    "type" : "record",
+    "name" : "Account",
+    "namespace" : "com.peets.socialplay.server",
+    "doc" : "Account data schema",
+    "fields" : [ {
+      "name" : "accountId",
+      "type" : "long",
+      "doc" : "ID of an account"
+    }, {
+      "name" : "name",
+      "type" : "string",
+      "doc" : "account holder's name"
+    }, {
+      "name" : "identity",
+      "type" : "Identity",
+      "doc" : "the associated identity of an account"
+    } ]
   } ],
   "schema" : {
     "schema" : "com.peets.socialplay.server.ParentingTip",
@@ -53,7 +96,7 @@
       "supports" : [ "get" ],
       "identifier" : {
         "name" : "parentingTipId",
-        "params" : "com.peets.socialplay.server.ParentingTipId",
+        "params" : "com.peets.socialplay.server.Account",
         "type" : "com.peets.socialplay.server.ParentingTipId"
       }
     },

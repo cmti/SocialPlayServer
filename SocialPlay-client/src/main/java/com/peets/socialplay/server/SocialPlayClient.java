@@ -2,13 +2,17 @@ package com.peets.socialplay.server;
 
 import com.peets.socialplay.server.SocialPlayContext;
 import com.peets.socialplay.server.SocialPlayRequestBuilders;
+import com.linkedin.r2.RemoteInvocationException;
 import com.linkedin.r2.transport.common.Client;
 import com.linkedin.r2.transport.common.bridge.client.TransportClientAdapter;
 import com.linkedin.r2.transport.http.client.HttpClientFactory;
+import com.linkedin.restli.client.ActionRequest;
 import com.linkedin.restli.client.CreateRequest;
+import com.linkedin.restli.client.GetRequest;
 import com.linkedin.restli.client.Response;
 import com.linkedin.restli.client.ResponseFuture;
 import com.linkedin.restli.client.RestClient;
+import com.linkedin.restli.common.ComplexResourceKey;
 import com.linkedin.restli.common.EmptyRecord;
 import com.linkedin.restli.common.IdResponse;
 
@@ -33,17 +37,58 @@ public class SocialPlayClient {
 	private static final String POST_URL = BASE_URL + "/1234567";
 	private static final String FIND_URL = 	BASE_URL + "?action=findChatRoom";
 	
+    private static final HttpClientFactory http = new HttpClientFactory();
+    private static final Client r2Client = new TransportClientAdapter(
+            http.getClient(Collections.<String, String> emptyMap()));
+    // Create a RestClient to talk to localhost:8080
+    private static RestClient restClient = new RestClient(r2Client, CREATE_URL);
+    private static RegistrationBuilders registrationBuilders = new RegistrationBuilders();
+    private static SocialPlayBuilders socialPlayBuilders = new SocialPlayBuilders();
+    private static ActivationBuilders activationBuilders = new ActivationBuilders();
+    private static ParentingCommentBuilders parentingCommentBuilders = new ParentingCommentBuilders();
+    private static ParentingTipBuilders parentingTipBuilders = new ParentingTipBuilders();
+    private static final String TAG = "SocialPlayRestServer";
+
+    /**
+     * ping to server to keep live
+     * @param accountId
+     * @return
+     */
+    public static ParentingTip getTips(){
+        try {
+            ParentingTipGetBuilder parentingTipGetBuilder = parentingTipBuilders.get();
+
+            ParentingTipId pid = new ParentingTipId().setTipResourceId(1).setTipSequenceId(1);
+            Account account = new Account().setAccountId(1234567L);
+            ComplexResourceKey<ParentingTipId, Account> id = new ComplexResourceKey<ParentingTipId, Account>(pid, account);
+            
+            GetRequest<ParentingTip> parentingTipRequest = parentingTipGetBuilder.id(id).build();
+            System.out.println("parentingTipRequest: " + id.toStringFull());
+            ResponseFuture<ParentingTip> parentingTipFuture = restClient.sendRequest(parentingTipRequest);
+            Response<ParentingTip> parentingTipResponse = parentingTipFuture.getResponse();
+
+            return parentingTipResponse.getEntity();
+        }catch (RemoteInvocationException ex)
+        {
+            System.out.println("Encountered error doing keep live: " + ex.getMessage());
+        }
+
+        return null;
+    }
+	
 	public static void main(String[] args) throws Exception{
-		String body = doFind();
-		System.out.println(body);
+//		String body = doFind();
+//		System.out.println(body);
+//		
+//		JSONObject json = new JSONObject(body);
+//		String chatRoomId = json.getString("value");
+//		System.out.println(chatRoomId);
+//		create(chatRoomId);
+//		System.out.println(doGet(GET_URL));
+//		System.out.println(doGet(UPDATE_URL));
+//		System.out.println(doGet(POST_URL));
 		
-		JSONObject json = new JSONObject(body);
-		String chatRoomId = json.getString("value");
-		System.out.println(chatRoomId);
-		create(chatRoomId);
-		System.out.println(doGet(GET_URL));
-		System.out.println(doGet(UPDATE_URL));
-		System.out.println(doGet(POST_URL));
+		System.out.println(getTips());
 	}
 	
 	private static String doFind() throws Exception

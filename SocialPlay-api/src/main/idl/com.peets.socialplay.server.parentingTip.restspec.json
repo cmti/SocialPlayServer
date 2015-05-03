@@ -8,7 +8,7 @@
     "identifier" : {
       "name" : "parentingTipId",
       "type" : "com.peets.socialplay.server.ParentingTipId",
-      "params" : "com.peets.socialplay.server.ParentingTipId"
+      "params" : "com.peets.socialplay.server.Account"
     },
     "supports" : [ "get" ],
     "methods" : [ {
