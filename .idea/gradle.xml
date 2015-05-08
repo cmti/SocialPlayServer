@@ -3,8 +3,9 @@
   <component name="GradleSettings">
     <option name="linkedExternalProjectsSettings">
       <GradleProjectSettings>
-        <option name="distributionType" value="DEFAULT_WRAPPED" />
+        <option name="distributionType" value="LOCAL" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="gradleHome" value="$USER_HOME$/Downloads/gradle-2.4" />
         <option name="gradleJvm" value="1.8" />
         <option name="modules">
           <set>
@@ -12,48 +13,6 @@
             <option value="$PROJECT_DIR$/SocialPlay-api" />
             <option value="$PROJECT_DIR$/SocialPlay-client" />
             <option value="$PROJECT_DIR$/SocialPlay-server" />
-            <option value="$PROJECT_DIR$/buildSrc" />
-            <option value="$PROJECT_DIR$/d2" />
-            <option value="$PROJECT_DIR$/d2-contrib" />
-            <option value="$PROJECT_DIR$/d2-int-test" />
-            <option value="$PROJECT_DIR$/d2-schemas" />
-            <option value="$PROJECT_DIR$/data" />
-            <option value="$PROJECT_DIR$/data-avro" />
-            <option value="$PROJECT_DIR$/data-avro-1_6" />
-            <option value="$PROJECT_DIR$/data-avro-generator" />
-            <option value="$PROJECT_DIR$/data-transform" />
-            <option value="$PROJECT_DIR$/degrader" />
-            <option value="$PROJECT_DIR$/generator" />
-            <option value="$PROJECT_DIR$/generator-test" />
-            <option value="$PROJECT_DIR$/gradle-plugins" />
-            <option value="$PROJECT_DIR$/li-jersey-uri" />
-            <option value="$PROJECT_DIR$/log-test-config" />
-            <option value="$PROJECT_DIR$/pegasus-common" />
-            <option value="$PROJECT_DIR$/r2" />
-            <option value="$PROJECT_DIR$/r2-int-test" />
-            <option value="$PROJECT_DIR$/r2-jetty" />
-            <option value="$PROJECT_DIR$/r2-perf-test" />
-            <option value="$PROJECT_DIR$/r2-sample" />
-            <option value="$PROJECT_DIR$/r2-testutils" />
-            <option value="$PROJECT_DIR$/restli-client" />
-            <option value="$PROJECT_DIR$/restli-common" />
-            <option value="$PROJECT_DIR$/restli-contrib-spring" />
-            <option value="$PROJECT_DIR$/restli-docgen" />
-            <option value="$PROJECT_DIR$/restli-extras" />
-            <option value="$PROJECT_DIR$/restli-guice-bridge" />
-            <option value="$PROJECT_DIR$/restli-int-test" />
-            <option value="$PROJECT_DIR$/restli-int-test-api" />
-            <option value="$PROJECT_DIR$/restli-int-test-client" />
-            <option value="$PROJECT_DIR$/restli-int-test-server" />
-            <option value="$PROJECT_DIR$/restli-internal-testutils" />
-            <option value="$PROJECT_DIR$/restli-netty-standalone" />
-            <option value="$PROJECT_DIR$/restli-server" />
-            <option value="$PROJECT_DIR$/restli-server-extras" />
-            <option value="$PROJECT_DIR$/restli-server-standalone" />
-            <option value="$PROJECT_DIR$/restli-spring-bridge" />
-            <option value="$PROJECT_DIR$/restli-tools" />
-            <option value="$PROJECT_DIR$/restli-tools-scala" />
-            <option value="$PROJECT_DIR$/test-util" />
           </set>
         </option>
       </GradleProjectSettings>

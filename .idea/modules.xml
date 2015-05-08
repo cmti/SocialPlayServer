@@ -6,48 +6,6 @@
       <module fileurl="file://$PROJECT_DIR$/SocialPlay-client/SocialPlay-client.iml" filepath="$PROJECT_DIR$/SocialPlay-client/SocialPlay-client.iml" />
       <module fileurl="file://$PROJECT_DIR$/SocialPlay-server/SocialPlay-server.iml" filepath="$PROJECT_DIR$/SocialPlay-server/SocialPlay-server.iml" />
       <module fileurl="file://$PROJECT_DIR$/SocialPlayServer.iml" filepath="$PROJECT_DIR$/SocialPlayServer.iml" />
-      <module fileurl="file://$PROJECT_DIR$/buildSrc/buildSrc.iml" filepath="$PROJECT_DIR$/buildSrc/buildSrc.iml" />
-      <module fileurl="file://$PROJECT_DIR$/d2/d2.iml" filepath="$PROJECT_DIR$/d2/d2.iml" />
-      <module fileurl="file://$PROJECT_DIR$/d2-contrib/d2-contrib.iml" filepath="$PROJECT_DIR$/d2-contrib/d2-contrib.iml" />
-      <module fileurl="file://$PROJECT_DIR$/d2-int-test/d2-int-test.iml" filepath="$PROJECT_DIR$/d2-int-test/d2-int-test.iml" />
-      <module fileurl="file://$PROJECT_DIR$/d2-schemas/d2-schemas.iml" filepath="$PROJECT_DIR$/d2-schemas/d2-schemas.iml" />
-      <module fileurl="file://$PROJECT_DIR$/data/data.iml" filepath="$PROJECT_DIR$/data/data.iml" />
-      <module fileurl="file://$PROJECT_DIR$/data-avro/data-avro.iml" filepath="$PROJECT_DIR$/data-avro/data-avro.iml" />
-      <module fileurl="file://$PROJECT_DIR$/data-avro-1_6/data-avro-1_6.iml" filepath="$PROJECT_DIR$/data-avro-1_6/data-avro-1_6.iml" />
-      <module fileurl="file://$PROJECT_DIR$/data-avro-generator/data-avro-generator.iml" filepath="$PROJECT_DIR$/data-avro-generator/data-avro-generator.iml" />
-      <module fileurl="file://$PROJECT_DIR$/data-transform/data-transform.iml" filepath="$PROJECT_DIR$/data-transform/data-transform.iml" />
-      <module fileurl="file://$PROJECT_DIR$/degrader/degrader.iml" filepath="$PROJECT_DIR$/degrader/degrader.iml" />
-      <module fileurl="file://$PROJECT_DIR$/generator/generator.iml" filepath="$PROJECT_DIR$/generator/generator.iml" />
-      <module fileurl="file://$PROJECT_DIR$/generator-test/generator-test.iml" filepath="$PROJECT_DIR$/generator-test/generator-test.iml" />
-      <module fileurl="file://$PROJECT_DIR$/gradle-plugins/gradle-plugins.iml" filepath="$PROJECT_DIR$/gradle-plugins/gradle-plugins.iml" />
-      <module fileurl="file://$PROJECT_DIR$/li-jersey-uri/li-jersey-uri.iml" filepath="$PROJECT_DIR$/li-jersey-uri/li-jersey-uri.iml" />
-      <module fileurl="file://$PROJECT_DIR$/log-test-config/log-test-config.iml" filepath="$PROJECT_DIR$/log-test-config/log-test-config.iml" />
-      <module fileurl="file://$PROJECT_DIR$/pegasus-common/pegasus-common.iml" filepath="$PROJECT_DIR$/pegasus-common/pegasus-common.iml" />
-      <module fileurl="file://$PROJECT_DIR$/r2/r2.iml" filepath="$PROJECT_DIR$/r2/r2.iml" />
-      <module fileurl="file://$PROJECT_DIR$/r2-int-test/r2-int-test.iml" filepath="$PROJECT_DIR$/r2-int-test/r2-int-test.iml" />
-      <module fileurl="file://$PROJECT_DIR$/r2-jetty/r2-jetty.iml" filepath="$PROJECT_DIR$/r2-jetty/r2-jetty.iml" />
-      <module fileurl="file://$PROJECT_DIR$/r2-perf-test/r2-perf-test.iml" filepath="$PROJECT_DIR$/r2-perf-test/r2-perf-test.iml" />
-      <module fileurl="file://$PROJECT_DIR$/r2-sample/r2-sample.iml" filepath="$PROJECT_DIR$/r2-sample/r2-sample.iml" />
-      <module fileurl="file://$PROJECT_DIR$/r2-testutils/r2-testutils.iml" filepath="$PROJECT_DIR$/r2-testutils/r2-testutils.iml" />
-      <module fileurl="file://$PROJECT_DIR$/restli-client/restli-client.iml" filepath="$PROJECT_DIR$/restli-client/restli-client.iml" />
-      <module fileurl="file://$PROJECT_DIR$/restli-common/restli-common.iml" filepath="$PROJECT_DIR$/restli-common/restli-common.iml" />
-      <module fileurl="file://$PROJECT_DIR$/restli-contrib-spring/restli-contrib-spring.iml" filepath="$PROJECT_DIR$/restli-contrib-spring/restli-contrib-spring.iml" />
-      <module fileurl="file://$PROJECT_DIR$/restli-docgen/restli-docgen.iml" filepath="$PROJECT_DIR$/restli-docgen/restli-docgen.iml" />
-      <module fileurl="file://$PROJECT_DIR$/restli-extras/restli-extras.iml" filepath="$PROJECT_DIR$/restli-extras/restli-extras.iml" />
-      <module fileurl="file://$PROJECT_DIR$/restli-guice-bridge/restli-guice-bridge.iml" filepath="$PROJECT_DIR$/restli-guice-bridge/restli-guice-bridge.iml" />
-      <module fileurl="file://$PROJECT_DIR$/restli-int-test/restli-int-test.iml" filepath="$PROJECT_DIR$/restli-int-test/restli-int-test.iml" />
-      <module fileurl="file://$PROJECT_DIR$/restli-int-test-api/restli-int-test-api.iml" filepath="$PROJECT_DIR$/restli-int-test-api/restli-int-test-api.iml" />
-      <module fileurl="file://$PROJECT_DIR$/restli-int-test-client/restli-int-test-client.iml" filepath="$PROJECT_DIR$/restli-int-test-client/restli-int-test-client.iml" />
-      <module fileurl="file://$PROJECT_DIR$/restli-int-test-server/restli-int-test-server.iml" filepath="$PROJECT_DIR$/restli-int-test-server/restli-int-test-server.iml" />
-      <module fileurl="file://$PROJECT_DIR$/restli-internal-testutils/restli-internal-testutils.iml" filepath="$PROJECT_DIR$/restli-internal-testutils/restli-internal-testutils.iml" />
-      <module fileurl="file://$PROJECT_DIR$/restli-netty-standalone/restli-netty-standalone.iml" filepath="$PROJECT_DIR$/restli-netty-standalone/restli-netty-standalone.iml" />
-      <module fileurl="file://$PROJECT_DIR$/restli-server/restli-server.iml" filepath="$PROJECT_DIR$/restli-server/restli-server.iml" />
-      <module fileurl="file://$PROJECT_DIR$/restli-server-extras/restli-server-extras.iml" filepath="$PROJECT_DIR$/restli-server-extras/restli-server-extras.iml" />
-      <module fileurl="file://$PROJECT_DIR$/restli-server-standalone/restli-server-standalone.iml" filepath="$PROJECT_DIR$/restli-server-standalone/restli-server-standalone.iml" />
-      <module fileurl="file://$PROJECT_DIR$/restli-spring-bridge/restli-spring-bridge.iml" filepath="$PROJECT_DIR$/restli-spring-bridge/restli-spring-bridge.iml" />
-      <module fileurl="file://$PROJECT_DIR$/restli-tools/restli-tools.iml" filepath="$PROJECT_DIR$/restli-tools/restli-tools.iml" />
-      <module fileurl="file://$PROJECT_DIR$/restli-tools-scala/restli-tools-scala_2.10.iml" filepath="$PROJECT_DIR$/restli-tools-scala/restli-tools-scala_2.10.iml" />
-      <module fileurl="file://$PROJECT_DIR$/test-util/test-util.iml" filepath="$PROJECT_DIR$/test-util/test-util.iml" />
     </modules>
   </component>
 </project>

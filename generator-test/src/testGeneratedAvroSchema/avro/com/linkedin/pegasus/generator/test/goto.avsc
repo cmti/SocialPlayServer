@@ -1,6 +1,0 @@
-{
-  "type" : "record",
-  "name" : "goto",
-  "namespace" : "com.linkedin.pegasus.generator.test",
-  "fields" : [ ]
-}

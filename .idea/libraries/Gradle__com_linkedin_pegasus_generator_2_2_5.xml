@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="Gradle: com.linkedin.pegasus:generator:2.2.5">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.linkedin.pegasus/generator/2.2.5/448449472b8008a8b1e0ea1f3e13f8007be03166/generator-2.2.5.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.linkedin.pegasus/generator/2.2.5/e28cdca5304895adb94fb8c0a83e4063d84bd400/generator-2.2.5-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

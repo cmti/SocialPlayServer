@@ -1,7 +1,0 @@
-{
-  "type" : "record",
-  "name" : "PTString",
-  "namespace" : "com.linkedin.pegasus.generator.test",
-  "fields" : [ ],
-  "pString" : "string"
-}
