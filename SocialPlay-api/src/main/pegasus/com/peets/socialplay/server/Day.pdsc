@@ -1,0 +1,7 @@
+{
+  "type" : "enum",
+  "name" : "Day",
+  "namespace" : "com.peets.socialplay.server",
+  "doc" : "enum of days",
+  "symbols" : [ "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY","SUNDAY" ]
+}

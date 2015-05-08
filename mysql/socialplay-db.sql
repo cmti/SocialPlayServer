@@ -1,3 +1,6 @@
+DROP TABLE IF EXISTS `parenting_settings`;
+DROP TABLE IF EXISTS `parenting_reminder_schedule`;
+DROP TABLE IF EXISTS `parenting_notification_schedule`;
 DROP TABLE IF EXISTS `parenting_tips_history`;
 DROP TABLE IF EXISTS `parenting_tips_comments`;
 DROP TABLE IF EXISTS `parenting_tips`;
@@ -143,5 +146,27 @@ CREATE TABLE `parenting_tips_history` (
   `tip_id` int NOT NULL,
   PRIMARY KEY (`user_id`, `timestamp`),
   FOREIGN KEY(resource_id) REFERENCES parenting_resources(resource_id),
+  FOREIGN KEY(user_id) REFERENCES users(user_id)
+);
+
+CREATE TABLE `parenting_notification_schedule` (
+  `user_id` int(8) NOT NULL,
+  `day` smallint NOT NULL,
+  `schedule` time NOT NULL,
+  PRIMARY KEY (`user_id`, `day`),
+  FOREIGN KEY(user_id) REFERENCES users(user_id)
+);
+
+CREATE TABLE `parenting_reminder_schedule` (
+  `user_id` int(8) NOT NULL,
+  `schedule` time NOT NULL,
+  PRIMARY KEY (`user_id`, `schedule`),
+  FOREIGN KEY(user_id) REFERENCES users(user_id)
+);
+
+CREATE TABLE `parenting_settings` (
+  `user_id` int(8) NOT NULL,
+  `timeZone` varchar(10) NOT NULL,
+  PRIMARY KEY (`user_id`, `timeZone`),
   FOREIGN KEY(user_id) REFERENCES users(user_id)
 );
