@@ -35,8 +35,9 @@ public class CollectionArgumentBuilder implements RestLiArgumentBuilder
   public Object[] buildArguments(RestLiRequestData requestData, RoutingResult routingResult)
   {
     return ArgumentBuilder.buildArgs(new Object[0],
-                                     routingResult.getResourceMethod().getParameters(),
-                                     routingResult.getContext());
+                                     routingResult.getResourceMethod(),
+                                     routingResult.getContext(),
+                                     null);
   }
 
   @Override

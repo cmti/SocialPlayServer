@@ -1,0 +1,7 @@
+{
+  "type" : "record",
+  "name" : "PTInt",
+  "namespace" : "com.linkedin.pegasus.generator.test",
+  "fields" : [ ],
+  "pInt" : 1
+}

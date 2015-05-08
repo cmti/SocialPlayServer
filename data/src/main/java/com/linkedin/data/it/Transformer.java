@@ -27,6 +27,7 @@ import java.util.ArrayList;
 /**
  * Transforms Data objects returned by a {@link DataIterator}.
  * 
+ * @author "Joe Betz<jbetz@linkedin.com>"
  */
 public class Transformer
 {

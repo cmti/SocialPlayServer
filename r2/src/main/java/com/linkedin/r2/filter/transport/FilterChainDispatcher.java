@@ -17,16 +17,15 @@
 /* $Id$ */
 package com.linkedin.r2.filter.transport;
 
-import java.util.Map;
 
 import com.linkedin.r2.filter.FilterChain;
 import com.linkedin.r2.message.RequestContext;
 import com.linkedin.r2.message.rest.RestRequest;
 import com.linkedin.r2.message.rest.RestResponse;
-import com.linkedin.r2.message.rpc.RpcRequest;
-import com.linkedin.r2.message.rpc.RpcResponse;
 import com.linkedin.r2.transport.common.bridge.common.TransportCallback;
 import com.linkedin.r2.transport.common.bridge.server.TransportDispatcher;
+
+import java.util.Map;
 
 /**
  * {@link TransportDispatcher} adapter which composes a {@link TransportDispatcher} and a
@@ -50,19 +49,9 @@ public class FilterChainDispatcher implements TransportDispatcher
                                FilterChain filters)
   {
     _filters = filters
+            .addFirst(new ServerQueryTunnelFilter())
             .addFirst(new ResponseFilter())
             .addLast(new DispatcherRequestFilter(dispatcher));
-  }
-
-  @Override
-  @Deprecated
-  @SuppressWarnings("deprecation")
-  public void handleRpcRequest(RpcRequest req, Map<String, String> wireAttrs,
-                               TransportCallback<RpcResponse> callback)
-  {
-    final RequestContext context = new RequestContext();
-    ResponseFilter.registerCallback(callback, context);
-    _filters.onRpcRequest(req, context, wireAttrs);
   }
 
   @Override

@@ -17,49 +17,49 @@
 /* $Id$ */
 package com.linkedin.r2.transport.http.client;
 
-import com.linkedin.r2.util.ConfigValueExtractor;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLParameters;
-
-import org.apache.commons.lang.StringUtils;
-import org.jboss.netty.channel.socket.ClientSocketChannelFactory;
-import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.linkedin.common.callback.Callback;
 import com.linkedin.common.util.None;
 import com.linkedin.r2.filter.FilterChain;
 import com.linkedin.r2.filter.FilterChains;
+import com.linkedin.r2.filter.CompressionConfig;
 import com.linkedin.r2.filter.compression.ClientCompressionFilter;
 import com.linkedin.r2.filter.compression.EncodingType;
+import com.linkedin.r2.filter.transport.ClientQueryTunnelFilter;
 import com.linkedin.r2.filter.transport.FilterChainClient;
 import com.linkedin.r2.message.RequestContext;
 import com.linkedin.r2.message.rest.RestRequest;
 import com.linkedin.r2.message.rest.RestResponse;
-import com.linkedin.r2.message.rpc.RpcRequest;
-import com.linkedin.r2.message.rpc.RpcResponse;
 import com.linkedin.r2.transport.common.TransportClientFactory;
 import com.linkedin.r2.transport.common.bridge.client.TransportClient;
 import com.linkedin.r2.transport.common.bridge.common.TransportCallback;
+import com.linkedin.r2.util.ConfigValueExtractor;
 import com.linkedin.r2.util.NamedThreadFactory;
+
+import io.netty.channel.nio.NioEventLoopGroup;
+import java.util.concurrent.ExecutorService;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLParameters;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A factory for HttpNettyClient instances.
  *
  * All clients created by the factory will share the same resources, in particular the
- * {@link ClientSocketChannelFactory} and {@link ScheduledExecutorService}.
+ * {@link io.netty.channel.nio.NioEventLoopGroup} and {@link ScheduledExecutorService}.
  *
  * In order to shutdown cleanly, all clients issued by the factory should be shutdown via
  * {@link TransportClient#shutdown(com.linkedin.common.callback.Callback)} and the factory
@@ -92,37 +92,31 @@ public class HttpClientFactory implements TransportClientFactory
   public static final String HTTP_SSL_CONTEXT = "http.sslContext";
   public static final String HTTP_SSL_PARAMS = "http.sslParams";
   public static final String HTTP_RESPONSE_COMPRESSION_OPERATIONS = "http.responseCompressionOperations";
+  public static final String HTTP_REQUEST_CONTENT_ENCODINGS = "http.requestContentEncodings";
   public static final String HTTP_SERVICE_NAME = "http.serviceName";
   public static final String HTTP_POOL_STRATEGY = "http.poolStrategy";
   public static final String HTTP_POOL_MIN_SIZE = "http.poolMinSize";
+  public static final String HTTP_MAX_HEADER_SIZE = "http.maxHeaderSize";
+  public static final String HTTP_MAX_CHUNK_SIZE = "http.maxChunkSize";
 
   public static final int DEFAULT_POOL_WAITER_SIZE = Integer.MAX_VALUE;
   public static final int DEFAULT_POOL_SIZE = 200;
   public static final int DEFAULT_REQUEST_TIMEOUT = 10000;
-  public static final int DEFAULT_IDLE_TIMEOUT = 30000;
+  public static final int DEFAULT_IDLE_TIMEOUT = 25000;
   public static final int DEFAULT_SHUTDOWN_TIMEOUT = 5000;
   public static final int DEFAULT_MAX_RESPONSE_SIZE = 1024 * 1024 * 2;
   public static final String DEFAULT_CLIENT_NAME = "noNameSpecifiedClient";
   public static final AsyncPoolImpl.Strategy DEFAULT_POOL_STRATEGY = AsyncPoolImpl.Strategy.MRU;
   public static final int DEFAULT_POOL_MIN_SIZE = 0;
-  public static final AbstractJmxManager NULL_JMX_MANAGER = new AbstractJmxManager()
-  {
-    @Override
-    public void onProviderCreate(PoolStatsProvider provider)
-    {
-    }
+  public static final int DEFAULT_MAX_HEADER_SIZE = 8 * 1024;
+  public static final int DEFAULT_MAX_CHUNK_SIZE = 8 * 1024;
 
-    @Override
-    public void onProviderShutdown(PoolStatsProvider provider)
-    {
-    }
-  };
 
   private static final String LIST_SEPARATOR = ",";
 
-  private final ClientSocketChannelFactory _channelFactory;
+  private final NioEventLoopGroup          _eventLoopGroup;
   private final ScheduledExecutorService   _executor;
-  private final ExecutorService            _callbackExecutor;
+  private final ExecutorService            _callbackExecutorGroup;
   private final boolean                    _shutdownFactory;
   private final boolean                    _shutdownExecutor;
   private final boolean                    _shutdownCallbackExecutor;
@@ -131,6 +125,12 @@ public class HttpClientFactory implements TransportClientFactory
   private final AtomicBoolean              _finishingShutdown = new AtomicBoolean(false);
   private volatile ScheduledFuture<?>      _shutdownTimeoutTask;
   private final AbstractJmxManager         _jmxManager;
+
+  /** Default request compression config (used when a config for a service isn't specified in {@link #_requestCompressionConfigs}) */
+  private final CompressionConfig          _defaultRequestCompressionConfig;
+  /** Request compression config for each http service. */
+  private final Map<String, CompressionConfig> _requestCompressionConfigs;
+  private final boolean                    _useClientCompression;
 
   // All fields below protected by _mutex
   private final Object                     _mutex               = new Object();
@@ -158,9 +158,7 @@ public class HttpClientFactory implements TransportClientFactory
                            boolean shutdownCallbackExecutor)
   {
     this(FilterChains.empty(),
-         new NioClientSocketChannelFactory(
-            Executors.newCachedThreadPool(new NamedThreadFactory("R2 Netty IO Boss")),
-            Executors.newCachedThreadPool(new NamedThreadFactory("R2 Netty IO Worker"))),
+         new NioEventLoopGroup(0 /* use default settings */, new NamedThreadFactory("R2 Nio Event Loop")),
          true,
          Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("R2 Netty Scheduler")),
          true,
@@ -178,9 +176,7 @@ public class HttpClientFactory implements TransportClientFactory
     // TODO Disable Netty's thread renaming so that the names below are the ones that actually
     // show up in log messages; need to coordinate with Espresso team (who also have netty threads)
     this(filters,
-         new NioClientSocketChannelFactory(
-            Executors.newCachedThreadPool(new NamedThreadFactory("R2 Netty IO Boss")),
-            Executors.newCachedThreadPool(new NamedThreadFactory("R2 Netty IO Worker"))),
+         new NioEventLoopGroup(0 /* use default settings */, new NamedThreadFactory("R2 Nio Event Loop")),
          true,
          Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("R2 Netty Scheduler")),
          true);
@@ -190,7 +186,7 @@ public class HttpClientFactory implements TransportClientFactory
    * Creates a new HttpClientFactory.
    *
    * @param filters the filter chain shared by all Clients created by this factory
-   * @param channelFactory the ClientSocketChannelFactory that all Clients created by this
+   * @param eventLoopGroup the {@link NioEventLoopGroup} that all Clients created by this
    *          factory will share
    * @param shutdownFactory if true, the channelFactory will be shut down when this
    *          factory is shut down
@@ -200,17 +196,17 @@ public class HttpClientFactory implements TransportClientFactory
    *          shut down
    */
   public HttpClientFactory(FilterChain filters,
-                           ClientSocketChannelFactory channelFactory,
+                           NioEventLoopGroup eventLoopGroup,
                            boolean shutdownFactory,
                            ScheduledExecutorService executor,
                            boolean shutdownExecutor)
   {
     this(filters,
-         channelFactory,
+         eventLoopGroup,
          shutdownFactory,
          executor,
          shutdownExecutor,
-         executor,
+         null,
          false);
   }
 
@@ -218,7 +214,7 @@ public class HttpClientFactory implements TransportClientFactory
    * Creates a new HttpClientFactory.
    *
    * @param filters the filter chain shared by all Clients created by this factory
-   * @param channelFactory the ClientSocketChannelFactory that all Clients created by this
+   * @param eventLoopGroup the {@link NioEventLoopGroup} that all Clients created by this
    *          factory will share
    * @param shutdownFactory if true, the channelFactory will be shut down when this
    *          factory is shut down
@@ -226,46 +222,89 @@ public class HttpClientFactory implements TransportClientFactory
    *          tasks
    * @param shutdownExecutor if true, the executor will be shut down when this factory is
    *          shut down
-   * @param callbackExecutor an optional executor to invoke user callbacks that otherwise
-   *          will be invoked by scheduler executor.
+   * @param callbackExecutorGroup an optional executor group to execute user callbacks that otherwise
+   *          will be executed by eventLoopGroup.
    * @param shutdownCallbackExecutor if true, the callback executor will be shut down when
    *          this factory is shut down
    */
   public HttpClientFactory(FilterChain filters,
-                           ClientSocketChannelFactory channelFactory,
+                           NioEventLoopGroup eventLoopGroup,
                            boolean shutdownFactory,
                            ScheduledExecutorService executor,
                            boolean shutdownExecutor,
-                           ExecutorService callbackExecutor,
+                           ExecutorService callbackExecutorGroup,
                            boolean shutdownCallbackExecutor)
   {
     this(filters,
-         channelFactory,
+         eventLoopGroup,
          shutdownFactory,
          executor,
          shutdownExecutor,
-         callbackExecutor,
+         callbackExecutorGroup,
          shutdownCallbackExecutor,
-         NULL_JMX_MANAGER);
+         AbstractJmxManager.NULL_JMX_MANAGER);
   }
 
   public HttpClientFactory(FilterChain filters,
-                           ClientSocketChannelFactory channelFactory,
+                           NioEventLoopGroup eventLoopGroup,
                            boolean shutdownFactory,
                            ScheduledExecutorService executor,
                            boolean shutdownExecutor,
-                           ExecutorService callbackExecutor,
+                           ExecutorService callbackExecutorGroup,
                            boolean shutdownCallbackExecutor,
                            AbstractJmxManager jmxManager)
   {
+    this(filters, eventLoopGroup, shutdownFactory, executor, shutdownExecutor, callbackExecutorGroup,
+        shutdownCallbackExecutor, jmxManager, Integer.MAX_VALUE, Collections.<String, CompressionConfig>emptyMap());
+  }
+
+  public HttpClientFactory(FilterChain filters,
+                           NioEventLoopGroup eventLoopGroup,
+                           boolean shutdownFactory,
+                           ScheduledExecutorService executor,
+                           boolean shutdownExecutor,
+                           ExecutorService callbackExecutorGroup,
+                           boolean shutdownCallbackExecutor,
+                           AbstractJmxManager jmxManager,
+                           int requestCompressionThresholdDefault,
+                           Map<String, CompressionConfig> requestCompressionConfigs)
+  {
+    this(filters, eventLoopGroup, shutdownFactory, executor, shutdownExecutor, callbackExecutorGroup,
+        shutdownCallbackExecutor, jmxManager, requestCompressionThresholdDefault, requestCompressionConfigs,
+        true);
+  }
+
+  public HttpClientFactory(FilterChain filters,
+                           NioEventLoopGroup eventLoopGroup,
+                           boolean shutdownFactory,
+                           ScheduledExecutorService executor,
+                           boolean shutdownExecutor,
+                           ExecutorService callbackExecutorGroup,
+                           boolean shutdownCallbackExecutor,
+                           AbstractJmxManager jmxManager,
+                           int requestCompressionThresholdDefault,
+                           Map<String, CompressionConfig> requestCompressionConfigs,
+                           boolean useClientCompression)
+  {
     _filters = filters;
-    _channelFactory = channelFactory;
+    _eventLoopGroup = eventLoopGroup;
     _shutdownFactory = shutdownFactory;
     _executor = executor;
     _shutdownExecutor = shutdownExecutor;
-    _callbackExecutor = callbackExecutor;
+    _callbackExecutorGroup = callbackExecutorGroup;
     _shutdownCallbackExecutor = shutdownCallbackExecutor;
     _jmxManager = jmxManager;
+    if (requestCompressionThresholdDefault < 0)
+    {
+      throw new IllegalArgumentException("requestCompressionThresholdDefault should not be negative.");
+    }
+    _defaultRequestCompressionConfig = new CompressionConfig(requestCompressionThresholdDefault);
+    if (requestCompressionConfigs == null)
+    {
+      throw new IllegalArgumentException("requestCompressionConfigs should not be null.");
+    }
+    _requestCompressionConfigs = Collections.unmodifiableMap(requestCompressionConfigs);
+    _useClientCompression = useClientCompression;
   }
 
   @Override
@@ -307,6 +346,23 @@ public class HttpClientFactory implements TransportClientFactory
     return valueClass.cast(value);
   }
 
+  /* package private */ CompressionConfig getCompressionConfig(String httpServiceName, String requestContentEncodingName)
+  {
+    if (_requestCompressionConfigs.containsKey(httpServiceName))
+    {
+      if (requestContentEncodingName == EncodingType.IDENTITY.getHttpName())
+      {
+        // This will likely happen when the service doesn't allow any request content encodings for compression,
+        // but the client specified a compression config for the service.
+        // The client probably has a misunderstanding (thinks the service supports request compression when it actually does not).
+        // Note that it is okay to pass in any compression config to ClientCompressionFilter when there isn't an available algorithm
+        // because ClientCompressionFilter will not compress requests when encoding type is IDENTITY.
+        LOG.warn("No request compression algorithm available but compression config specified for service {}", httpServiceName);
+      }
+      return _requestCompressionConfigs.get(httpServiceName);
+    }
+    return _defaultRequestCompressionConfig;
+  }
 
   /**
    * Create a new {@link TransportClient} with the specified properties,
@@ -328,20 +384,28 @@ public class HttpClientFactory implements TransportClientFactory
 
     List<String> httpResponseCompressionOperations = ConfigValueExtractor.buildList(properties.remove(HTTP_RESPONSE_COMPRESSION_OPERATIONS),
                                                                                     LIST_SEPARATOR);
-
+    List<String> httpRequestServerSupportedEncodings = ConfigValueExtractor.buildList(properties.remove(HTTP_REQUEST_CONTENT_ENCODINGS),
+                                                                                      LIST_SEPARATOR);
     FilterChain filters;
-    if (!httpResponseCompressionOperations.isEmpty())
+
+    if (_useClientCompression)
     {
-      String requestCompressionSchemaName = buildRequestEncodingSchemaName();
-      String responseCompressionSchemaName = buildAcceptEncodingSchemaNames();
-      filters = _filters.addLast(new ClientCompressionFilter(requestCompressionSchemaName,
-                                                             responseCompressionSchemaName,
-                                                             httpResponseCompressionOperations));
+      String httpServiceName = (String) properties.get(HTTP_SERVICE_NAME);
+      String requestContentEncodingName = getRequestContentEncodingName(httpRequestServerSupportedEncodings);
+      CompressionConfig compressionConfig = getCompressionConfig(httpServiceName, requestContentEncodingName);
+      String responseCompressionSchemaName = httpResponseCompressionOperations.isEmpty() ? "" : buildAcceptEncodingSchemaNames();
+      filters = _filters.addLast(new ClientCompressionFilter(requestContentEncodingName,
+          compressionConfig,
+          responseCompressionSchemaName,
+          httpResponseCompressionOperations));
     }
     else
     {
       filters = _filters;
     }
+
+    Integer queryPostThreshold = chooseNewOverDefault(getIntValue(properties, HTTP_QUERY_POST_THRESHOLD), Integer.MAX_VALUE);
+    filters = filters.addLast(new ClientQueryTunnelFilter(queryPostThreshold));
 
     client = new FilterChainClient(client, filters);
     client = new FactoryClient(client);
@@ -357,11 +421,22 @@ public class HttpClientFactory implements TransportClientFactory
   }
 
   /**
-   * @return the compression schema name used to compress the request to the server
+   * Chooses the first encoding in the given list of supported encodings that the client can compress with.
+   * This assumes that the service listed the encodings in order of preference.
+   *
+   * @param serverSupportedEncodings list of compression encodings the server supports.
+   * @return the encoding name that should be used to compress requests.
    */
-  private String buildRequestEncodingSchemaName()
+  private static String getRequestContentEncodingName(List<String> serverSupportedEncodings)
   {
-    return ""; // no request encoding for now
+    for (String encoding: serverSupportedEncodings)
+    {
+      if (EncodingType.isSupported(encoding))
+      {
+        return encoding;
+      }
+    }
+    return EncodingType.IDENTITY.getHttpName();
   }
 
   /**
@@ -441,7 +516,6 @@ public class HttpClientFactory implements TransportClientFactory
     Integer idleTimeout = chooseNewOverDefault(getIntValue(properties, HTTP_IDLE_TIMEOUT), DEFAULT_IDLE_TIMEOUT);
     Integer shutdownTimeout = chooseNewOverDefault(getIntValue(properties, HTTP_SHUTDOWN_TIMEOUT), DEFAULT_SHUTDOWN_TIMEOUT);
     Integer maxResponseSize = chooseNewOverDefault(getIntValue(properties, HTTP_MAX_RESPONSE_SIZE), DEFAULT_MAX_RESPONSE_SIZE);
-    Integer queryPostThreshold = chooseNewOverDefault(getIntValue(properties, HTTP_QUERY_POST_THRESHOLD), Integer.MAX_VALUE);
     Integer requestTimeout = chooseNewOverDefault(getIntValue(properties, HTTP_REQUEST_TIMEOUT), DEFAULT_REQUEST_TIMEOUT);
     Integer poolWaiterSize = chooseNewOverDefault(getIntValue(properties, HTTP_POOL_WAITER_SIZE), DEFAULT_POOL_WAITER_SIZE);
     String clientName = null;
@@ -452,8 +526,10 @@ public class HttpClientFactory implements TransportClientFactory
     clientName = chooseNewOverDefault(clientName, DEFAULT_CLIENT_NAME);
     AsyncPoolImpl.Strategy strategy = chooseNewOverDefault(getStrategy(properties), DEFAULT_POOL_STRATEGY);
     Integer poolMinSize = chooseNewOverDefault(getIntValue(properties, HTTP_POOL_MIN_SIZE), DEFAULT_POOL_MIN_SIZE);
+    Integer maxHeaderSize = chooseNewOverDefault(getIntValue(properties, HTTP_MAX_HEADER_SIZE), DEFAULT_MAX_HEADER_SIZE);
+    Integer maxChunkSize = chooseNewOverDefault(getIntValue(properties, HTTP_MAX_CHUNK_SIZE), DEFAULT_MAX_CHUNK_SIZE);
 
-    return new HttpNettyClient(_channelFactory,
+    return new HttpNettyClient(_eventLoopGroup,
                                _executor,
                                poolSize,
                                requestTimeout,
@@ -462,13 +538,14 @@ public class HttpClientFactory implements TransportClientFactory
                                maxResponseSize,
                                sslContext,
                                sslParameters,
-                               queryPostThreshold,
-                               _callbackExecutor,
+                               _callbackExecutorGroup,
                                poolWaiterSize,
                                clientName,
                                _jmxManager,
                                strategy,
-                               poolMinSize);
+                               poolMinSize,
+                               maxHeaderSize,
+                               maxChunkSize);
   }
 
   /**
@@ -561,50 +638,39 @@ public class HttpClientFactory implements TransportClientFactory
       _shutdownTimeoutTask.cancel(false);
     }
 
-    // Under some circumstances, this method will be executed on a Netty IO thread.  For example,
-    // as the factory waits for clients to shutdown, if the final client shuts down due an IO
-    // event (receives response, connection refused, etc.).  In that case, the call to
-    // releaseExternalResources() below will throw an exception -- because
-    // releaseExternalResources() blocks until all threads are shut down, it refuses to run
-    // if called from one of its own threads.  Therefore, schedule this task to run on
-    // a different thread pool.  That does mean _executor will be shut down from one of its
-    // own threads, but since this call doesn't await termination it's OK.
-    _executor.execute(new Runnable()
+    if (_shutdownFactory)
     {
-      @Override
-      public void run()
-      {
-        if (_shutdownFactory)
-        {
-          _channelFactory.releaseExternalResources();
-          LOG.info("ChannelFactory shutdown complete");
-        }
-        if (_shutdownExecutor)
-        {
-          // Due to a bug in ScheduledThreadPoolExecutor, shutdownNow() returns cancelled
-          // tasks as though they were still pending execution.  If the executor has a large
-          // number of cancelled tasks, shutdownNow() could take a long time to copy the array
-          // of tasks.  Calling shutdown() first will purge the cancelled tasks.  Bug filed with
-          // Oracle; will provide bug number when available.  May be fixed in JDK7 already.
-          _executor.shutdown();
-          _executor.shutdownNow();
-          LOG.info("Scheduler shutdown complete");
-        }
-        if (_shutdownCallbackExecutor)
-        {
-          _callbackExecutor.shutdown();
-          _callbackExecutor.shutdownNow();
-          LOG.info("Callback Executor shutdown complete");
-        }
-        final Callback<None> callback;
-        synchronized (_mutex)
-        {
-          callback = _factoryShutdownCallback;
-        }
-        LOG.info("Shutdown complete");
-        callback.onSuccess(None.none());
-      }
-    });
+      LOG.info("Shutdown Netty Event Loop");
+      _eventLoopGroup.shutdownGracefully(0, 0, TimeUnit.SECONDS);
+    }
+
+    if (_shutdownExecutor)
+    {
+      // Due to a bug in ScheduledThreadPoolExecutor, shutdownNow() returns cancelled
+      // tasks as though they were still pending execution.  If the executor has a large
+      // number of cancelled tasks, shutdownNow() could take a long time to copy the array
+      // of tasks.  Calling shutdown() first will purge the cancelled tasks.  Bug filed with
+      // Oracle; will provide bug number when available.  May be fixed in JDK7 already.
+      _executor.shutdown();
+      _executor.shutdownNow();
+      LOG.info("Scheduler shutdown complete");
+    }
+
+    if (_shutdownCallbackExecutor)
+    {
+      LOG.info("Shutdown callback executor");
+      _callbackExecutorGroup.shutdown();
+      _callbackExecutorGroup.shutdownNow();
+    }
+
+    final Callback<None> callback;
+    synchronized (_mutex)
+    {
+      callback = _factoryShutdownCallback;
+    }
+
+    LOG.info("Shutdown complete");
+    callback.onSuccess(None.none());
   }
 
   private void clientShutdown()
@@ -632,6 +698,7 @@ public class HttpClientFactory implements TransportClientFactory
   private class FactoryClient implements TransportClient
   {
     private final TransportClient _client;
+    private final AtomicBoolean _shutdown = new AtomicBoolean(false);
 
     private FactoryClient(TransportClient client)
     {
@@ -647,45 +714,43 @@ public class HttpClientFactory implements TransportClientFactory
     }
 
     @Override
-    @Deprecated
-    @SuppressWarnings("deprecation")
-    public void rpcRequest(RpcRequest request, RequestContext requestContext,
-                           Map<String, String> wireAttrs, TransportCallback<RpcResponse> callback)
-    {
-      _client.rpcRequest(request, requestContext, wireAttrs, callback);
-    }
-
-    @Override
     public void shutdown(final Callback<None> callback)
     {
-      _client.shutdown(new Callback<None>()
+      if (_shutdown.compareAndSet(false, true))
       {
-        @Override
-        public void onSuccess(None none)
+        _client.shutdown(new Callback<None>()
         {
-          try
+          @Override
+          public void onSuccess(None none)
           {
-            callback.onSuccess(none);
+            try
+            {
+              callback.onSuccess(none);
+            }
+            finally
+            {
+              clientShutdown();
+            }
           }
-          finally
-          {
-            clientShutdown();
-          }
-        }
 
-        @Override
-        public void onError(Throwable e)
-        {
-          try
+          @Override
+          public void onError(Throwable e)
           {
-            callback.onError(e);
+            try
+            {
+              callback.onError(e);
+            }
+            finally
+            {
+              clientShutdown();
+            }
           }
-          finally
-          {
-            clientShutdown();
-          }
-        }
-      });
+        });
+      }
+      else
+      {
+        callback.onError(new IllegalStateException("shutdown has already been requested."));
+      }
     }
   }
 }

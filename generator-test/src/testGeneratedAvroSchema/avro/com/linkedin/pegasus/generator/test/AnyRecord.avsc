@@ -1,0 +1,12 @@
+{
+  "name" : "AvroAnyRecord",
+  "type" : "record",
+  "fields" : [ {
+    "name" : "type",
+    "type" : "string"
+  }, {
+    "name" : "value",
+    "type" : "string"
+  } ],
+  "namespace" : "com.linkedin.pegasus.generator.test.avro"
+}

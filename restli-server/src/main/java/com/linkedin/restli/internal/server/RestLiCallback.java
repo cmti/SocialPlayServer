@@ -14,6 +14,7 @@
    limitations under the License.
  */
 
+
 package com.linkedin.restli.internal.server;
 
 import com.linkedin.r2.message.rest.RestException;
@@ -34,9 +35,9 @@ import com.linkedin.restli.server.filter.FilterRequestContext;
 import com.linkedin.restli.server.filter.ResponseFilter;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 
 public class RestLiCallback<T> implements RequestExecutionCallback<T>
@@ -159,7 +160,8 @@ public class RestLiCallback<T> implements RequestExecutionCallback<T>
     return _responseHandler.buildRestException(e, partialResponse);
   }
 
-  private AugmentedRestLiResponseData convertExceptionToRestLiResponseData(Throwable e)
+  /* Package private for testing purposes */
+  AugmentedRestLiResponseData convertExceptionToRestLiResponseData(Throwable e)
   {
     RestLiServiceException restLiServiceException;
     if (e instanceof RestLiServiceException)
@@ -181,11 +183,11 @@ public class RestLiCallback<T> implements RequestExecutionCallback<T>
     }
 
     Map<String, String> requestHeaders = _request.getHeaders();
-    Map<String, String> headers = new HashMap<String, String>();
-    headers.put(ProtocolVersionUtil.getProtocolVersionHeaderName(requestHeaders),
+    Map<String, String> headers = new TreeMap<String, String>(String.CASE_INSENSITIVE_ORDER);
+    headers.put(RestConstants.HEADER_RESTLI_PROTOCOL_VERSION,
                 ProtocolVersionUtil.extractProtocolVersion(requestHeaders).toString());
     headers.put(HeaderUtil.getErrorResponseHeaderName(requestHeaders), RestConstants.HEADER_VALUE_ERROR);
-    return _responseHandler.buildErrorResponseData(_request, _method, restLiServiceException, headers);
+    return _responseHandler.buildExceptionResponseData(_request, _method, restLiServiceException, headers);
   }
 
   private void invokeResponseFilters(final FilterResponseContextInternal responseContext, Throwable lastException) throws Throwable

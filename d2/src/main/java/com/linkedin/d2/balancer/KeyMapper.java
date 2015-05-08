@@ -20,16 +20,14 @@
 
 package com.linkedin.d2.balancer;
 
-import com.linkedin.d2.balancer.util.AllPartitionsMultipleHostsResult;
-import com.linkedin.d2.balancer.util.AllPartitionsResult;
+
+import com.linkedin.d2.balancer.util.HostSet;
 import com.linkedin.d2.balancer.util.HostToKeyMapper;
 import com.linkedin.d2.balancer.util.MapKeyResult;
 import com.linkedin.r2.message.RequestContext;
 
 import java.net.URI;
 import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * KeyMapper is used with D2's consistent hashing mechanism to maintain key to host affinity across
@@ -52,42 +50,6 @@ import java.util.Set;
 
 public interface KeyMapper
 {
-  /**
-   * Maps keys to hosts according to the underlying strategy, e.g., consistent hashing.
-   * Output is a map of host URI to group of keys.  Each key in the input set will
-   * appear in exactly one of output groups, i.e., the groups are mutually exclusive
-   * and collectively exhaustive (MECE).
-   *
-   * Duplicate keys are allowed.
-   *
-   * @param keys The set of keys to be mapped
-   * @param serviceUri The URI for the service to which requests will be issued
-   * @param <K> The key type
-   * @return map of host URI -> mapped keys
-   * @deprecated use @link #mapKeysV2(URI, Collection) instead
-   */
-  @Deprecated
-  public <K> Map<URI, Collection<K>> mapKeys(URI serviceUri, Iterable<K> keys)
-          throws ServiceUnavailableException;
-
-  /**
-   * Maps keys to hosts according to the underlying strategy, e.g., consistent hashing.
-   * Output is a map of host URI to group of keys.  Each key in the input set will
-   * appear in exactly one of output groups, i.e., the groups are mutually exclusive
-   * and collectively exhaustive (MECE).
-   *
-   * Duplicate keys are not allowed.
-   *
-   * @param keys The set of keys to be mapped
-   * @param serviceUri The URI for the service to which requests will be issued
-   * @param <K> The key type
-   * @return map of host URI -> mapped keys
-   * @deprecated use @link #mapKeysV2(URI, Collection) instead
-   */
-  @Deprecated
-  public <K> Map<URI, Set<K>> mapKeys(URI serviceUri, Set<K> keys)
-          throws ServiceUnavailableException;
-
   /**
    * Maps keys to hosts according to the underlying strategy, e.g., consistent hashing.
    * Output is a map of host URI to group of keys.  Each key in the input set will
@@ -143,43 +105,14 @@ public interface KeyMapper
       throws ServiceUnavailableException;
 
   /**
-   * Similar to the other mapKeysV3 method but this method will try to return the same order of hosts based on the
-   * sticky key.
-   *
-   * @param serviceUri
-   * @param keys
-   * @param limitNumHostsPerPartition
-   * @param stickyKey
-   * @param <K>
-   * @param <S>
-   * @return
-   * @throws ServiceUnavailableException
+   * Similar to the other mapKeysV3 method but accepting a sticky key to determine the order of hosts.
+   * That means if the same sticky key is used in two different calls, the order of hosts in each partition will also be the same.
    */
   public <K, S> HostToKeyMapper<K> mapKeysV3(URI serviceUri,
-                                               Collection<K> keys,
-                                               int limitNumHostsPerPartition,
-                                               S stickyKey)
-      throws ServiceUnavailableException;
-
-
-  /**
-   * Get host uris that cover all the partitions. The number of uris does not neccessarily equal
-   * to the number of partitions, because a server may join multiple partitions. Additional information
-   * about partition availability is supplied in {@link AllPartitionsResult}
-   * @param serviceUri the service uri
-   * @return {@link AllPartitionsResult}
-   */
-  public AllPartitionsResult<URI> getAllPartitions(URI serviceUri) throws ServiceUnavailableException;
-
-  /**
-   * Get host uris that cover all the partitions. The number of uris does not neccessarily equal
-   * to the number of partitions, because a server may join multiple partitions. Additional information
-   * about partition availability is supplied in {@link AllPartitionsResult}
-   * @param serviceUri the service uri
-   * @param hashCode used to pick a node in each partition
-   * @return {@link AllPartitionsResult}
-   */
-  public AllPartitionsResult<URI> getAllPartitions(URI serviceUri, int hashCode) throws ServiceUnavailableException;
+                                             Collection<K> keys,
+                                             int limitNumHostsPerPartition,
+                                             S stickyKey)
+          throws ServiceUnavailableException;
 
   /**
    * Get host uris for each partition that is available. The number of hosts returned per partition is
@@ -188,22 +121,16 @@ public interface KeyMapper
    *
    * @param serviceUri the service uri
    * @param numHostPerPartition the number of hosts that we should return for each partition. Must be larger than 0.
-   * @return {@link AllPartitionsMultipleHostsResult}
+   * @return {@link com.linkedin.d2.balancer.util.HostSet}
    */
-  public AllPartitionsMultipleHostsResult<URI> getAllPartitionsMultipleHosts(URI serviceUri, int numHostPerPartition)
+  public HostSet getAllPartitionsMultipleHosts(URI serviceUri, int numHostPerPartition)
       throws ServiceUnavailableException;
 
   /**
-   * Similar to the other getAllPartitionMultipleHost without stickyKey but we try to ensure the ordering of
-   * the hosts are preserved based on the provided stickyKey (provided there's no change in servers' health and membership)
-   *
-   * @param serviceUri the service uri
-   * @param limitHostPerPartition the number of hosts that we should return for each partition. Must be larger than 0.
-   * @param stickyKey used to pick a node in each partition
-   * @param <S> stickyKey type
-   * @return {@link AllPartitionsMultipleHostsResult}
+   * Similar to the other getAllPartitionsMultipleHosts method but accepting a sticky key to determine the order of hosts.
+   * That means if the same sticky key is used in two different calls, the order of hosts in each partition will also be the same.
    */
-  public <S> AllPartitionsMultipleHostsResult<URI> getAllPartitionsMultipleHosts(URI serviceUri,
+  public <S> HostSet getAllPartitionsMultipleHosts(URI serviceUri,
                                                                                     int limitHostPerPartition,
                                                                                     final S stickyKey)
       throws ServiceUnavailableException;

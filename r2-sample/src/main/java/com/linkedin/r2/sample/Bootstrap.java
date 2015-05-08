@@ -17,15 +17,12 @@
 /* $Id$ */
 package com.linkedin.r2.sample;
 
-import java.net.URI;
-import java.util.Collections;
 
 import com.linkedin.r2.filter.FilterChain;
 import com.linkedin.r2.sample.echo.EchoServiceImpl;
 import com.linkedin.r2.sample.echo.OnExceptionEchoService;
 import com.linkedin.r2.sample.echo.ThrowingEchoService;
 import com.linkedin.r2.sample.echo.rest.RestEchoServer;
-import com.linkedin.r2.sample.echo.rpc.RpcEchoServer;
 import com.linkedin.r2.transport.common.Client;
 import com.linkedin.r2.transport.common.Server;
 import com.linkedin.r2.transport.common.bridge.client.TransportClient;
@@ -35,6 +32,9 @@ import com.linkedin.r2.transport.common.bridge.server.TransportDispatcherBuilder
 import com.linkedin.r2.transport.http.client.HttpClientFactory;
 import com.linkedin.r2.transport.http.server.HttpServerFactory;
 
+import java.net.URI;
+import java.util.Collections;
+
 /**
  * @author Chris Pettitt
  * @version $Revision$
@@ -42,6 +42,7 @@ import com.linkedin.r2.transport.http.server.HttpServerFactory;
 public class Bootstrap
 {
   private static final int HTTP_PORT = 8877;
+  private static final int HTTPS_PORT = 8443;
 
   private static final URI ECHO_URI = URI.create("/echo");
   private static final URI ON_EXCEPTION_ECHO_URI = URI.create("/on-exception-echo");
@@ -56,6 +57,17 @@ public class Bootstrap
   {
     return new HttpServerFactory(filters)
             .createServer(port, createDispatcher());
+  }
+
+  public static Server createHttpsServer(String keyStore, String keyStorePassword, FilterChain filters)
+  {
+    return createHttpsServer(HTTPS_PORT, keyStore, keyStorePassword, filters);
+  }
+
+  public static Server createHttpsServer(int sslPort, String keyStore, String keyStorePassword, FilterChain filters)
+  {
+    return new HttpServerFactory(filters)
+        .createHttpsServer(HTTP_PORT, sslPort, keyStore, keyStorePassword, createDispatcher());
   }
 
   public static Client createHttpClient(FilterChain filters)
@@ -75,6 +87,16 @@ public class Bootstrap
     return URI.create("http://localhost:" + port + relativeURI);
   }
 
+  public static URI createHttpsURI(URI relativeURI)
+  {
+    return createHttpsURI(HTTPS_PORT, relativeURI);
+  }
+
+  public static URI createHttpsURI(int port, URI relativeURI)
+  {
+    return URI.create("https://localhost:" + port + relativeURI);
+  }
+
   public static URI getEchoURI()
   {
     return ECHO_URI;
@@ -90,13 +112,9 @@ public class Bootstrap
     return THROWING_ECHO_URI;
   }
 
-  @SuppressWarnings("deprecation")
   private static TransportDispatcher createDispatcher()
   {
     return new TransportDispatcherBuilder()
-            .addRpcHandler(ECHO_URI, new RpcEchoServer(new EchoServiceImpl()))
-            .addRpcHandler(ON_EXCEPTION_ECHO_URI, new RpcEchoServer(new OnExceptionEchoService()))
-            .addRpcHandler(THROWING_ECHO_URI, new RpcEchoServer(new ThrowingEchoService()))
             .addRestHandler(ECHO_URI, new RestEchoServer(new EchoServiceImpl()))
             .addRestHandler(ON_EXCEPTION_ECHO_URI, new RestEchoServer(new OnExceptionEchoService()))
             .addRestHandler(THROWING_ECHO_URI, new RestEchoServer(new ThrowingEchoService()))

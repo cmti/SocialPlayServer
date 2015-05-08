@@ -23,7 +23,6 @@ package com.linkedin.restli.client;
 
 import com.linkedin.data.template.RecordTemplate;
 import com.linkedin.restli.client.response.BatchKVResponse;
-import com.linkedin.restli.client.uribuilders.RestliUriBuilderUtil;
 import com.linkedin.restli.common.CollectionRequest;
 import com.linkedin.restli.common.KeyValueRecord;
 import com.linkedin.restli.common.ResourceMethod;
@@ -31,11 +30,10 @@ import com.linkedin.restli.common.ResourceSpec;
 import com.linkedin.restli.common.TypeSpec;
 import com.linkedin.restli.common.UpdateStatus;
 import com.linkedin.restli.internal.client.BatchUpdateResponseDecoder;
-import com.linkedin.restli.internal.client.CollectionRequestUtil;
 
-import java.net.URI;
 import java.util.Collections;
 import java.util.Map;
+
 
 /**
  * @author Josh Walker
@@ -47,7 +45,7 @@ public class BatchUpdateRequest<K, V extends RecordTemplate>
 {
   private final Map<K, V> _updateInputMap;
 
-  @SuppressWarnings({"unchecked", "rawtypes"})
+  @SuppressWarnings("unchecked")
   BatchUpdateRequest(Map<String, String> headers,
                      CollectionRequest<KeyValueRecord<K, V>> entities,
                      Map<String, Object> queryParams,
@@ -72,35 +70,11 @@ public class BatchUpdateRequest<K, V extends RecordTemplate>
   }
 
   /**
-   * @deprecated Please use {@link #getInputRecord()} instead
-   */
-  @SuppressWarnings({"unchecked", "rawtypes"})
-  @Deprecated
-  @Override
-  public RecordTemplate getInput()
-  {
-    return CollectionRequestUtil.convertToBatchRequest((CollectionRequest<KeyValueRecord>) getInputRecord(),
-                                                       getResourceSpec().getKeyType(),
-                                                       getResourceSpec().getComplexKeyType(),
-                                                       getResourceSpec().getKeyParts(),
-                                                       getResourceSpec().getValueType());
-  }
-
-  /**
    * Get the inputs for this request
    * @return a map of entity key to entity value in the update
    */
   Map<K, V> getUpdateInputMap()
   {
     return _updateInputMap;
-  }
-
-  /**
-   * @deprecated Please use {@link com.linkedin.restli.client.uribuilders.RestliUriBuilder#buildBaseUri()} instead
-   */
-  @Deprecated
-  public URI getBaseURI()
-  {
-    return RestliUriBuilderUtil.createUriBuilder(this).buildBaseUri();
   }
 }

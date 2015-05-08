@@ -1,0 +1,41 @@
+{
+  "type" : "record",
+  "name" : "Deprecated",
+  "namespace" : "com.linkedin.pegasus.generator.test",
+  "fields" : [ {
+    "name" : "deprecatedInt",
+    "type" : "int",
+    "deprecated" : "Reason for int deprecation."
+  }, {
+    "name" : "sample",
+    "type" : "int",
+    "deprecated" : true
+  }, {
+    "name" : "sampleTyperef",
+    "type" : "double",
+    "deprecated" : true
+  }, {
+    "name" : "sampleEnum",
+    "type" : {
+      "type" : "enum",
+      "name" : "DeprecatedEnum",
+      "symbols" : [ "ONE", "TWO" ],
+      "deprecated" : true,
+      "deprecatedSymbols" : {
+        "ONE" : "Reason for enum deprecation",
+        "TWO" : true
+      }
+    },
+    "deprecated" : true
+  }, {
+    "name" : "sampleFixed",
+    "type" : {
+      "type" : "fixed",
+      "name" : "DeprecatedFixed",
+      "size" : 16,
+      "deprecated" : true
+    },
+    "deprecated" : true
+  } ],
+  "deprecated" : true
+}

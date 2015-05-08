@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.Collections;
 
 import org.testng.Assert;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import com.linkedin.common.callback.Callback;
@@ -36,8 +37,12 @@ import com.linkedin.r2.message.rest.RestResponse;
 import com.linkedin.restli.client.GetRequest;
 import com.linkedin.restli.client.GetRequestBuilder;
 import com.linkedin.restli.common.CompoundKey;
+import com.linkedin.restli.common.EmptyRecord;
+import com.linkedin.restli.common.ProtocolVersion;
 import com.linkedin.restli.common.ResourceMethod;
 import com.linkedin.restli.common.ResourceSpecImpl;
+import com.linkedin.restli.internal.common.AllProtocolVersions;
+import com.linkedin.restli.internal.common.TestConstants;
 import com.linkedin.restli.server.RestLiConfig;
 import com.linkedin.restli.server.RestLiServer;
 import com.linkedin.restli.server.resources.PrototypeResourceFactory;
@@ -50,9 +55,8 @@ import com.linkedin.restli.server.resources.PrototypeResourceFactory;
 
 public class TestCharacterEncoding
 {
-
-  @Test
-  public void testQueryParamValueEncoding()
+  @Test(dataProvider = TestConstants.RESTLI_PROTOCOL_1_2_PREFIX + "protocolVersions")
+  public void testQueryParamValueEncoding(ProtocolVersion protocolVersion)
   {
     RestLiConfig config = new RestLiConfig();
     config.setResourcePackageNames(QueryParamMockCollection.class.getPackage().getName());
@@ -61,22 +65,22 @@ public class TestCharacterEncoding
     for (char c = 0; c < 256; ++c)
     {
       final String testValue = String.valueOf(c);
-      GetRequest<QueryParamMockCollection.DummyRecord> req =
-              new GetRequestBuilder<String, QueryParamMockCollection.DummyRecord>(
+      GetRequest<EmptyRecord> req =
+              new GetRequestBuilder<String, EmptyRecord>(
                       QueryParamMockCollection.RESOURCE_NAME,
-                      QueryParamMockCollection.DummyRecord.class,
+                      EmptyRecord.class,
                       new ResourceSpecImpl(Collections.<ResourceMethod> emptySet(),
                                            Collections.<String, DynamicRecordMetadata> emptyMap(),
                                            Collections.<String, DynamicRecordMetadata> emptyMap(),
                                            String.class,
                                            null,
                                            null,
-                                           QueryParamMockCollection.DummyRecord.class,
+                                           EmptyRecord.class,
                                            Collections.<String, CompoundKey.TypeInfo> emptyMap()),
                       RestliRequestOptions.DEFAULT_OPTIONS)
                       .id("dummy")
                       .setParam(QueryParamMockCollection.VALUE_KEY, testValue).build();
-      RestRequest restRequest = new RestRequestBuilder(RestliUriBuilderUtil.createUriBuilder(req).build())
+      RestRequest restRequest = new RestRequestBuilder(RestliUriBuilderUtil.createUriBuilder(req, protocolVersion).build())
               .setMethod(req.getMethod().getHttpMethod().toString()).build();
 
       // N.B. since QueryParamMockCollection is implemented using the synchronous rest.li interface,
@@ -108,5 +112,14 @@ public class TestCharacterEncoding
       });
 
     }
+  }
+
+  @DataProvider(name = TestConstants.RESTLI_PROTOCOL_1_2_PREFIX + "protocolVersions")
+  public Object[][] protocolVersionsDataProvider()
+  {
+    return new Object[][] {
+      { AllProtocolVersions.RESTLI_PROTOCOL_1_0_0.getProtocolVersion(), },
+      { AllProtocolVersions.RESTLI_PROTOCOL_2_0_0.getProtocolVersion(), }
+    };
   }
 }

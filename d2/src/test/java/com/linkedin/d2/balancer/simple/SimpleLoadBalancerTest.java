@@ -42,14 +42,11 @@ import com.linkedin.d2.balancer.strategies.LoadBalancerStrategy;
 import com.linkedin.d2.balancer.strategies.LoadBalancerStrategyFactory;
 import com.linkedin.d2.balancer.strategies.degrader.DegraderLoadBalancerStrategyFactoryV3;
 import com.linkedin.d2.balancer.strategies.random.RandomLoadBalancerStrategyFactory;
-import com.linkedin.d2.balancer.util.AllPartitionsMultipleHostsResult;
 import com.linkedin.d2.balancer.util.HostToKeyMapper;
 import com.linkedin.d2.balancer.util.KeysAndHosts;
 import com.linkedin.d2.balancer.util.LoadBalancerUtil;
-import com.linkedin.d2.balancer.util.MapKeyHostPartitionResult;
 import com.linkedin.d2.balancer.util.MapKeyResult;
 import com.linkedin.d2.balancer.util.URIRequest;
-import com.linkedin.d2.balancer.util.hashing.ConsistentHashKeyMapper;
 import com.linkedin.d2.balancer.util.hashing.ConsistentHashRing;
 import com.linkedin.d2.balancer.util.hashing.HashFunction;
 import com.linkedin.d2.balancer.util.hashing.MD5Hash;
@@ -57,7 +54,6 @@ import com.linkedin.d2.balancer.util.hashing.Ring;
 import com.linkedin.d2.balancer.util.partitions.DefaultPartitionAccessor;
 import com.linkedin.d2.balancer.util.partitions.PartitionAccessException;
 import com.linkedin.d2.balancer.util.partitions.PartitionAccessor;
-import com.linkedin.d2.balancer.util.partitions.PartitionInfoProvider;
 import com.linkedin.d2.discovery.PropertySerializer;
 import com.linkedin.d2.discovery.event.PropertyEventThread.PropertyEventShutdownCallback;
 import com.linkedin.d2.discovery.event.SynchronousExecutorService;
@@ -68,22 +64,24 @@ import com.linkedin.r2.message.Request;
 import com.linkedin.r2.message.RequestContext;
 import com.linkedin.r2.message.rest.RestRequest;
 import com.linkedin.r2.message.rest.RestResponse;
-import com.linkedin.r2.message.rpc.RpcRequest;
-import com.linkedin.r2.message.rpc.RpcResponse;
 import com.linkedin.r2.transport.common.TransportClientFactory;
 import com.linkedin.r2.transport.common.bridge.client.TransportClient;
 import com.linkedin.r2.transport.common.bridge.common.TransportCallback;
+import com.linkedin.util.degrader.DegraderImpl;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -91,6 +89,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+
 import org.apache.commons.io.FileUtils;
 import org.testng.Assert;
 import org.testng.annotations.AfterSuite;
@@ -188,8 +187,7 @@ public class SimpleLoadBalancerTest
       serviceRegistry.put("foo", new ServiceProperties("foo",
                                                         "cluster-1",
                                                         "/foo",
-                                                        "degrader",
-                                                        Collections.<String>emptyList(),
+                                                        Arrays.asList("degrader"),
                                                         Collections.<String,Object>emptyMap(),
                                                         null,
                                                         null,
@@ -241,47 +239,18 @@ public class SimpleLoadBalancerTest
   }
 
   /**
-   * This tests the ordering of server from SimpleLoadBalancer.getPartitionInfo()
-   *
-   * The ordering of the servers should be identical given:
-   * 1.) the hash provider always returns the same hash
-   * 2.) the membership of each partitions identical
-   *
-   * Example:
-   * We have 3 servers: server1, server2, server3
-   * We have 3 partitions. 1,2,3. All the 3 servers above belong to all partitions.
-   * We have 3 data: 1,2,3. Data 1 belongs to partition 1. Data 2 belongs to partition 2, Data 3 belongs to partition 3.
-   * When we ask for partitionInfo we can have the following result:
-   *
-   * {
-   *   partitionId 1 -> [data1], [server1, server2, server3]
-   *   partitionId 2 -> [data2], [server2, server3, server1]
-   *   partitionId 3 -> [data3], [server2, server1, server3]
-   * }
-   *
-   * but this test guarantees that because we provide hash provider that always return the same hash, and because
-   * server1,2,3 all belongs to partition 1,2,3. Then the ordering of server for each partition will be the same.
-   *
-   * This is the expected result (notice the ordering of the servers are the same for partition 1,2,3)
-   *
-   * {
-   *   partitionId 1 -> [data1], [server2, server3, server1]
-   *   partitionId 2 -> [data2], [server2, server3, server1]
-   *   partitionId 3 -> [data3], [server2, server3, server1]
-   * }
-   *
+   * This tests the getPartitionInfo() when given a collection of keys (actually a test for KeyMapper.mapKeysV3()).
    */
   @Test
   public void testGetPartitionInfoOrdering()
       throws Exception
   {
-
     String serviceName = "articles";
     String clusterName = "cluster";
     String path = "path";
     String strategyName = "degrader";
 
-    //setup partition
+    // setup 3 partitions. Partition 1 and Partition 2 both have server1 - server3. Partition 3 only has server1.
     Map<URI,Map<Integer, PartitionData>> partitionDescriptions = new HashMap<URI, Map<Integer, PartitionData>>();
 
     final URI server1 = new URI("http://foo1.com");
@@ -295,16 +264,13 @@ public class SimpleLoadBalancerTest
     Map<Integer, PartitionData> server2Data = new HashMap<Integer, PartitionData>();
     server2Data.put(1, new PartitionData(1.0));
     server2Data.put(2, new PartitionData(1.0));
-    server2Data.put(3, new PartitionData(1.0));
     partitionDescriptions.put(server2, server2Data);
 
     final URI server3 = new URI("http://foo3.com");
     Map<Integer, PartitionData> server3Data = new HashMap<Integer, PartitionData>();
     server3Data.put(1, new PartitionData(1.0));
     server3Data.put(2, new PartitionData(1.0));
-    server3Data.put(3, new PartitionData(1.0));
     partitionDescriptions.put(server3, server3Data);
-
 
     //setup strategy which involves tweaking the hash ring to get partitionId -> URI host
     List<LoadBalancerState.SchemeStrategyPair> orderedStrategies = new ArrayList<LoadBalancerState.SchemeStrategyPair>();
@@ -312,39 +278,36 @@ public class SimpleLoadBalancerTest
 
     orderedStrategies.add(new LoadBalancerState.SchemeStrategyPair("http", strategy));
 
-    //setup the partition accessor which is used to get partitionId -> keys
+    //setup the partition accessor which can only map keys from 1 - 3.
     PartitionAccessor accessor = new TestPartitionAccessor();
 
     URI serviceURI = new URI("d2://" + serviceName);
     SimpleLoadBalancer balancer = new SimpleLoadBalancer(new PartitionedLoadBalancerTestState(
-        clusterName, serviceName, path, strategyName, partitionDescriptions, orderedStrategies,
-        accessor
+            clusterName, serviceName, path, strategyName, partitionDescriptions, orderedStrategies,
+            accessor
     ));
 
     List<Integer> keys = new ArrayList<Integer>();
     keys.add(1);
     keys.add(2);
     keys.add(3);
+    keys.add(123);
 
-    MapKeyHostPartitionResult<Integer> result = balancer.getPartitionInformation(serviceURI, keys, 3, new PartitionInfoProvider.HashProvider()
-    {
-      @Override
-      public int nextHash()
-      {
-        return 123;
-      }
-    });
+    HostToKeyMapper<Integer> result = balancer.getPartitionInformation(serviceURI, keys, 3, 123);
 
-    Assert.assertTrue(result.getUnmappedKeys().isEmpty());
-    Assert.assertTrue(result.getPartitionWithoutEnoughHost().isEmpty());
+    Assert.assertEquals(result.getLimitHostPerPartition(), 3);
+
+    Assert.assertEquals(1, result.getUnmappedKeys().size());
+    Assert.assertEquals(123, (int)result.getUnmappedKeys().iterator().next().getKey());
+
     //partition 0 should be null
     Assert.assertNull(result.getPartitionInfoMap().get(0));
-    //for partition 1
+    // results for partition 1 should contain server1, server2 and server3
     KeysAndHosts<Integer> keysAndHosts1 = result.getPartitionInfoMap().get(1);
     Assert.assertTrue(keysAndHosts1.getKeys().size() == 1);
     Assert.assertTrue(keysAndHosts1.getKeys().iterator().next() == 1);
     List<URI> ordering1 = keysAndHosts1.getHosts();
-    //for partition 2
+    // results for partition 2 should be the same as partition1.
     KeysAndHosts<Integer> keysAndHosts2 = result.getPartitionInfoMap().get(2);
     Assert.assertTrue(keysAndHosts2.getKeys().size() == 1);
     Assert.assertTrue(keysAndHosts2.getKeys().iterator().next() == 2);
@@ -355,39 +318,18 @@ public class SimpleLoadBalancerTest
     Assert.assertTrue(keysAndHosts3.getKeys().iterator().next() == 3);
     List<URI> ordering3 = keysAndHosts3.getHosts();
 
+    Assert.assertEquals(ordering1.get(0), server2);
+    Assert.assertEquals(ordering1.get(1), server3);
+    Assert.assertEquals(ordering1.get(2), server1);
     Assert.assertEquals(ordering1, ordering2);
-    Assert.assertEquals(ordering1, ordering3);
+    Assert.assertEquals(ordering3.get(0), server1);
+
+    Assert.assertTrue(result.getPartitionsWithoutEnoughHosts().containsKey(3));
+    Assert.assertEquals((int)result.getPartitionsWithoutEnoughHosts().get(3), 2);
   }
 
   /**
-   * This tests the ordering of server from SimpleLoadBalancer.getAllPartitionMultipleHosts()
-   *
-   * The ordering of the servers should be identical given:
-   * 1.) the hash provider always returns the same hash
-   * 2.) the membership of each partitions identical
-   *
-   * Example:
-   * We have 3 servers: server1, server2, server3
-   * We have 3 partitions. 1,2,3. All the 3 servers above belong to all partitions.
-   * When we ask for partitionInfo we can have the following result:
-   *
-   * {
-   *   partitionId 1 -> [server1, server2, server3]
-   *   partitionId 2 -> [server2, server3, server1]
-   *   partitionId 3 -> [server2, server1, server3]
-   * }
-   *
-   * but this test guarantees that because we provide hash provider that always return the same hash, and because
-   * server1,2,3 all belongs to partition 1,2,3. Then the ordering of server for each partition will be the same.
-   *
-   * This is the expected result (notice the ordering of the servers are the same for partition 1,2,3)
-   *
-   * {
-   *   partitionId 1 -> [server2, server3, server1]
-   *   partitionId 2 -> [server2, server3, server1]
-   *   partitionId 3 -> [server2, server3, server1]
-   * }
-   *
+   * This tests the getPartitionInfo() when keys are null (actually a test for KeyMapper.getAllPartitionMultipleHosts()).
    */
   @Test
   public void testGetAllPartitionMultipleHostsOrdering()
@@ -413,16 +355,15 @@ public class SimpleLoadBalancerTest
     Map<Integer, PartitionData> server2Data = new HashMap<Integer, PartitionData>();
     server2Data.put(1, new PartitionData(1.0));
     server2Data.put(2, new PartitionData(1.0));
-    server2Data.put(3, new PartitionData(1.0));
+    //server2Data.put(3, new PartitionData(1.0));
     partitionDescriptions.put(server2, server2Data);
 
     final URI server3 = new URI("http://foo3.com");
     Map<Integer, PartitionData> server3Data = new HashMap<Integer, PartitionData>();
     server3Data.put(1, new PartitionData(1.0));
     server3Data.put(2, new PartitionData(1.0));
-    server3Data.put(3, new PartitionData(1.0));
+    //server3Data.put(3, new PartitionData(1.0));
     partitionDescriptions.put(server3, server3Data);
-
 
     //setup strategy which involves tweaking the hash ring to get partitionId -> URI host
     List<LoadBalancerState.SchemeStrategyPair> orderedStrategies = new ArrayList<LoadBalancerState.SchemeStrategyPair>();
@@ -435,32 +376,33 @@ public class SimpleLoadBalancerTest
 
     URI serviceURI = new URI("d2://" + serviceName);
     SimpleLoadBalancer balancer = new SimpleLoadBalancer(new PartitionedLoadBalancerTestState(
-        clusterName, serviceName, path, strategyName, partitionDescriptions, orderedStrategies,
-        accessor
+            clusterName, serviceName, path, strategyName, partitionDescriptions, orderedStrategies,
+            accessor
     ));
 
-    AllPartitionsMultipleHostsResult<URI> result = balancer.
-        getAllPartitionMultipleHosts(serviceURI, 3, new PartitionInfoProvider.HashProvider()
-                                                     {
-                                                       @Override
-                                                       public int nextHash()
-                                                       {
-                                                         return 123;
-                                                       }
-                                                     });
+    HostToKeyMapper<URI> result = balancer.getPartitionInformation(serviceURI, null, 3, 123);
 
-    Assert.assertTrue(result.getPartitionCount() == 4);
-    //partition 0 should be empty
-    Assert.assertTrue(result.getPartitionInfo(0).isEmpty());
-    //for partition 1
-    List<URI> ordering1 = result.getPartitionInfo(1);
-    //for partition 2
-    List<URI> ordering2 = result.getPartitionInfo(2);
-    //for partition 3
-    List<URI> ordering3 = result.getPartitionInfo(3);
-
+    Assert.assertEquals(result.getPartitionInfoMap().size(), 4);
+    Assert.assertEquals(4, result.getPartitionCount());
+    // partition 0 should be empty
+    Assert.assertTrue(result.getPartitionInfoMap().get(0).getHosts().isEmpty());
+    // partition 1 should have server1, server2 and server3.
+    List<URI> ordering1 = result.getPartitionInfoMap().get(1).getHosts();
+    Assert.assertEquals(ordering1.get(0), server2);
+    Assert.assertEquals(ordering1.get(1), server3);
+    Assert.assertEquals(ordering1.get(2), server1);
+    // partition 2 should be the same as partition 1
+    List<URI> ordering2 = result.getPartitionInfoMap().get(2).getHosts();
     Assert.assertEquals(ordering1, ordering2);
-    Assert.assertEquals(ordering1, ordering3);
+    // partition 3 should only contain server1
+    List<URI> ordering3 = result.getPartitionInfoMap().get(3).getHosts();
+    Assert.assertEquals(ordering3.get(0), server1);
+
+    // partition 0 and partition 3 should not have enough hosts: lacking 3 and 2 respectively.
+    Assert.assertTrue(result.getPartitionsWithoutEnoughHosts().containsKey(3));
+    Assert.assertTrue(result.getPartitionsWithoutEnoughHosts().containsKey(0));
+    Assert.assertEquals((int)result.getPartitionsWithoutEnoughHosts().get(3), 2);
+    Assert.assertEquals((int)result.getPartitionsWithoutEnoughHosts().get(0), 3);
   }
 
   // load balancer working with partitioned cluster
@@ -558,8 +500,7 @@ public class SimpleLoadBalancerTest
       serviceRegistry.put("foo", new ServiceProperties("foo",
                                                         "cluster-1",
                                                         "/foo",
-                                                        "degrader",
-                                                        Collections.<String>emptyList(),
+                                                        Arrays.asList("degrader"),
                                                         Collections.<String,Object>emptyMap(),
                                                         null,
                                                         null,
@@ -869,7 +810,7 @@ public class SimpleLoadBalancerTest
     assertNotNull(balancer.getClient(uriRequest, new RequestContext()));
   }
 
-  @Test(groups = { "medium", "back-end" })
+  @Test(groups = { "medium", "back-end" }, enabled =  false)
   public void testLoadBalancerSimulationRandom() throws URISyntaxException,
       IOException,
       ServiceUnavailableException,
@@ -1059,16 +1000,6 @@ public class SimpleLoadBalancerTest
       }
 
       @Override
-      @Deprecated
-      @SuppressWarnings("deprecation")
-      public void rpcRequest(RpcRequest request,
-                             RequestContext requestContext,
-                             Map<String, String> wireAttrs,
-                             TransportCallback<RpcResponse> callback)
-      {
-      }
-
-      @Override
       public void shutdown(Callback<None> callback)
       {
         _count.decrementAndGet();
@@ -1168,5 +1099,129 @@ public class SimpleLoadBalancerTest
       return 3;
     }
 
+  }
+
+  /**
+   * This test simulates dropping requests by playing with OverrideDropRate in config
+   *
+   */
+  @Test(groups = { "small", "back-end" })
+  public void testLoadBalancerDropRate() throws ServiceUnavailableException,
+          ExecutionException, InterruptedException {
+    final int RETRY=10;
+    for (int tryAgain = 0; tryAgain < RETRY; ++tryAgain)
+    {
+      Map<String, LoadBalancerStrategyFactory<? extends LoadBalancerStrategy>> loadBalancerStrategyFactories =
+              new HashMap<String, LoadBalancerStrategyFactory<? extends LoadBalancerStrategy>>();
+      Map<String, TransportClientFactory> clientFactories = new HashMap<String, TransportClientFactory>();
+      List<String> prioritizedSchemes = new ArrayList<String>();
+
+      MockStore<ServiceProperties> serviceRegistry = new MockStore<ServiceProperties>();
+      MockStore<ClusterProperties> clusterRegistry = new MockStore<ClusterProperties>();
+      MockStore<UriProperties> uriRegistry = new MockStore<UriProperties>();
+
+      ScheduledExecutorService executorService = new SynchronousExecutorService();
+
+      //loadBalancerStrategyFactories.put("rr", new RandomLoadBalancerStrategyFactory());
+      loadBalancerStrategyFactories.put("degrader", new DegraderLoadBalancerStrategyFactoryV3());
+      // PrpcClientFactory();
+      clientFactories.put("http", new DoNothingClientFactory()); // new
+      // HttpClientFactory();
+
+      SimpleLoadBalancerState state =
+              new SimpleLoadBalancerState(executorService,
+                      uriRegistry,
+                      clusterRegistry,
+                      serviceRegistry,
+                      clientFactories,
+                      loadBalancerStrategyFactories);
+
+      SimpleLoadBalancer loadBalancer =
+              new SimpleLoadBalancer(state, 5, TimeUnit.SECONDS);
+
+      FutureCallback<None> balancerCallback = new FutureCallback<None>();
+      loadBalancer.start(balancerCallback);
+      balancerCallback.get();
+
+      URI uri1 = URI.create("http://test.qa1.com:1234");
+      URI uri2 = URI.create("http://test.qa2.com:2345");
+      URI uri3 = URI.create("http://test.qa3.com:6789");
+
+      Map<Integer, PartitionData> partitionData = new HashMap<Integer, PartitionData>(1);
+      partitionData.put(DefaultPartitionAccessor.DEFAULT_PARTITION_ID, new PartitionData(1d));
+      Map<URI, Map<Integer, PartitionData>> uriData = new HashMap<URI, Map<Integer, PartitionData>>(3);
+      uriData.put(uri1, partitionData);
+      uriData.put(uri2, partitionData);
+      uriData.put(uri3, partitionData);
+
+      prioritizedSchemes.add("http");
+
+      clusterRegistry.put("cluster-1", new ClusterProperties("cluster-1"));
+
+      serviceRegistry.put("foo", new ServiceProperties("foo",
+              "cluster-1",
+              "/foo",
+              Arrays.asList("degrader"),
+              Collections.<String,Object>emptyMap(),
+              null,
+              null,
+              prioritizedSchemes,
+              null));
+      uriRegistry.put("cluster-1", new UriProperties("cluster-1", uriData));
+
+      URI expectedUri1 = URI.create("http://test.qa1.com:1234/foo");
+      URI expectedUri2 = URI.create("http://test.qa2.com:2345/foo");
+      URI expectedUri3 = URI.create("http://test.qa3.com:6789/foo");
+
+      Set<URI> expectedUris = new HashSet<URI>();
+
+      expectedUris.add(expectedUri1);
+      expectedUris.add(expectedUri2);
+      expectedUris.add(expectedUri3);
+      Random random = new Random();
+
+      for (int i = 0; i < 100; ++i)
+      {
+        try
+        {
+          RewriteClient client =
+                  (RewriteClient) loadBalancer.getClient(new URIRequest("d2://foo/52"), new RequestContext());
+          TrackerClient tClient = (TrackerClient) client.getWrappedClient();
+          DegraderImpl degrader = (DegraderImpl)tClient.getDegrader(DefaultPartitionAccessor.DEFAULT_PARTITION_ID);
+          DegraderImpl.Config cfg = new DegraderImpl.Config(degrader.getConfig());
+          // Change DropRate to 0.0 at the rate of 1/3
+          cfg.setOverrideDropRate((random.nextInt(2) == 0) ? 1.0 : 0.0);
+          degrader.setConfig(cfg);
+
+          assertTrue(expectedUris.contains(client.getUri()));
+          assertEquals(client.getUri().getScheme(), "http");
+        }
+        catch (ServiceUnavailableException e)
+        {
+          assertTrue(e.toString().contains("in a bad state (high latency/high error)"));
+        }
+      }
+
+      final CountDownLatch latch = new CountDownLatch(1);
+      PropertyEventShutdownCallback callback = new PropertyEventShutdownCallback()
+      {
+        @Override
+        public void done()
+        {
+          latch.countDown();
+        }
+      };
+
+      state.shutdown(callback);
+
+      if (!latch.await(60, TimeUnit.SECONDS))
+      {
+        fail("unable to shutdown state");
+      }
+
+      executorService.shutdownNow();
+
+      assertTrue(executorService.isShutdown(), "ExecutorService should have shut down!");
+    }
   }
 }

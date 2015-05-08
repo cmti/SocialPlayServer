@@ -18,11 +18,12 @@ dependencies {
   compile externalDependency.commonsLang
   compile externalDependency.javaxInject
   compile externalDependency.parseq
-  runtime externalDependency.slf4jLog4j12
-  runtime externalDependency.log4j
   testCompile project(path: ':restli-common', configuration: 'testArtifacts')
+  testCompile project(path: ':restli-internal-testutils', configuration: 'testArtifacts')
+  testCompile project(path: ':restli-client', configuration: 'testArtifacts')
   testCompile externalDependency.testng
   testCompile externalDependency.mockito
+  testCompile externalDependency.httpclient
   testDataModel project(path: ':restli-int-test-api', configuration: 'dataTemplate')
   testCompile project(path: ':restli-int-test-api', configuration: 'restClient')
   testCompile project(path: project.path, configuration: 'testRestClient')

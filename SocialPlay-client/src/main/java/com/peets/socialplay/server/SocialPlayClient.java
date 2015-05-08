@@ -63,7 +63,7 @@ public class SocialPlayClient {
             ComplexResourceKey<ParentingTipId, Account> id = new ComplexResourceKey<ParentingTipId, Account>(pid, account);
             
             GetRequest<ParentingTip> parentingTipRequest = parentingTipGetBuilder.id(id).build();
-            System.out.println("parentingTipRequest: " + id.toStringFull());
+            //System.out.println("parentingTipRequest: " + id.toStringFull());
             ResponseFuture<ParentingTip> parentingTipFuture = restClient.sendRequest(parentingTipRequest);
             Response<ParentingTip> parentingTipResponse = parentingTipFuture.getResponse();
 

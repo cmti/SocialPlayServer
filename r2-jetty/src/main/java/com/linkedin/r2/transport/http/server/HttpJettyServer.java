@@ -20,9 +20,9 @@
 
 package com.linkedin.r2.transport.http.server;
 
-import java.io.IOException;
 
 import javax.servlet.http.HttpServlet;
+import java.io.IOException;
 
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
@@ -61,17 +61,6 @@ public class HttpJettyServer implements HttpServer
                     new RAPServlet(dispatcher));
   }
 
-  @Deprecated
-  public HttpJettyServer(int port, String contextPath, int threadPoolSize, HttpDispatcher dispatcher)
-  {
-    this(port,
-         contextPath,
-         threadPoolSize,
-         dispatcher,
-         HttpServerFactory.DEFAULT_USE_ASYNC_SERVLET_API,
-         HttpServerFactory.DEFAULT_ASYNC_TIMEOUT);
-  }
-
   public HttpJettyServer(int port, HttpServlet servlet)
   {
     this(port,
@@ -92,9 +81,7 @@ public class HttpJettyServer implements HttpServer
   public void start() throws IOException
   {
     _server = new Server();
-    SelectChannelConnector connector = new SelectChannelConnector();
-    connector.setPort(_port);
-    _server.setConnectors(new Connector[] { connector });
+    _server.setConnectors(getConnectors());
     _server.setThreadPool(new QueuedThreadPool(_threadPoolSize));
     ServletContextHandler root =
         new ServletContextHandler(_server, _contextPath, ServletContextHandler.SESSIONS);
@@ -131,5 +118,13 @@ public class HttpJettyServer implements HttpServer
   public void waitForStop() throws InterruptedException
   {
     _server.join();
+  }
+
+
+  protected Connector[] getConnectors()
+  {
+    SelectChannelConnector connector = new SelectChannelConnector();
+    connector.setPort(_port);
+    return new Connector[] { connector };
   }
 }

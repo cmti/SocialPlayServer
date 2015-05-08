@@ -30,6 +30,7 @@ import com.linkedin.common.util.None;
  * A Callback which accumulates a specified number of success or failure calls before
  * invoking the original callback with success or failure as appropriate.
  *
+ * A useful variant might be a MultiCallback<T> which accepts a Callback<Collection<T>>
  * and returns the accumulated results on success.
  *
  * @author Steven Ihde

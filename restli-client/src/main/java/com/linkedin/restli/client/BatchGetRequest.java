@@ -19,18 +19,19 @@ package com.linkedin.restli.client;
 
 import com.linkedin.data.schema.PathSpec;
 import com.linkedin.data.template.RecordTemplate;
-import com.linkedin.restli.client.uribuilders.RestliUriBuilderUtil;
 import com.linkedin.restli.common.BatchResponse;
 import com.linkedin.restli.common.ResourceMethod;
 import com.linkedin.restli.common.ResourceSpec;
 import com.linkedin.restli.internal.client.RestResponseDecoder;
-import java.net.URI;
+
 import java.util.Map;
 import java.util.Set;
 
 
 /**
  * A request for reading a resource batch.
+ *
+ * This class has been deprecated. Please use {@link BatchGetEntityRequest} instead.
  *
  * @param <T> entity template class
  *
@@ -61,15 +62,5 @@ public class BatchGetRequest<T extends RecordTemplate> extends BatchRequest<Batc
   public Set<PathSpec> getFields()
   {
     return super.getFields();
-  }
-
-  /**
-   * @deprecated Please use {@link com.linkedin.restli.client.uribuilders.RestliUriBuilder#buildBaseUri()} instead
-   * @return
-   */
-  @Deprecated
-  public URI getBaseURI()
-  {
-    return RestliUriBuilderUtil.createUriBuilder(this).buildBaseUri();
   }
 }

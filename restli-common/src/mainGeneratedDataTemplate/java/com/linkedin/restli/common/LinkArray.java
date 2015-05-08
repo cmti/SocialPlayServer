@@ -10,12 +10,12 @@ import com.linkedin.data.schema.PathSpec;
 import com.linkedin.data.template.DataTemplateUtil;
 import com.linkedin.data.template.WrappingArrayTemplate;
 
-@Generated(value = "com.linkedin.pegasus.generator.PegasusDataTemplateGenerator", comments = "LinkedIn Data Template. Generated from /Users/jianli/git/SocialPlayServer/restli-common/src/main/pegasus/com/linkedin/restli/common/CollectionMetadata.pdsc.", date = "Fri Apr 17 15:52:47 PDT 2015")
+@Generated(value = "com.linkedin.pegasus.generator.PegasusDataTemplateGenerator", comments = "LinkedIn Data Template. Generated from /Users/jianli/git/SocialPlayServer/restli-common/src/main/pegasus/com/linkedin/restli/common/CollectionMetadata.pdsc.", date = "Thu May 07 23:46:42 PDT 2015")
 public class LinkArray
     extends WrappingArrayTemplate<Link>
 {
 
-    private final static ArrayDataSchema SCHEMA = ((ArrayDataSchema) DataTemplateUtil.parseSchema("{\"type\":\"array\",\"items\":{\"type\":\"record\",\"name\":\"Link\",\"namespace\":\"com.linkedin.restli.common\",\"doc\":\"A atom:link-inspired link\",\"fields\":[{\"name\":\"rel\",\"type\":\"string\",\"doc\":\"The link relation e.g. 'self' or 'next'\"},{\"name\":\"href\",\"type\":\"string\",\"doc\":\"The link URI\"},{\"name\":\"type\",\"type\":\"string\",\"doc\":\"The type (media type) of the resource\"},{\"name\":\"title\",\"type\":\"string\",\"doc\":\"The title of the link\"}]}}"));
+    private final static ArrayDataSchema SCHEMA = ((ArrayDataSchema) DataTemplateUtil.parseSchema("{\"type\":\"array\",\"items\":{\"type\":\"record\",\"name\":\"Link\",\"namespace\":\"com.linkedin.restli.common\",\"doc\":\"A atom:link-inspired link\",\"fields\":[{\"name\":\"rel\",\"type\":\"string\",\"doc\":\"The link relation e.g. 'self' or 'next'\"},{\"name\":\"href\",\"type\":\"string\",\"doc\":\"The link URI\"},{\"name\":\"type\",\"type\":\"string\",\"doc\":\"The type (media type) of the resource\"}]}}"));
 
     public LinkArray() {
         this(new DataList());

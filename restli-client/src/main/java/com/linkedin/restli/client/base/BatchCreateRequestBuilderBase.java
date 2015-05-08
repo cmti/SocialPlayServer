@@ -30,22 +30,16 @@ import java.util.List;
 
 /**
  * @author Josh Walker
- * @version $Revision: $
+ *
+ * @deprecated This class has been deprecated. Please use {@link BatchCreateIdRequestBuilderBase} instead.
  */
-
+@Deprecated
 public abstract class BatchCreateRequestBuilderBase<
         K,
         V extends RecordTemplate,
         RB extends BatchCreateRequestBuilderBase<K, V, RB>>
         extends BatchCreateRequestBuilder<K, V>
 {
-  @Deprecated
-  public BatchCreateRequestBuilderBase(String baseUriTemplate, Class<V> valueClass,
-                                       ResourceSpec resourceSpec)
-  {
-    this(baseUriTemplate, valueClass, resourceSpec, RestliRequestOptions.DEFAULT_OPTIONS);
-  }
-
   public BatchCreateRequestBuilderBase(String baseUriTemplate,
                                        Class<V> valueClass,
                                        ResourceSpec resourceSpec,
@@ -66,19 +60,6 @@ public abstract class BatchCreateRequestBuilderBase<
   public RB inputs(List<V> entities)
   {
     return (RB)super.inputs(entities);
-  }
-
-  /**
-   * @deprecated This method is deprecated and replaced by a set* method for API consistency reasons.
-   * This method cannot be removed permanently until all projects use a version of Rest.li containing the
-   * set* methods in a multi-project build environment for binary compatibility.
-   */
-  @SuppressWarnings({"unchecked"})
-  @Deprecated
-  @Override
-  public RB header(String key, String value)
-  {
-    return (RB) super.header(key, value);
   }
 
   @SuppressWarnings({"unchecked"})

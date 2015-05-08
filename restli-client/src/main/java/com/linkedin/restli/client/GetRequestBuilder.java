@@ -27,6 +27,7 @@ import com.linkedin.restli.common.ResourceSpec;
 
 import java.util.Map;
 
+
 /**
  * @author Josh Walker
  * @version $Revision: $
@@ -34,45 +35,20 @@ import java.util.Map;
 
 
 public class GetRequestBuilder<K, V extends RecordTemplate> extends
-    RestfulRequestBuilder<K,V, GetRequest<V>>
+    SingleEntityRequestBuilder<K,V, GetRequest<V>>
 {
-  private final Class<V> _elementClass;
-  private K              _id;
-
-  @Deprecated
-  public GetRequestBuilder(String baseUriTemplate, Class<V> elementClass, ResourceSpec resourceSpec)
-  {
-    this(baseUriTemplate, elementClass, resourceSpec, RestliRequestOptions.DEFAULT_OPTIONS);
-  }
-
   public GetRequestBuilder(String baseUriTemplate,
                            Class<V> elementClass,
                            ResourceSpec resourceSpec,
                            RestliRequestOptions requestOptions)
   {
-    super(baseUriTemplate, resourceSpec, requestOptions);
-    _elementClass = elementClass;
+    super(baseUriTemplate, elementClass, resourceSpec, requestOptions);
   }
 
+  @Override
   public GetRequestBuilder<K, V> id(K id)
   {
-    _id = id;
-    return this;
-  }
-
-  @Override
-  @Deprecated
-  public GetRequestBuilder<K, V> param(String key, Object value)
-  {
-    super.setParam(key, value);
-    return this;
-  }
-
-  @Override
-  @Deprecated
-  public GetRequestBuilder<K, V> reqParam(String key, Object value)
-  {
-    super.setReqParam(key, value);
+    super.id(id);
     return this;
   }
 
@@ -101,14 +77,6 @@ public class GetRequestBuilder<K, V extends RecordTemplate> extends
   public GetRequestBuilder<K, V> addReqParam(String key, Object value)
   {
     super.addReqParam(key, value);
-    return this;
-  }
-
-  @Override
-  @Deprecated
-  public GetRequestBuilder<K, V> header(String key, String value)
-  {
-    super.setHeader(key, value);
     return this;
   }
 
@@ -143,13 +111,13 @@ public class GetRequestBuilder<K, V extends RecordTemplate> extends
   @Override
   public GetRequest<V> build()
   {
-    return new GetRequest<V>(_headers,
-                             _elementClass,
-                             _id,
-                             _queryParams,
+    return new GetRequest<V>(buildReadOnlyHeaders(),
+                             getValueClass(),
+                             buildReadOnlyId(),
+                             buildReadOnlyQueryParameters(),
                              _resourceSpec,
                              getBaseUriTemplate(),
-                             _pathKeys,
+                             buildReadOnlyPathKeys(),
                              getRequestOptions());
   }
 

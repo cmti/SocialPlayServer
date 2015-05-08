@@ -1,0 +1,12 @@
+{
+  "type" : "record",
+  "name" : "Point",
+  "namespace" : "com.linkedin.pegasus.generator.test",
+  "fields" : [ {
+    "name" : "x",
+    "type" : "double"
+  }, {
+    "name" : "y",
+    "type" : "double"
+  } ]
+}

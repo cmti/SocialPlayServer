@@ -1,0 +1,9 @@
+{
+  "type" : "record",
+  "name" : "RecordInArray",
+  "namespace" : "com.linkedin.pegasus.generator.test",
+  "fields" : [ {
+    "name" : "f",
+    "type" : "int"
+  } ]
+}

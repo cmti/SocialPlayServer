@@ -17,10 +17,9 @@
 /* $Id$ */
 package com.linkedin.r2.caprep.db;
 
+
 import com.linkedin.r2.message.Request;
 import com.linkedin.r2.message.Response;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
 import java.io.File;
@@ -30,6 +29,9 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 /**
  * DbSource which obtains messages from a directory on the filesystem.
  *
@@ -83,7 +85,6 @@ public class DirectoryDbSource implements DbSource
     }
   }
 
-  @SuppressWarnings("deprecation")
   private Map<Request, Response> loadDb(File dir, MessageSerializer serializer) throws IOException
   {
     final Map<Request, Response> db = new HashMap<Request, Response>();
@@ -98,12 +99,10 @@ public class DirectoryDbSource implements DbSource
       try
       {
         reqIn = new FileInputStream(DirectoryDbUtil.requestFileName(dir, id));
-        final Request req = DirectoryDbUtil.isRestId(id) ? serializer.readRestRequest(reqIn)
-                                                         : serializer.readRpcRequest(reqIn);
+        final Request req = serializer.readRestRequest(reqIn);
 
         resIn = new FileInputStream(DirectoryDbUtil.responseFileName(dir, id));
-        final Response res = DirectoryDbUtil.isRestId(id) ? serializer.readRestResponse(resIn)
-                                                          : serializer.readRpcResponse(resIn);
+        final Response res = serializer.readRestResponse(resIn);
 
         db.put(canonicalize(req), res);
       }

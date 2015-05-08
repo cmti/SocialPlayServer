@@ -30,10 +30,7 @@ import com.linkedin.r2.message.rest.RestRequest;
 import com.linkedin.r2.message.rest.RestRequestBuilder;
 import com.linkedin.r2.message.rest.RestResponse;
 import com.linkedin.r2.message.rest.RestResponseBuilder;
-import com.linkedin.r2.message.rpc.RpcRequest;
-import com.linkedin.r2.message.rpc.RpcRequestBuilder;
-import com.linkedin.r2.message.rpc.RpcResponse;
-import com.linkedin.r2.message.rpc.RpcResponseBuilder;
+import com.linkedin.r2.transport.http.common.HttpConstants;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -97,7 +94,7 @@ public class DefaultMessageSerializer implements MessageSerializer
     writeReqLine(out, req);
     if (req instanceof RestRequest)
     {
-      writeHeaders(out, (RestRequest)req);
+      writeHeaders(out, (RestRequest)req, HttpConstants.REQUEST_COOKIE_HEADER_NAME);
     }
     else
     {
@@ -112,7 +109,7 @@ public class DefaultMessageSerializer implements MessageSerializer
     writeResLine(out, res);
     if (res instanceof RestResponse)
     {
-      writeHeaders(out, (RestResponse)res);
+      writeHeaders(out, (RestResponse)res, HttpConstants.RESPONSE_COOKIE_HEADER_NAME);
     }
     else
     {
@@ -126,18 +123,7 @@ public class DefaultMessageSerializer implements MessageSerializer
   {
     final RestRequestBuilder builder = new RestRequestBuilder(URI.create(""));
     readReqLine(builder, in);
-    readHeaders(builder, in);
-    readEntity(builder, in);
-    return builder.build();
-  }
-
-  @Override
-  @Deprecated
-  public RpcRequest readRpcRequest(InputStream in) throws IOException
-  {
-    final RpcRequestBuilder builder = new RpcRequestBuilder(URI.create(""));
-    readReqLine(builder, in);
-    readIgnoreNewLine(in);
+    readHeaders(builder, in, HttpConstants.REQUEST_COOKIE_HEADER_NAME);
     readEntity(builder, in);
     return builder.build();
   }
@@ -147,18 +133,7 @@ public class DefaultMessageSerializer implements MessageSerializer
   {
     final RestResponseBuilder builder = new RestResponseBuilder();
     readResLine(builder, in);
-    readHeaders(builder, in);
-    readEntity(builder, in);
-    return builder.build();
-  }
-
-  @Override
-  @Deprecated
-  public RpcResponse readRpcResponse(InputStream in) throws IOException
-  {
-    final RpcResponseBuilder builder = new RpcResponseBuilder();
-    readResLine(builder, in);
-    readIgnoreNewLine(in);
+    readHeaders(builder, in, HttpConstants.RESPONSE_COOKIE_HEADER_NAME);
     readEntity(builder, in);
     return builder.build();
   }
@@ -204,7 +179,7 @@ public class DefaultMessageSerializer implements MessageSerializer
     readIgnoreLine(in);
   }
 
-  private void readHeaders(RestMessageBuilder<?> builder, InputStream in) throws IOException
+  private void readHeaders(RestMessageBuilder<?> builder, InputStream in, String cookieHeader) throws IOException
   {
     String line = readLine(in);
     while (!line.isEmpty())
@@ -222,7 +197,12 @@ public class DefaultMessageSerializer implements MessageSerializer
       {
         valueBuilder.append(line);
       }
-      builder.addHeaderValue(key, valueBuilder.toString().trim());
+
+      if (key.equalsIgnoreCase(cookieHeader)) {
+        builder.addCookie(valueBuilder.toString().trim());
+      } else {
+        builder.addHeaderValue(key, valueBuilder.toString().trim());
+      }
     }
   }
 
@@ -242,7 +222,7 @@ public class DefaultMessageSerializer implements MessageSerializer
     final ByteString entity;
     if (eb.length >= 2 && eb[eb.length-2] == CR_CHAR && eb[eb.length-1] == LF_CHAR)
     {
-      entity = ByteString.copyString(new String(eb, 0, eb.length - 2), CHARSET);
+      entity = ByteString.copy(eb, 0, eb.length - 2);
     }
     else
     {
@@ -344,28 +324,36 @@ public class DefaultMessageSerializer implements MessageSerializer
     }
   }
 
-  private void writeHeaders(OutputStream out, RestMessage msg) throws IOException
+  private void writeHeaders(OutputStream out, RestMessage msg, String cookieHeader) throws IOException
   {
     for (Map.Entry<String, String> hdr : msg.getHeaders().entrySet())
     {
-      write(out, hdr.getKey());
-
-      write(out, ":");
-      // Not required per spec, but improves readability
-      write(out, SP);
-
-      // Replace CR/LF with SP, acceptable per RFC-2616
-      write(out, hdr.getValue().replaceAll("[\n\r]+", " "));
-
-      write(out, CRLF);
+      writeHeader(out, hdr.getKey(), hdr.getValue());
     }
+    for (String cookie : msg.getCookies())
+    {
+      writeHeader(out, cookieHeader, cookie);
+    }
+    write(out, CRLF);
+  }
+
+  private void writeHeader(OutputStream out, String key, String value) throws IOException
+  {
+    write(out, key);
+
+    write(out, ":");
+    // Not required per spec, but improves readability
+    write(out, SP);
+
+    // Replace CR/LF with SP, acceptable per RFC-2616
+    write(out, value.replaceAll("[\n\r]+", " "));
+
     write(out, CRLF);
   }
 
   private void readIgnore(String expectedStr, InputStream in) throws IOException
   {
-    // This is safe only because we've baked in the assumption of the ASCII charset.
-    final int bytesExpected = expectedStr.length();
+    final int bytesExpected = expectedStr.getBytes(CHARSET).length;
     final byte[] actualBytes = new byte[bytesExpected];
     final int bytesRead = in.read(actualBytes);
     final String actualStr = new String(actualBytes, 0, bytesRead, CHARSET);
@@ -379,7 +367,8 @@ public class DefaultMessageSerializer implements MessageSerializer
 
   private String readUntil(char ch, InputStream in) throws IOException
   {
-    final StringBuilder sb = new StringBuilder();
+    // This is safe only because we assume ch is ASCII
+    final ByteArrayOutputStream out = new ByteArrayOutputStream();
     int nextByte;
     while ((nextByte = in.read()) != ch)
     {
@@ -388,10 +377,9 @@ public class DefaultMessageSerializer implements MessageSerializer
         throw new IOException("Parse failed. End of stream before reaching expected char: " + printable(ch));
       }
 
-      // Safe only because we assume ASCII charset.
-      sb.append((char)nextByte);
+      out.write(nextByte);
     }
-    return sb.toString();
+    return new String(out.toByteArray(), CHARSET);
   }
 
   private void readIgnoreNewLine(InputStream in) throws IOException
@@ -443,7 +431,7 @@ public class DefaultMessageSerializer implements MessageSerializer
   private String printable(String str)
   {
     final StringBuilder sb = new StringBuilder();
-    for (byte b : str.getBytes())
+    for (byte b : str.getBytes(CHARSET))
     {
       sb.append(printable((char)b));
     }

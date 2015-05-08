@@ -32,8 +32,10 @@ import com.linkedin.data.schema.validation.ValidationOptions;
 import com.linkedin.data.template.AbstractArrayTemplate;
 import com.linkedin.data.template.DataTemplate;
 import com.linkedin.data.template.DataTemplateUtil;
+import com.linkedin.data.template.DynamicRecordTemplate;
 import com.linkedin.data.template.RecordTemplate;
 import com.linkedin.data.template.TemplateRuntimeException;
+import com.linkedin.internal.common.util.CollectionUtils;
 import com.linkedin.r2.message.rest.RestRequest;
 import com.linkedin.restli.common.BatchRequest;
 import com.linkedin.restli.common.ComplexResourceKey;
@@ -43,12 +45,15 @@ import com.linkedin.restli.common.TypeSpec;
 import com.linkedin.restli.internal.common.QueryParamsDataMap;
 import com.linkedin.restli.internal.common.URIParamUtils;
 import com.linkedin.restli.internal.server.model.Parameter;
+import com.linkedin.restli.internal.server.model.ResourceMethodDescriptor;
 import com.linkedin.restli.internal.server.util.ArgumentUtils;
 import com.linkedin.restli.internal.server.util.DataMapUtils;
 import com.linkedin.restli.internal.server.util.RestUtils;
+import com.linkedin.restli.common.validation.RestLiDataValidator;
 import com.linkedin.restli.server.PagingContext;
-import com.linkedin.restli.server.PathKeys;
+import com.linkedin.restli.server.ResourceConfigException;
 import com.linkedin.restli.server.ResourceContext;
+import com.linkedin.restli.server.RestLiServiceException;
 import com.linkedin.restli.server.RoutingException;
 import com.linkedin.restli.server.annotations.HeaderParam;
 
@@ -75,14 +80,18 @@ public class ArgumentBuilder
    *
    * @param positionalArguments pass-through arguments coming from
    *          {@link RestLiArgumentBuilder}
-   * @param parameters list of request {@link Parameter}s
+   * @param resourceMethod the resource method
    * @param context {@link ResourceContext}
+   * @param template {@link DynamicRecordTemplate}
    * @return array of method argument for method invocation.
    */
+  @SuppressWarnings("deprecation")
   public static Object[] buildArgs(final Object[] positionalArguments,
-                                   final List<Parameter<?>> parameters,
-                                   final ResourceContext context)
+                                   final ResourceMethodDescriptor resourceMethod,
+                                   final ResourceContext context,
+                                   final DynamicRecordTemplate template)
   {
+    List<Parameter<?>> parameters = resourceMethod.getParameters();
     Object[] arguments = Arrays.copyOf(positionalArguments, parameters.size());
 
     fixUpComplexKeySingletonArraysInArguments(arguments);
@@ -90,72 +99,145 @@ public class ArgumentBuilder
     for (int i = positionalArguments.length; i < parameters.size(); ++i)
     {
       Parameter<?> param = parameters.get(i);
-      if (param.getParamType() == Parameter.ParamType.KEY || param.getParamType() == Parameter.ParamType.ASSOC_KEY_PARAM)
+      try
       {
-        Object value = context.getPathKeys().get(param.getName());
-        if (value == null && param.isOptional() == false)
+        if (param.getParamType() == Parameter.ParamType.KEY || param.getParamType() == Parameter.ParamType.ASSOC_KEY_PARAM)
         {
-          throw new RoutingException("Association key '" + param.getName()
-              + "' is required", HttpStatus.S_400_BAD_REQUEST.getCode());
+          Object value = context.getPathKeys().get(param.getName());
+          if (value != null)
+          {
+            arguments[i] = value;
+            continue;
+          }
         }
-        arguments[i] = value;
+        else if (param.getParamType() == Parameter.ParamType.CALLBACK)
+        {
+          continue;
+        }
+        else if (param.getParamType() == Parameter.ParamType.PARSEQ_CONTEXT_PARAM || param.getParamType() == Parameter.ParamType.PARSEQ_CONTEXT)
+        {
+          continue; // don't know what to fill in yet
+        }
+        else if (param.getParamType() == Parameter.ParamType.HEADER)
+        {
+          HeaderParam headerParam = param.getAnnotations().get(HeaderParam.class);
+          String value = context.getRequestHeaders().get(headerParam.value());
+          arguments[i] = value;
+          continue;
+        }
+        //Since we have multiple different types of MaskTrees that can be passed into resource methods,
+        //we must evaluate based on the param type (annotation used)
+        else if (param.getParamType() == Parameter.ParamType.PROJECTION || param.getParamType() == Parameter.ParamType.PROJECTION_PARAM)
+        {
+          arguments[i] = context.getProjectionMask();
+          continue;
+        }
+        else if (param.getParamType() == Parameter.ParamType.METADATA_PROJECTION_PARAM)
+        {
+          arguments[i] = context.getMetadataProjectionMask();
+          continue;
+        }
+        else if (param.getParamType() == Parameter.ParamType.PAGING_PROJECTION_PARAM)
+        {
+          arguments[i] = context.getPagingProjectionMask();
+          continue;
+        }
+        else if (param.getParamType() == Parameter.ParamType.CONTEXT || param.getParamType() == Parameter.ParamType.PAGING_CONTEXT_PARAM)
+        {
+          PagingContext ctx = RestUtils.getPagingContext(context, (PagingContext) param.getDefaultValue());
+          arguments[i] = ctx;
+          continue;
+        }
+        else if (param.getParamType() == Parameter.ParamType.PATH_KEYS || param.getParamType() == Parameter.ParamType.PATH_KEYS_PARAM)
+        {
+          arguments[i] = context.getPathKeys();
+          continue;
+        }
+        else if (param.getParamType() == Parameter.ParamType.RESOURCE_CONTEXT || param.getParamType() == Parameter.ParamType.RESOURCE_CONTEXT_PARAM)
+        {
+          arguments[i] = context;
+          continue;
+        }
+        else if (param.getParamType() == Parameter.ParamType.VALIDATOR_PARAM)
+        {
+          RestLiDataValidator validator = new RestLiDataValidator(resourceMethod.getResourceModel().getResourceClass().getAnnotations(),
+                                                                  resourceMethod.getResourceModel().getValueClass(), resourceMethod.getMethodType());
+          arguments[i] = validator;
+          continue;
+        }
+        else if (param.getParamType() == Parameter.ParamType.POST)
+        {
+          // handle action parameters
+          if (template != null)
+          {
+            DataMap data = template.data();
+            if (data.containsKey(param.getName()))
+            {
+              arguments[i] = template.getValue(param);
+              continue;
+            }
+          }
+        }
+        else if (param.getParamType() == Parameter.ParamType.QUERY)
+        {
+          Object value;
+          if (DataTemplate.class.isAssignableFrom(param.getType()))
+          {
+            value = buildDataTemplateArgument(context, param);
+          }
+          else
+          {
+            value = buildRegularArgument(context, param);
+          }
+
+          if (value != null)
+          {
+            arguments[i] = value;
+            continue;
+          }
+        }
+        else if (param.getParamType() == Parameter.ParamType.BATCH || param.getParamType() == Parameter.ParamType.RESOURCE_KEY)
+        {
+          // should not come to this routine since it should be handled by passing in positionalArguments
+          throw new RoutingException("Parameter '" + param.getName() + "' should be passed in as a positional argument",
+              HttpStatus.S_400_BAD_REQUEST.getCode());
+        }
+        else
+        {
+          // unknown param type
+          throw new RoutingException(
+              "Parameter '" + param.getName() + "' has an unknown parameter type '" + param.getParamType().name() + "'",
+              HttpStatus.S_400_BAD_REQUEST.getCode());
+        }
       }
-      else if (param.getParamType() == Parameter.ParamType.CALLBACK)
+      catch (TemplateRuntimeException e)
       {
-        continue;
-      }
-      else if (param.getParamType() == Parameter.ParamType.PARSEQ_CONTEXT_PARAM ||param.getParamType() == Parameter.ParamType.PARSEQ_CONTEXT)
-      {
-        continue; // don't know what to fill in yet
+        throw new RoutingException("Parameter '" + param.getName() + "' is invalid", HttpStatus.S_400_BAD_REQUEST.getCode());
       }
 
-      else if (param.getParamType() == Parameter.ParamType.HEADER)
+      try
       {
-        HeaderParam headerParam = param.getAnnotations().get(HeaderParam.class);
-        String value = context.getRequestHeaders().get(headerParam.value());
-        arguments[i] = value;
+        // Handling null-valued parameters not provided in resource context or entity body
+        // check if it is optional parameter
+        if (param.isOptional() && param.hasDefaultValue())
+        {
+          arguments[i] = param.getDefaultValue();
+        }
+        else if (param.isOptional() && !param.getType().isPrimitive())
+        {
+          // optional primitive parameter must have default value or provided
+          arguments[i] = null;
+        }
+        else
+        {
+          throw new RoutingException("Parameter '" + param.getName() + "' is required", HttpStatus.S_400_BAD_REQUEST.getCode());
+        }
       }
-
-      //Since we have multiple different types of MaskTrees that can be passed into resource methods,
-      //we must evaluate based on the param type (annotation used)
-      else if (param.getParamType() == Parameter.ParamType.PROJECTION)
+      catch (ResourceConfigException e)
       {
-        arguments[i] = context.getProjectionMask();
-      }
-
-      else if (param.getParamType() == Parameter.ParamType.PROJECTION_PARAM)
-      {
-        arguments[i] = context.getProjectionMask();
-      }
-
-      else if (param.getParamType() == Parameter.ParamType.METADATA_PROJECTION_PARAM)
-      {
-        arguments[i] = context.getMetadataProjectionMask();
-      }
-
-      else if (param.getParamType() == Parameter.ParamType.PAGING_PROJECTION_PARAM)
-      {
-        arguments[i] = context.getPagingProjectionMask();
-      }
-
-      else if (param.getType().isAssignableFrom(PagingContext.class))
-      {
-        PagingContext ctx =
-            RestUtils.getPagingContext(context, (PagingContext) param.getDefaultValue());
-        arguments[i] = ctx;
-      }
-
-      else if (param.getType().isAssignableFrom(PathKeys.class))
-      {
-        arguments[i] = context.getPathKeys();
-      }
-      else if (DataTemplate.class.isAssignableFrom(param.getType()))
-      {
-        arguments[i] = buildDataTemplateArgument(context, param);
-      }
-      else
-      {
-        arguments[i] = buildRegularArgument(context, param);
+        // Parameter default value format exception should result in server error code 500.
+        throw new RestLiServiceException(HttpStatus.S_500_INTERNAL_SERVER_ERROR,
+            "Parameter '" + param.getName() + "' default value is invalid", e);
       }
     }
     return arguments;
@@ -296,19 +378,7 @@ public class ArgumentBuilder
     final Object convertedValue;
     if (value == null)
     {
-      if (param.isOptional() && param.hasDefaultValue())
-      {
-        convertedValue = param.getDefaultValue();
-      }
-      else if (param.isOptional() && !param.getType().isPrimitive())
-      {
-        convertedValue = null;
-      }
-      else
-      {
-        throw new RoutingException("Parameter '" + param.getName() + "' is required",
-                                   HttpStatus.S_400_BAD_REQUEST.getCode());
-      }
+      return null;
     }
     else
     {
@@ -362,18 +432,7 @@ public class ArgumentBuilder
 
     if (paramValue == null)
     {
-      if (!param.isOptional())
-      {
-        throw new RoutingException("Parameter '" + param.getName() + "' is required",
-                                   HttpStatus.S_400_BAD_REQUEST.getCode());
-      }
-
-      if (!param.hasDefaultValue())
-      {
-        return null;
-      }
-
-      paramRecordTemplate = (DataTemplate) param.getDefaultValue();
+      return null;
     }
     else
     {
@@ -389,8 +448,7 @@ public class ArgumentBuilder
        * So this means if the 'final' type of a query param is an Array and the paramValue we received from
        * ResourceContext is not a DataList we will have to wrap the paramValue inside a DataList
        */
-      if (AbstractArrayTemplate.class.isAssignableFrom(paramType) &&
-          paramValue.getClass() != DataList.class)
+      if (AbstractArrayTemplate.class.isAssignableFrom(paramType) && paramValue.getClass() != DataList.class)
       {
         paramRecordTemplate = DataTemplateUtil.wrap(new DataList(Arrays.asList(paramValue)), paramType);
       }
@@ -398,14 +456,13 @@ public class ArgumentBuilder
       {
         paramRecordTemplate = DataTemplateUtil.wrap(paramValue, paramType);
       }
+
+      // Validate against the class schema with FixupMode.STRING_TO_PRIMITIVE to parse the
+      // strings into the corresponding primitive types.
+      ValidateDataAgainstSchema.validate(paramRecordTemplate.data(), paramRecordTemplate.schema(),
+          new ValidationOptions(RequiredMode.CAN_BE_ABSENT_IF_HAS_DEFAULT, CoercionMode.STRING_TO_PRIMITIVE));
+      return paramRecordTemplate;
     }
-    // Validate against the class schema with FixupMode.STRING_TO_PRIMITIVE to parse the
-    // strings into the corresponding primitive types.
-    ValidateDataAgainstSchema.validate(paramRecordTemplate.data(),
-                                       paramRecordTemplate.schema(),
-                                       new ValidationOptions(RequiredMode.CAN_BE_ABSENT_IF_HAS_DEFAULT,
-                                                             CoercionMode.STRING_TO_PRIMITIVE));
-    return paramRecordTemplate;
   }
 
   /**
@@ -459,7 +516,7 @@ public class ArgumentBuilder
     }
 
     Map<Object, R> result =
-      new HashMap<Object, R>((int)(batchRequest.getEntities().size() / 0.75f) + 1, 0.75f);
+      new HashMap<Object, R>(CollectionUtils.getMapInitialCapacity(batchRequest.getEntities().size(), 0.75f), 0.75f);
     for (Map.Entry<String, R> entry : batchRequest.getEntities().entrySet())
     {
       Object key = parsedKeyMap.get(entry.getKey());

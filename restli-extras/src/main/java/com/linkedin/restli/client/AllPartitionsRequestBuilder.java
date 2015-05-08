@@ -20,8 +20,9 @@ package com.linkedin.restli.client;
 import com.linkedin.common.callback.Callback;
 import com.linkedin.d2.balancer.KeyMapper;
 import com.linkedin.d2.balancer.ServiceUnavailableException;
-import com.linkedin.d2.balancer.util.AllPartitionsResult;
+import com.linkedin.d2.balancer.util.HostSet;
 import com.linkedin.r2.message.RequestContext;
+
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -32,6 +33,7 @@ import java.util.Collection;
  * Nevertheless, it will still do the job if caller uses it for un-partitioned service
  * The possible benefit is that the caller is not required to know whether a service is partitioned or not
  * @author Zhenkai Zhu
+ * @author Xialin Zhu
  * @version $Revision: $
  */
 public class AllPartitionsRequestBuilder <T>
@@ -45,50 +47,6 @@ public class AllPartitionsRequestBuilder <T>
   }
 
   /**
-   * Construct the request contexts that includes uris which cover all available partitions
-   * @param request  query-all request
-   * @param requestContext  original request context
-   * @return the partition cover that includes a collection of requestContext for each uri for the uris that cover all available
-   * partitions, an int of total partition number and a collection of available partitions
-   * @throws ServiceUnavailableException
-   */
-  @SuppressWarnings("deprecation")
-  public AllPartitionsResult<RequestContext>
-  buildRequestContexts(Request<T> request, RequestContext requestContext)
-      throws ServiceUnavailableException
-  {
-    URI serviceUri;
-    try
-    {
-      if (request.hasUri())
-      {
-        // legacy constructor used to construct the request
-        serviceUri = new URI(D2_URI_PREFIX + request.getUri().toString());
-      }
-      else
-      {
-        serviceUri = new URI(D2_URI_PREFIX + request.getServiceName());
-      }
-    }
-    catch(URISyntaxException e)
-    {
-      throw new IllegalArgumentException(e);
-    }
-
-    final Collection<RequestContext> queryAllRequestContext = new ArrayList<RequestContext>();
-    final AllPartitionsResult<URI> uriResult = _mapper.getAllPartitions(serviceUri, request.hashCode());
-    Collection<URI> targetHosts = uriResult.getPartitionInfo();
-    for (URI targetHost : targetHosts)
-    {
-      RequestContext context = requestContext.clone();
-      KeyMapper.TargetHostHints.setRequestContextTargetHost(context, targetHost);
-      queryAllRequestContext.add(context);
-    }
-
-    return new AllPartitionsResult<RequestContext>(queryAllRequestContext, uriResult.getPartitionCount(), uriResult.getUnavailablePartitions());
-  }
-
-  /**
    * A convenience function for caller to issue search request with one call.
    * If finer-grain control is required, users should call buildRequestContexts instead and send requests by themselves
    *
@@ -99,16 +57,29 @@ public class AllPartitionsRequestBuilder <T>
    * @return the partition cover which informs the caller the RequestContexts, the total number of partitions and the available partition number
    * @throws ServiceUnavailableException
    */
-  public AllPartitionsResult<RequestContext> sendRequests(RestClient client, Request<T> request, RequestContext requestContext, Callback<Response<T>> callback)
+  public HostSet sendRequests(RestClient client, Request<T> request, RequestContext requestContext, Callback<Response<T>> callback)
       throws ServiceUnavailableException
   {
-    AllPartitionsResult<RequestContext> contextCover = buildRequestContexts(request, requestContext);
-    Collection<RequestContext> contexts = contextCover.getPartitionInfo();
-    for (RequestContext context : contexts)
+    URI serviceUri;
+    try
     {
+      serviceUri = new URI(D2_URI_PREFIX + request.getServiceName());
+    }
+    catch(URISyntaxException e)
+    {
+      throw new IllegalArgumentException(e);
+    }
+
+    final Collection<RequestContext> queryAllRequestContext = new ArrayList<RequestContext>();
+    final HostSet uriResult = _mapper.getAllPartitionsMultipleHosts(serviceUri, 1);
+    for (URI targetHost : uriResult.getAllHosts())
+    {
+      RequestContext context = requestContext.clone();
+      KeyMapper.TargetHostHints.setRequestContextTargetHost(context, targetHost);
+      queryAllRequestContext.add(context);
       client.sendRequest(request, context, callback);
     }
 
-    return contextCover;
+    return uriResult;
   }
 }

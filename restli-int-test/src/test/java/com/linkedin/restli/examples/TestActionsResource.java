@@ -20,13 +20,7 @@ package com.linkedin.restli.examples;
 import com.linkedin.data.template.RecordTemplate;
 import com.linkedin.data.template.StringArray;
 import com.linkedin.r2.RemoteInvocationException;
-import com.linkedin.r2.transport.common.Client;
-import com.linkedin.r2.transport.common.bridge.client.TransportClientAdapter;
-import com.linkedin.r2.transport.http.client.HttpClientFactory;
 import com.linkedin.restli.client.Request;
-import com.linkedin.restli.client.Response;
-import com.linkedin.restli.client.ResponseFuture;
-import com.linkedin.restli.client.RestClient;
 import com.linkedin.restli.client.RestLiResponseException;
 import com.linkedin.restli.common.HttpStatus;
 import com.linkedin.restli.examples.greetings.api.Message;
@@ -43,15 +37,9 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
-import java.util.Collections;
-import java.util.HashMap;
 
 public class TestActionsResource extends RestLiIntegrationTest
 {
-  private static final Client CLIENT = new TransportClientAdapter(new HttpClientFactory().getClient(Collections.<String, String>emptyMap()));
-  private static final String URI_PREFIX = "http://localhost:1338/";
-  private static final RestClient REST_CLIENT = new RestClient(CLIENT, URI_PREFIX);
-
   @BeforeClass
   public void initClass() throws Exception
   {
@@ -68,11 +56,11 @@ public class TestActionsResource extends RestLiIntegrationTest
   public void testPrimitiveReturningActions(RootBuilderWrapper<?, ?> builders) throws RemoteInvocationException
   {
     Request<Integer> intRequest = builders.<Integer>action("ReturnInt").build();
-    Integer integer = REST_CLIENT.sendRequest(intRequest).getResponse().getEntity();
+    Integer integer = getClient().sendRequest(intRequest).getResponse().getEntity();
     Assert.assertEquals(0, integer.intValue());
 
     Request<Boolean> boolRequest = builders.<Boolean>action("ReturnBool").build();
-    Boolean bool = REST_CLIENT.sendRequest(boolRequest).getResponse().getEntity();
+    Boolean bool = getClient().sendRequest(boolRequest).getResponse().getEntity();
     Assert.assertTrue(bool);
   }
 
@@ -80,7 +68,7 @@ public class TestActionsResource extends RestLiIntegrationTest
   public void testActionsSet(RootBuilderWrapper<?, ?> builders) throws RemoteInvocationException
   {
     Request<Integer> request = builders.<Integer>action("UltimateAnswer").build();
-    Integer answer = REST_CLIENT.sendRequest(request).getResponse().getEntity();
+    Integer answer = getClient().sendRequest(request).getResponse().getEntity();
     Assert.assertEquals(answer, Integer.valueOf(42));
   }
 
@@ -88,7 +76,7 @@ public class TestActionsResource extends RestLiIntegrationTest
   public void testActionNamedGet(RootBuilderWrapper<?, ?> builders) throws RemoteInvocationException
   {
     Request<String> request = builders.<String>action("Get").build();
-    String value = REST_CLIENT.sendRequest(request).getResponse().getEntity();
+    String value = getClient().sendRequest(request).getResponse().getEntity();
     Assert.assertEquals(value, "Hello, World");
   }
 
@@ -101,7 +89,7 @@ public class TestActionsResource extends RestLiIntegrationTest
     inputMessageArray.add(new Message().setId("My Message Id 2").setMessage("My Message 2"));
     Request<MessageArray> messageArrayRequest =
         builders.<MessageArray>action("EchoMessageArray").setActionParam("Messages", inputMessageArray).build();
-    MessageArray messageArray = REST_CLIENT.sendRequest(messageArrayRequest).getResponse().getEntity();
+    MessageArray messageArray = getClient().sendRequest(messageArrayRequest).getResponse().getEntity();
 
     Assert.assertEquals(messageArray.get(0).getId(), "My Message Id");
     Assert.assertEquals(messageArray.get(0).getMessage(), "My Message");
@@ -115,7 +103,7 @@ public class TestActionsResource extends RestLiIntegrationTest
     inputStringArray.add("message2");
     Request<StringArray> stringArrayRequest =
         builders.<StringArray>action("EchoStringArray").setActionParam("Strings", inputStringArray).build();
-    StringArray stringArray = REST_CLIENT.sendRequest(stringArrayRequest).getResponse().getEntity();
+    StringArray stringArray = getClient().sendRequest(stringArrayRequest).getResponse().getEntity();
 
     Assert.assertEquals(stringArray.get(0), "message1");
     Assert.assertEquals(stringArray.get(1), "message2");
@@ -127,7 +115,7 @@ public class TestActionsResource extends RestLiIntegrationTest
 
     Request<ToneArray> toneArrayRequest =
         builders.<ToneArray>action("EchoToneArray").setActionParam("Tones", inputTonesArray).build();
-    ToneArray tones = REST_CLIENT.sendRequest(toneArrayRequest).getResponse().getEntity();
+    ToneArray tones = getClient().sendRequest(toneArrayRequest).getResponse().getEntity();
 
     Assert.assertEquals(tones.get(0), Tone.SINCERE);
     Assert.assertEquals(tones.get(1), Tone.FRIENDLY);
@@ -142,7 +130,7 @@ public class TestActionsResource extends RestLiIntegrationTest
     Request<Void> request = builders.<Void>action("Timeout").build();
     try
     {
-      REST_CLIENT.sendRequest(request).getResponse();
+      getClient().sendRequest(request).getResponse();
     }
     catch (RestLiResponseException e)
     {
@@ -151,37 +139,13 @@ public class TestActionsResource extends RestLiIntegrationTest
     }
   }
 
-  @Test(dataProvider = com.linkedin.restli.internal.common.TestConstants.RESTLI_PROTOCOL_1_2_PREFIX + "requestBuilderDataProvider")
-  public void testParSeqAction(RootBuilderWrapper<?, ?> builders) throws RemoteInvocationException
-  {
-    // this version is given a Context and returns a promise
-    Request<String> req =
-        builders.<String>action("Parseq").setActionParam("A", 5).setActionParam("B", "yay").setActionParam("C", false).build();
-    ResponseFuture<String> future = REST_CLIENT.sendRequest(req);
-    Response<String> response = future.getResponse();
-
-    Assert.assertEquals(response.getEntity(), "101 YAY false");
-  }
-
-  @Test(dataProvider = com.linkedin.restli.internal.common.TestConstants.RESTLI_PROTOCOL_1_2_PREFIX + "requestBuilderDataProvider")
-  public void testParSeqAction2(RootBuilderWrapper<?, ?> builders) throws RemoteInvocationException
-  {
-    // this version gives a Task that RestLi runs
-    Request<String> req =
-        builders.<String>action("Parseq2").setActionParam("A", 5).setActionParam("B", "yay").setActionParam("C", false).build();
-    ResponseFuture<String> future = REST_CLIENT.sendRequest(req);
-    Response<String> response = future.getResponse();
-
-    Assert.assertEquals(response.getEntity(), "101 YAY false");
-  }
-
   @Test(expectedExceptions = RestLiResponseException.class,
         dataProvider = com.linkedin.restli.internal.common.TestConstants.RESTLI_PROTOCOL_1_2_PREFIX + "requestBuilderDataProvider")
   public void testFailPromiseCall(RootBuilderWrapper<?, ?> builders) throws RemoteInvocationException
   {
     // this version gives a Task that RestLi runs
     Request<Void> req = builders.<Void>action("FailPromiseCall").build();
-    REST_CLIENT.sendRequest(req).getResponse();
+    getClient().sendRequest(req).getResponse();
   }
 
   @Test(expectedExceptions = RestLiResponseException.class,
@@ -190,7 +154,7 @@ public class TestActionsResource extends RestLiIntegrationTest
   {
     // this version gives a Task that RestLi runs
     Request<Void> req = builders.<Void>action("FailPromiseThrow").build();
-    REST_CLIENT.sendRequest(req).getResponse();
+    getClient().sendRequest(req).getResponse();
   }
 
   @Test(expectedExceptions = RestLiResponseException.class,
@@ -199,7 +163,7 @@ public class TestActionsResource extends RestLiIntegrationTest
   {
     // this version gives a Task that RestLi runs
     Request<Void> req = builders.<Void>action("FailTaskCall").build();
-    REST_CLIENT.sendRequest(req).getResponse();
+    getClient().sendRequest(req).getResponse();
   }
 
   @Test(expectedExceptions = RestLiResponseException.class,
@@ -208,7 +172,7 @@ public class TestActionsResource extends RestLiIntegrationTest
   {
     // this version gives a Task that RestLi runs
     Request<Void> req = builders.<Void>action("FailTaskThrow").build();
-    REST_CLIENT.sendRequest(req).getResponse();
+    getClient().sendRequest(req).getResponse();
   }
 
   @Test(expectedExceptions = RestLiResponseException.class,
@@ -217,7 +181,7 @@ public class TestActionsResource extends RestLiIntegrationTest
   {
     // this version gives a Task that RestLi runs
     Request<Void> req = builders.<Void>action("FailThrowInTask").build();
-    REST_CLIENT.sendRequest(req).getResponse();
+    getClient().sendRequest(req).getResponse();
   }
 
   @Test(expectedExceptions = RestLiResponseException.class,
@@ -226,7 +190,7 @@ public class TestActionsResource extends RestLiIntegrationTest
   {
     // this version gives a Task that RestLi runs
     Request<String> req = builders.<String>action("NullPromise").build();
-    REST_CLIENT.sendRequest(req).getResponse();
+    getClient().sendRequest(req).getResponse();
   }
 
   @Test(expectedExceptions = RestLiResponseException.class,
@@ -235,11 +199,47 @@ public class TestActionsResource extends RestLiIntegrationTest
   {
     // this version gives a Task that RestLi runs
     Request<String> req = builders.<String>action("NullTask").build();
-    REST_CLIENT.sendRequest(req).getResponse();
+    getClient().sendRequest(req).getResponse();
+  }
+
+  @Test(dataProvider = com.linkedin.restli.internal.common.TestConstants.RESTLI_PROTOCOL_1_2_PREFIX + "requestBuilderDataProviderForParseqActions")
+  public void testBasicParseqBasedAction(RootBuilderWrapper<?, ?> builders, String actionName) throws RemoteInvocationException
+  {
+    // this version gives a Task that RestLi runs
+    Request<String> req = builders.<String>action(actionName).
+        setActionParam("a", 2).
+        setActionParam("b", "abc").
+        setActionParam("c", true).
+        build();
+    String result = getClient().sendRequest(req).getResponse().getEntity();
+
+    Assert.assertEquals(result, "10 ABC true");
+  }
+
+  @DataProvider(name = com.linkedin.restli.internal.common.TestConstants.RESTLI_PROTOCOL_1_2_PREFIX + "requestBuilderDataProviderForParseqActions")
+  private static Object[][] requestBuilderDataProviderForParseqActions()
+  {
+    return new Object[][] {
+        { new RootBuilderWrapper<Object, RecordTemplate>(new ActionsBuilders()), "parseq" },
+        //  This test cannot be compiled until we build with Java 8 by default.
+        //{ new RootBuilderWrapper<Object, RecordTemplate>(new ActionsBuilders()), "parseq2" },
+        { new RootBuilderWrapper<Object, RecordTemplate>(new ActionsBuilders()), "parseq3" },
+        { new RootBuilderWrapper<Object, RecordTemplate>(new ActionsBuilders(TestConstants.FORCE_USE_NEXT_OPTIONS)), "parseq" },
+        //  This test cannot be compiled until we build with Java 8 by default.
+        //{ new RootBuilderWrapper<Object, RecordTemplate>(new ActionsBuilders(TestConstants.FORCE_USE_NEXT_OPTIONS)), "parseq2" },
+        { new RootBuilderWrapper<Object, RecordTemplate>(new ActionsBuilders(TestConstants.FORCE_USE_NEXT_OPTIONS)), "parseq3" },
+        { new RootBuilderWrapper<Object, RecordTemplate>(new ActionsRequestBuilders()), "parseq" },
+        //  This test cannot be compiled until we build with Java 8 by default.
+        //{ new RootBuilderWrapper<Object, RecordTemplate>(new ActionsRequestBuilders()), "parseq2" },
+        { new RootBuilderWrapper<Object, RecordTemplate>(new ActionsRequestBuilders()), "parseq3" },
+        { new RootBuilderWrapper<Object, RecordTemplate>(new ActionsRequestBuilders(TestConstants.FORCE_USE_NEXT_OPTIONS)), "parseq" },
+        //  This test cannot be compiled until we build with Java 8 by default.
+        //{ new RootBuilderWrapper<Object, RecordTemplate>(new ActionsRequestBuilders(TestConstants.FORCE_USE_NEXT_OPTIONS)), "parseq2" },
+        { new RootBuilderWrapper<Object, RecordTemplate>(new ActionsRequestBuilders(TestConstants.FORCE_USE_NEXT_OPTIONS)), "parseq3" }
+    };
   }
 
   @DataProvider(name = com.linkedin.restli.internal.common.TestConstants.RESTLI_PROTOCOL_1_2_PREFIX + "requestBuilderDataProvider")
-  @SuppressWarnings("rawtypes")
   private static Object[][] requestBuilderDataProvider()
   {
     return new Object[][] {

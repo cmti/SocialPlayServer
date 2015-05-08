@@ -23,6 +23,7 @@ import com.linkedin.data.schema.Name;
 import com.linkedin.data.schema.RecordDataSchema;
 import com.linkedin.data.template.DataTemplateUtil;
 import com.linkedin.data.template.RecordTemplate;
+import com.linkedin.internal.common.util.CollectionUtils;
 import com.linkedin.restli.common.ComplexKeySpec;
 import com.linkedin.restli.common.ComplexResourceKey;
 import com.linkedin.restli.common.CompoundKey;
@@ -240,10 +241,12 @@ public class BatchKVResponse<K, V extends RecordTemplate> extends RecordTemplate
     }
     else
     {
-      _results = new ParamlessKeyHashMap<V>((int) Math.ceil(resultsRaw.size() / 0.75), complexKeyType);
+      _results = new ParamlessKeyHashMap<V>(
+          CollectionUtils.getMapInitialCapacity(resultsRaw.size(), 0.75f), 0.75f, complexKeyType);
       for (Map.Entry<String, Object> entry : resultsRaw.entrySet())
       {
-        final K key = ResponseUtils.convertKey(entry.getKey(), keyType, keyParts, complexKeyType, version);
+        @SuppressWarnings("unchecked")
+        final K key = (K) ResponseUtils.convertKey(entry.getKey(), keyType, keyParts, complexKeyType, version);
         final V value = deserializeValue(entry.getValue());
         _results.put(key, value);
       }
@@ -256,10 +259,12 @@ public class BatchKVResponse<K, V extends RecordTemplate> extends RecordTemplate
     }
     else
     {
-      _errors = new ParamlessKeyHashMap<ErrorResponse>((int) Math.ceil(errorsRaw.size() / 0.75), complexKeyType);
+      _errors = new ParamlessKeyHashMap<ErrorResponse>(
+          CollectionUtils.getMapInitialCapacity(errorsRaw.size(), 0.75f), 0.75f, complexKeyType);
       for (Map.Entry<String, Object> entry : errorsRaw.entrySet())
       {
-        final K key = ResponseUtils.convertKey(entry.getKey(), keyType, keyParts, complexKeyType, version);
+        @SuppressWarnings("unchecked")
+        final K key = (K) ResponseUtils.convertKey(entry.getKey(), keyType, keyParts, complexKeyType, version);
         final ErrorResponse value = DataTemplateUtil.wrap(entry.getValue(), ErrorResponse.class);
         _errors.put(key, value);
       }
@@ -297,9 +302,9 @@ public class BatchKVResponse<K, V extends RecordTemplate> extends RecordTemplate
       _complexKeyType = complexKeyType;
     }
 
-    private ParamlessKeyHashMap(int initialCapacity, ComplexKeySpec<?, ?> complexKeyType)
+    private ParamlessKeyHashMap(int initialCapacity, float loadFactor, ComplexKeySpec<?, ?> complexKeyType)
     {
-      super(initialCapacity);
+      super(initialCapacity, loadFactor);
       _complexKeyType = complexKeyType;
     }
 

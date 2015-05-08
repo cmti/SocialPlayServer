@@ -43,6 +43,7 @@ import java.io.IOException;
  * @author Goksel Genc
  * @version $Revision$
  */
+@SuppressWarnings("serial")
 public abstract class AbstractAsyncR2Servlet extends AbstractR2Servlet
 {
   private static final String TRANSPORT_CALLBACK_IOEXCEPTION = "TransportCallbackIOException";
@@ -63,6 +64,8 @@ public abstract class AbstractAsyncR2Servlet extends AbstractR2Servlet
   public void service(final HttpServletRequest req, final HttpServletResponse resp) throws ServletException,
                                                                                                  IOException
   {
+    RequestContext requestContext = readRequestContext(req);
+
     RestRequest restRequest;
 
     try
@@ -74,13 +77,7 @@ public abstract class AbstractAsyncR2Servlet extends AbstractR2Servlet
       writeToServletError(resp, RestStatus.BAD_REQUEST, e.toString());
       return;
     }
-    catch (MessagingException e)
-    {
-      writeToServletError(resp, RestStatus.BAD_REQUEST, e.toString());
-      return;
-    }
 
-    RequestContext requestContext = readRequestContext(req);
     final AsyncContext ctx = req.startAsync(req, resp);
 
     ctx.setTimeout(_timeout);
@@ -123,20 +120,31 @@ public abstract class AbstractAsyncR2Servlet extends AbstractR2Servlet
     TransportCallback<RestResponse> callback = new TransportCallback<RestResponse>()
     {
       @Override
-      public void onResponse(TransportResponse<RestResponse> response)
+      public void onResponse(final TransportResponse<RestResponse> response)
       {
-        try
+        // TransportCallback is usually invoked by non-servlet threads; hence we cannot assume that it's ok to
+        // do blocking IO there. As a result, we should use AsyncContext.start() to do blocking IO using the
+        // container/servlet threads. This still maintains the advantage of Async, meaning servlet thread is not
+        // blocking-wait when the response is not ready.
+        ctx.start(new Runnable()
         {
-          writeToServletResponse(response, (HttpServletResponse) ctx.getResponse());
-        }
-        catch (IOException e)
-        {
-          req.setAttribute(TRANSPORT_CALLBACK_IOEXCEPTION, e);
-        }
-        finally
-        {
-          ctx.complete();
-        }
+          @Override
+          public void run()
+          {
+            try
+            {
+              writeToServletResponse(response, (HttpServletResponse) ctx.getResponse());
+            }
+            catch (IOException e)
+            {
+              req.setAttribute(TRANSPORT_CALLBACK_IOEXCEPTION, e);
+            }
+            finally
+            {
+              ctx.complete();
+            }
+          }
+        });
       }
     };
 

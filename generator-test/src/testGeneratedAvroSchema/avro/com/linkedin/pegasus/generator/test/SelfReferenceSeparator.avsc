@@ -1,0 +1,42 @@
+{
+  "type" : "record",
+  "name" : "SelfReferenceSeparator",
+  "namespace" : "com.linkedin.pegasus.generator.test",
+  "fields" : [ {
+    "name" : "simpleInt",
+    "type" : "int"
+  }, {
+    "name" : "ref",
+    "type" : [ "null", {
+      "type" : "record",
+      "name" : "SelfReference",
+      "fields" : [ {
+        "name" : "simpleString",
+        "type" : "string"
+      }, {
+        "name" : "directRef",
+        "type" : [ "null", "SelfReference" ],
+        "default" : null
+      }, {
+        "name" : "unionRef",
+        "type" : [ "SelfReference", "string" ]
+      }, {
+        "name" : "mapRef",
+        "type" : {
+          "type" : "map",
+          "values" : "SelfReference"
+        }
+      }, {
+        "name" : "listRef",
+        "type" : {
+          "type" : "array",
+          "items" : "SelfReference"
+        }
+      }, {
+        "name" : "indirectRef",
+        "type" : "SelfReferenceSeparator"
+      } ]
+    } ],
+    "default" : null
+  } ]
+}

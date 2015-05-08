@@ -28,24 +28,21 @@ import com.linkedin.restli.common.ResourceSpec;
 import com.linkedin.restli.common.TypeSpec;
 import com.linkedin.restli.internal.client.BatchCreateDecoder;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-/**
- * @author Josh Walker
- * @version $Revision: $
- */
 
+/**
+ * This class has been deprecated. Please use {@link BatchCreateIdRequestBuilder} instead.
+ *
+ * @author Josh Walker
+ */
 public class BatchCreateRequestBuilder<K, V extends RecordTemplate> extends
     RestfulRequestBuilder<K, V, BatchCreateRequest<V>>
 {
-  private final CollectionRequest<V> _input;
-
-  @Deprecated
-  public BatchCreateRequestBuilder(String baseUriTemplate, Class<V> valueClass, ResourceSpec resourceSpec)
-  {
-    this(baseUriTemplate, valueClass, resourceSpec, RestliRequestOptions.DEFAULT_OPTIONS);
-  }
+  private final List<V> _entities = new ArrayList<V>();
+  private final Class<V> _valueClass;
 
   public BatchCreateRequestBuilder(String baseUriTemplate,
                                    Class<V> valueClass,
@@ -53,34 +50,18 @@ public class BatchCreateRequestBuilder<K, V extends RecordTemplate> extends
                                    RestliRequestOptions requestOptions)
   {
     super(baseUriTemplate, resourceSpec, requestOptions);
-    _input = new CollectionRequest<V>(new DataMap(), valueClass);
+    _valueClass = valueClass;
   }
 
   public BatchCreateRequestBuilder<K, V> input(V entity)
   {
-    _input.getElements().add(entity);
+    _entities.add(entity);
     return this;
   }
 
   public BatchCreateRequestBuilder<K, V> inputs(List<V> entities)
   {
-    _input.getElements().addAll(entities);
-    return this;
-  }
-
-  @Override
-  @Deprecated
-  public BatchCreateRequestBuilder<K, V> param(String key, Object value)
-  {
-    super.setParam(key, value);
-    return this;
-  }
-
-  @Override
-  @Deprecated
-  public BatchCreateRequestBuilder<K, V> reqParam(String key, Object value)
-  {
-    super.setReqParam(key, value);
+    _entities.addAll(entities);
     return this;
   }
 
@@ -109,14 +90,6 @@ public class BatchCreateRequestBuilder<K, V extends RecordTemplate> extends
   public BatchCreateRequestBuilder<K, V> addReqParam(String key, Object value)
   {
     super.addReqParam(key, value);
-    return this;
-  }
-
-  @Override
-  @Deprecated
-  public BatchCreateRequestBuilder<K, V> header(String key, String value)
-  {
-    super.setHeader(key, value);
     return this;
   }
 
@@ -156,14 +129,34 @@ public class BatchCreateRequestBuilder<K, V extends RecordTemplate> extends
                                                               _resourceSpec.getKeyParts(),
                                                               _resourceSpec.getComplexKeyType());
 
-    return new BatchCreateRequest<V>(_headers,
+    return new BatchCreateRequest<V>(buildReadOnlyHeaders(),
                                      decoder,
-                                     _input,
+                                     buildReadOnlyInput(),
                                      _resourceSpec,
-                                     _queryParams,
+                                     buildReadOnlyQueryParameters(),
                                      getBaseUriTemplate(),
-                                     _pathKeys,
+                                     buildReadOnlyPathKeys(),
                                      getRequestOptions());
   }
 
+  private CollectionRequest<V> buildReadOnlyInput()
+  {
+    try
+    {
+      DataMap map = new DataMap();
+      CollectionRequest<V> input = new CollectionRequest<V>(map, _valueClass);
+
+      for (V entity : _entities)
+      {
+        input.getElements().add(getReadOnlyOrCopyDataTemplate(entity));
+      }
+
+      map.setReadOnly();
+      return input;
+    }
+    catch (CloneNotSupportedException cloneException)
+    {
+      throw new IllegalArgumentException("Entity cannot be copied.", cloneException);
+    }
+  }
 }

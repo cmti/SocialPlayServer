@@ -48,8 +48,9 @@ public class BatchPatchArgumentBuilder implements RestLiArgumentBuilder
     BatchPatchRequest batchRequest = new BatchPatchRequest(requestData.getBatchKeyEntityMap());
     Object[] positionalArgs = { batchRequest };
     return ArgumentBuilder.buildArgs(positionalArgs,
-                                     routingResult.getResourceMethod().getParameters(),
-                                     routingResult.getContext());
+                                     routingResult.getResourceMethod(),
+                                     routingResult.getContext(),
+                                     null);
   }
 
   @SuppressWarnings("unchecked")

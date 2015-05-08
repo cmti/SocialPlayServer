@@ -14,8 +14,8 @@
    limitations under the License.
 */
 
-package com.linkedin.restli.internal.server;
 
+package com.linkedin.restli.internal.server;
 
 import com.linkedin.data.DataMap;
 import com.linkedin.r2.message.rest.RestException;
@@ -27,7 +27,6 @@ import com.linkedin.restli.common.HttpStatus;
 import com.linkedin.restli.common.ProtocolVersion;
 import com.linkedin.restli.common.ResourceMethod;
 import com.linkedin.restli.common.RestConstants;
-import com.linkedin.restli.internal.common.HeaderUtil;
 import com.linkedin.restli.internal.common.ProtocolVersionUtil;
 import com.linkedin.restli.internal.server.methods.MethodAdapterRegistry;
 import com.linkedin.restli.internal.server.methods.response.ErrorResponseBuilder;
@@ -44,10 +43,8 @@ import com.linkedin.restli.server.resources.CollectionResource;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
+import java.util.TreeMap;
 
 
 /**
@@ -71,13 +68,11 @@ public class RestLiResponseHandler
 {
   private final MethodAdapterRegistry _methodAdapterRegistry;
   private final ErrorResponseBuilder _errorResponseBuilder;
-  private final boolean  _permissiveEncoding;
 
-  public RestLiResponseHandler(MethodAdapterRegistry methodAdapterRegistry, ErrorResponseBuilder errorResponseBuilder, boolean permissiveEncoding)
+  public RestLiResponseHandler(MethodAdapterRegistry methodAdapterRegistry, ErrorResponseBuilder errorResponseBuilder)
   {
     _methodAdapterRegistry = methodAdapterRegistry;
     _errorResponseBuilder = errorResponseBuilder;
-    _permissiveEncoding = permissiveEncoding;
   }
 
   public static class Builder
@@ -98,12 +93,6 @@ public class RestLiResponseHandler
       return this;
     }
 
-    public Builder setPermissiveEncoding(boolean permissiveEncoding)
-    {
-      _permissiveEncoding = permissiveEncoding;
-      return this;
-    }
-
     public RestLiResponseHandler build()
     {
       if (_errorResponseBuilder == null)
@@ -114,7 +103,7 @@ public class RestLiResponseHandler
       {
         _methodAdapterRegistry = new MethodAdapterRegistry(_errorResponseBuilder);
       }
-      return new RestLiResponseHandler(_methodAdapterRegistry, _errorResponseBuilder, _permissiveEncoding);
+      return new RestLiResponseHandler(_methodAdapterRegistry, _errorResponseBuilder);
     }
   }
 
@@ -206,9 +195,9 @@ public class RestLiResponseHandler
   {
     ServerResourceContext context = (ServerResourceContext) routingResult.getContext();
     final ProtocolVersion protocolVersion = context.getRestliProtocolVersion();
-    Map<String, String> responseHeaders = new HashMap<String, String>();
+    Map<String, String> responseHeaders = new TreeMap<String, String>(String.CASE_INSENSITIVE_ORDER);
     responseHeaders.putAll(context.getResponseHeaders());
-    responseHeaders.put(ProtocolVersionUtil.getProtocolVersionHeaderName(request.getHeaders()), protocolVersion.toString());
+    responseHeaders.put(RestConstants.HEADER_RESTLI_PROTOCOL_VERSION, protocolVersion.toString());
 
     if (responseObject == null)
     {
@@ -246,10 +235,10 @@ public class RestLiResponseHandler
     return responseBuilder.buildRestLiResponseData(request, routingResult, responseObject, responseHeaders);
   }
 
-  public AugmentedRestLiResponseData buildErrorResponseData(final RestRequest request,
-                                                           final RoutingResult routingResult,
-                                                           final Object object,
-                                                           final Map<String, String> headers)
+  public AugmentedRestLiResponseData buildExceptionResponseData(final RestRequest request,
+                                                                final RoutingResult routingResult,
+                                                                final Object object,
+                                                                final Map<String, String> headers)
   {
     return _errorResponseBuilder.buildRestLiResponseData(request, routingResult, object, headers);
   }
@@ -282,7 +271,7 @@ public class RestLiResponseHandler
     else if (RestConstants.HEADER_VALUE_APPLICATION_JSON.equalsIgnoreCase(mimeType))
     {
       builder.setHeader(RestConstants.HEADER_CONTENT_TYPE, RestConstants.HEADER_VALUE_APPLICATION_JSON);
-      builder.setEntity(DataMapUtils.mapToBytes(dataMap, _permissiveEncoding));
+      builder.setEntity(DataMapUtils.mapToBytes(dataMap));
     }
     else
     {

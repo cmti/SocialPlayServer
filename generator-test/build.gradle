@@ -6,6 +6,7 @@ dependencies {
 }
 
 project.sourceSets.test.java.srcDir('src/test/javaPegasus')
+project.idea.module.testSourceDirs.add('src/test/javaPegasus')
 
 apply from: "${buildScriptDirPath}/dataTemplate.gradle"
 apply from: "${buildScriptDirPath}/cleanGenerated.gradle"

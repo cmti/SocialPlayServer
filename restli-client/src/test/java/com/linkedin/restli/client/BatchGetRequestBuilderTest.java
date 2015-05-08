@@ -36,14 +36,18 @@ import com.linkedin.restli.internal.common.AllProtocolVersions;
 import com.linkedin.restli.internal.common.PathSegment.PathSegmentSyntaxException;
 import com.linkedin.restli.internal.common.QueryParamsDataMap;
 import com.linkedin.restli.internal.common.URIElementParser;
+
 import java.net.URI;
 import java.net.URISyntaxException;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -141,6 +145,35 @@ public class BatchGetRequestBuilderTest
                   .setParam("param", "paramValue");
     GetRequest<TestRecord> request = requestBuilder.build();
     BatchGetRequest<TestRecord> batchRequest = BatchGetRequestBuilder.batch(request);
+    Assert.assertEquals(batchRequest.getBaseUriTemplate(), request.getBaseUriTemplate());
+    Assert.assertEquals(batchRequest.getPathKeys(), request.getPathKeys());
+    testUriGeneration(batchRequest, expectedProtocol1Uri, expectedProtocol2Uri);
+    Assert.assertEquals(batchRequest.getFields(), request.getFields());
+    Assert.assertEquals(batchRequest.getObjectIds(), new HashSet<Object>(Arrays.asList(request.getObjectId())));
+  }
+
+  @Test
+  public void testBatchKVConversion()
+      throws URISyntaxException
+  {
+    String expectedProtocol1Uri = "/?fields=message,id&ids=1&param=paramValue";
+    String expectedProtocol2Uri = "/?fields=message,id&ids=List(1)&param=paramValue";
+
+    GetRequestBuilder<Integer, TestRecord> requestBuilder =
+        new GetRequestBuilder<Integer, TestRecord>("/",
+                                                   TestRecord.class,
+                                                   new ResourceSpecImpl(Collections.<ResourceMethod>emptySet(),
+                                                                        null,
+                                                                        null,
+                                                                        Integer.class,
+                                                                        TestRecord.class,
+                                                                        Collections.<String, Object>emptyMap()),
+                                                   RestliRequestOptions.DEFAULT_OPTIONS);
+    requestBuilder.id(1)
+        .fields(FIELDS.id(), FIELDS.message())
+        .setParam("param", "paramValue");
+    GetRequest<TestRecord> request = requestBuilder.build();
+    BatchGetKVRequest<Integer, TestRecord> batchRequest = BatchGetRequestBuilder.batchKV(request);
     Assert.assertEquals(batchRequest.getBaseUriTemplate(), request.getBaseUriTemplate());
     Assert.assertEquals(batchRequest.getPathKeys(), request.getPathKeys());
     testUriGeneration(batchRequest, expectedProtocol1Uri, expectedProtocol2Uri);
@@ -840,7 +873,6 @@ public class BatchGetRequestBuilderTest
     Assert.assertEquals(batchingRequest.getObjectIds(), new HashSet<Integer>(Arrays.asList(1, 2, 3)));
   }
 
-  @SuppressWarnings("deprecation")
   private static void testUriGeneration(Request<?> request, String protocol1UriString, String protocol2UriString)
       throws URISyntaxException {
     ProtocolVersion protocol1 = AllProtocolVersions.RESTLI_PROTOCOL_1_0_0.getProtocolVersion();
@@ -849,12 +881,40 @@ public class BatchGetRequestBuilderTest
     URI protocol1Uri = RestliUriBuilderUtil.createUriBuilder(request, protocol1).build();
     URI protocol2Uri = RestliUriBuilderUtil.createUriBuilder(request, protocol2).build();
 
-    Assert.assertEquals(UriComponent.decodeQuery(protocol1Uri, true),
-                        UriComponent.decodeQuery(new URI(protocol1UriString), true),
-                        "Protocol 1 URI generation did not match expected URI!");
-    Assert.assertEquals(UriComponent.decodeQuery(protocol2Uri, true),
-                        UriComponent.decodeQuery(new URI(protocol2UriString), true),
-                        "Protocol 2 URI generation did not match expected URI!");
+    //V1:
+    MultivaluedMap actualQueryParamMapV1 = UriComponent.decodeQuery(protocol1Uri, true);
+    MultivaluedMap expectedQueryParamMapV1 = UriComponent.decodeQuery(new URI(protocol1UriString), true);
+    assertProtocolURIsMatch(actualQueryParamMapV1, expectedQueryParamMapV1, "Protocol 1");
+
+    //V2:
+    MultivaluedMap actualQueryParamMapV2 = UriComponent.decodeQuery(protocol2Uri, true);
+    MultivaluedMap expectedQueryParamMapV2 = UriComponent.decodeQuery(new URI(protocol2UriString), true);
+    assertProtocolURIsMatch(actualQueryParamMapV2, expectedQueryParamMapV2, "Protocol 2");
+  }
+
+  private static void assertProtocolURIsMatch(final MultivaluedMap actualQueryParamMap, final MultivaluedMap expectedQueryParamMap,
+      final String protocolName)
+  {
+    Assert.assertEquals(actualQueryParamMap.size(), expectedQueryParamMap.size(),
+        protocolName + " URI generation did not match expected URI! Query parameter count is incorrect");
+
+    for (final Map.Entry<String, List<String>> entry : actualQueryParamMap.entrySet())
+    {
+      if(!entry.getKey().equalsIgnoreCase(RestConstants.FIELDS_PARAM))
+      {
+        Assert.assertNotNull(entry.getValue(), "We should not have a null list of params for key: " + entry.getKey());
+        Assert.assertEquals(entry.getValue(), expectedQueryParamMap.get(entry.getKey()),
+            protocolName + " URI generation did not match expected URI! Values for a key mismatch!");
+      }
+      else
+      {
+        // Fields could be out of order, so we have to break it apart and compare using a set
+        final Set<String> actualFieldSet = new HashSet<String>(Arrays.asList(entry.getValue().get(0).split(",")));
+        final Set<String> expectedFieldSet = new HashSet<String>(Arrays.asList(expectedQueryParamMap.get(entry.getKey()).get(0).split(",")));
+        Assert.assertEquals(actualFieldSet, expectedFieldSet,
+            protocolName + " URI generation did not match expected URI! Projection field names have a mismatch!");
+      }
+    }
   }
 
   public static class MyCompoundKey extends CompoundKey

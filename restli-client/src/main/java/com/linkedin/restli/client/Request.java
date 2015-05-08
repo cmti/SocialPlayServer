@@ -16,35 +16,24 @@
 
 package com.linkedin.restli.client;
 
-
-import com.linkedin.data.DataComplex;
-import com.linkedin.data.DataMap;
 import com.linkedin.data.schema.PathSpec;
-import com.linkedin.data.template.DataTemplate;
 import com.linkedin.data.template.RecordTemplate;
 import com.linkedin.jersey.api.uri.UriTemplate;
-import com.linkedin.restli.client.uribuilders.RestliUriBuilderUtil;
-import com.linkedin.restli.common.ComplexResourceKey;
-import com.linkedin.restli.common.CompoundKey;
 import com.linkedin.restli.common.HttpMethod;
 import com.linkedin.restli.common.ResourceMethod;
+import com.linkedin.restli.common.ResourceProperties;
 import com.linkedin.restli.common.ResourceSpec;
 import com.linkedin.restli.common.RestConstants;
-import com.linkedin.restli.internal.client.QueryParamsUtil;
 import com.linkedin.restli.internal.client.RestResponseDecoder;
+import com.linkedin.restli.internal.common.ResourcePropertiesImpl;
 import com.linkedin.restli.internal.common.URIParamUtils;
 
-import java.lang.reflect.Array;
-import java.net.URI;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
-
-import org.apache.commons.lang.StringUtils;
 
 
 /**
@@ -58,103 +47,17 @@ public class Request<T>
 {
   private static final Pattern SLASH_PATTERN = Pattern.compile("/");
 
-  /*
-  A Request object should not have a URI anymore. The _uri and _hasUri fields are present here only because of
-  older clients using one of the deprecated constructors that have a URI parameter. If one of these constructors are
-  used we set the _uri field to the passed in URI and set _hasUri to true.
-
-  Similarly, if someone calls the deprecated getUri method we will either
-    (a) return _uri if _hasUri has been set to true
-    (b) generate a uri using the RestliUriBuilderUtil, and store it in _uri
-
-  These two fields will be removed in the future.
-  */
-  private URI                          _uri;
-  private boolean                      _hasUri;
-
   private final ResourceMethod         _method;
   private final RecordTemplate         _inputRecord;
   private final RestResponseDecoder<T> _decoder;
   private final Map<String, String>    _headers;
   private final ResourceSpec           _resourceSpec;
+  private final ResourceProperties     _resourceProperties;
   private final Map<String, Object>    _queryParams;
   private final String                 _methodName; // needed to identify finders and actions. null for everything else
   private final String                 _baseUriTemplate;
   private final Map<String, Object>    _pathKeys;
   private final RestliRequestOptions   _requestOptions;
-
-  @Deprecated
-  public Request(URI uri,
-                 ResourceMethod method,
-                 RecordTemplate inputRecord,
-                 Map<String, String> headers,
-                 RestResponseDecoder<T> decoder,
-                 ResourceSpec resourceSpec)
-  {
-    this(uri, method, inputRecord, headers, decoder, resourceSpec, Collections.<String>emptyList());
-  }
-
-  @Deprecated
-  public Request(URI uri,
-                 ResourceMethod method,
-                 RecordTemplate inputRecord,
-                 Map<String, String> headers,
-                 RestResponseDecoder<T> decoder,
-                 ResourceSpec resourceSpec,
-                 DataMap queryParams)
-  {
-    this(uri, method, inputRecord, headers, decoder, resourceSpec, queryParams, Collections.<String>emptyList());
-  }
-
-  @Deprecated
-  public Request(URI uri,
-                 ResourceMethod method,
-                 RecordTemplate inputRecord,
-                 Map<String, String> headers,
-                 RestResponseDecoder<T> decoder,
-                 ResourceSpec resourceSpec,
-                 List<String> resourcePath)
-  {
-    this(uri, method, inputRecord, headers, decoder, resourceSpec, null, resourcePath);
-  }
-
-  @Deprecated
-  public Request(URI uri,
-                 ResourceMethod method,
-                 RecordTemplate inputRecord,
-                 Map<String, String> headers,
-                 RestResponseDecoder<T> decoder,
-                 ResourceSpec resourceSpec,
-                 DataMap queryParams,
-                 List<String> resourcePath)
-  {
-    this(uri, method, inputRecord, headers, decoder, resourceSpec, queryParams, resourcePath, null);
-  }
-
-  @Deprecated
-  public Request(URI uri,
-                 ResourceMethod method,
-                 RecordTemplate inputRecord,
-                 Map<String, String> headers,
-                 RestResponseDecoder<T> decoder,
-                 ResourceSpec resourceSpec,
-                 DataMap queryParams,
-                 List<String> resourcePath,
-                 String methodName)
-  {
-    _method = method;
-    _inputRecord = inputRecord;
-    _headers = (headers == null) ? null : Collections.unmodifiableMap(headers);
-    _decoder = decoder;
-    _queryParams = (queryParams == null) ? null : Collections.unmodifiableMap(queryParams);
-    _resourceSpec = resourceSpec;
-    _methodName = methodName;
-    _baseUriTemplate = null;
-    _pathKeys = null;
-    _uri = uri;
-    _hasUri = true;
-    _requestOptions = RestliRequestOptions.DEFAULT_OPTIONS;
-  }
 
   Request(ResourceMethod method,
           RecordTemplate inputRecord,
@@ -170,26 +73,26 @@ public class Request<T>
     _method = method;
     _inputRecord = inputRecord;
     _decoder = decoder;
-    _headers = headers == null ? null : Collections.unmodifiableMap(headers);
+    _headers = headers;
     _resourceSpec = resourceSpec;
 
-    if (queryParams == null)
+    if (resourceSpec != null)
     {
-      _queryParams = null;
+      _resourceProperties = new ResourcePropertiesImpl(resourceSpec.getSupportedMethods(),
+                                                       resourceSpec.getKeyType(),
+                                                       resourceSpec.getComplexKeyType(),
+                                                       resourceSpec.getValueType(),
+                                                       resourceSpec.getKeyParts());
     }
     else
     {
-      _queryParams = getReadOnlyQueryParams(queryParams);
+      _resourceProperties = null;
     }
 
+    _queryParams = queryParams;
     _methodName = methodName;
-
     _baseUriTemplate = baseUriTemplate;
-
-    _pathKeys = (pathKeys == null) ? null : Collections.unmodifiableMap(pathKeys);
-
-    _uri = null;
-    _hasUri = false;
+    _pathKeys = pathKeys;
 
     if (_baseUriTemplate != null && _pathKeys != null)
     {
@@ -205,7 +108,7 @@ public class Request<T>
    */
   protected void validateKeyPresence(Object key)
   {
-    if (getResourceSpec().isKeylessResource())
+    if (getResourceProperties().isKeylessResource())
     {
       if (key != null)
       {
@@ -219,89 +122,6 @@ public class Request<T>
         throw new IllegalArgumentException("id required to build this request");
       }
     }
-  }
-
-  /**
-   * Converts the query params to read only.
-   * @param queryParams the passed in query params
-   * @return a read only version of the query params
-   */
-  private Map<String, Object> getReadOnlyQueryParams(Map<String, Object> queryParams)
-  {
-    for (Map.Entry<String, Object> entry: queryParams.entrySet())
-    {
-      String key = entry.getKey();
-      Object value = entry.getValue();
-      queryParams.put(key, getReadOnly(value));
-    }
-    return Collections.unmodifiableMap(queryParams);
-  }
-
-  /**
-   * Returns a read only version of {@code value}
-   * @param value the object we want to get a read only version of
-   * @return a read only version of {@code value}
-   */
-  private Object getReadOnly(Object value)
-  {
-    if (value == null)
-    {
-      return null;
-    }
-
-    if (value instanceof Object[])
-    {
-      // array of non-primitives
-      Object[] arr = (Object[])value;
-      List<Object> list = new ArrayList<Object>(arr.length);
-      for (Object o: arr)
-      {
-        list.add(getReadOnly(o));
-      }
-      return Collections.unmodifiableList(list);
-    }
-    else if (value.getClass().isArray())
-    {
-      // array of primitives
-      int length = Array.getLength(value);
-      List<Object> list = new ArrayList<Object>();
-      for (int i = 0; i < length; i++)
-      {
-        list.add(Array.get(value, i));
-      }
-      return Collections.unmodifiableList(list);
-    }
-    else if (value instanceof ComplexResourceKey)
-    {
-      ((ComplexResourceKey) value).makeReadOnly();
-      return value;
-    }
-    else if (value instanceof CompoundKey)
-    {
-      ((CompoundKey) value).makeReadOnly();
-      return value;
-    }
-    else if (value instanceof DataTemplate)
-    {
-      Object data = ((DataTemplate) value).data();
-      if (data instanceof DataComplex)
-      {
-        ((DataComplex) data).makeReadOnly();
-      }
-      // we don't try to make other types of data read only.
-      return value;
-    }
-    else if (value instanceof Iterable)
-    {
-      List<Object> list = new ArrayList<Object>();
-      for (Object o: (Iterable)value)
-      {
-        list.add(getReadOnly(o));
-      }
-      return Collections.unmodifiableList(list);
-    }
-
-    return value;
   }
 
   /**
@@ -320,79 +140,9 @@ public class Request<T>
     }
   }
 
-  /**
-   * @deprecated Requests are now built using a {@link com.linkedin.restli.client.uribuilders.RestliUriBuilder}.
-   * We do not recommend calling this method as URI generation is an expensive process and is dependent on the version
-   * of Rest.li protocol being used.
-   *
-   * Consider using the {@link #toString()} method instead to meet your needs.
-   *
-   * If you must generate a URI, please use {@link com.linkedin.restli.client.uribuilders.RestliUriBuilder#build()}
-   *
-   * @return the URI for this request.
-   */
-  @Deprecated
-  public URI getUri()
-  {
-    if (_hasUri)
-    {
-      return _uri;
-    }
-    else
-    {
-      if (_uri == null)
-      {
-        // if someone calls this method w/o manually setting a URI in the constructor we will generate a URI using the
-        // current default Rest.li version in the builders and cache it.
-        _uri = RestliUriBuilderUtil.createUriBuilder(this).build();
-      }
-      return _uri;
-    }
-  }
-
-  /**
-   * THIS METHOD WILL BE REMOVED ONCE {@link #getUri()} has been removed.
-   *
-   * @return True if a legacy constructor was used to construct this {@link Request} object. False otherwise.
-   */
-  boolean hasUri()
-  {
-    return _hasUri;
-  }
-
   public String getMethodName()
   {
     return _methodName;
-  }
-
-  /**
-   * Returns the resource path parts as a list.
-   *
-   * The resource path of a root resource with a URI of "x/key1" has a resource is a list with one part: ["x"].
-   *
-   * The resource path of a sub-resource with a URI of "x/key1/y/key2" is a list with two parts: ["x", "y"].
-   *
-   * The resource path of a simple sub-resource with a URI of "x/key1/y/z/key2/t" is a list with
-   * four parts: ["x", "y", "z", "t"].
-   *
-   * @return the resource path parts as a list.
-   */
-  @Deprecated
-  public List<String> getResourcePath()
-  {
-    UriTemplate template = new UriTemplate(_baseUriTemplate);
-    List<String> resourcePath = new ArrayList<String>(1);
-    String[] pathParts = SLASH_PATTERN.split(template.createURI(Collections.<String, String>emptyMap()));
-
-    for (String pathPart : pathParts)
-    {
-      if (!pathPart.equals(""))
-      {
-        resourcePath.add(pathPart);
-      }
-    }
-
-    return resourcePath;
   }
 
   public ResourceMethod getMethod()
@@ -405,17 +155,6 @@ public class Request<T>
     return _headers;
   }
 
-  /**
-   * @deprecated Please use {@link #getInputRecord()} instead
-   *
-   * @return
-   */
-  @Deprecated
-  public RecordTemplate getInput()
-  {
-    return _inputRecord;
-  }
-
   public RecordTemplate getInputRecord()
   {
     return _inputRecord;
@@ -426,9 +165,19 @@ public class Request<T>
     return _decoder;
   }
 
+  /**
+   * @deprecated Please use {@link #getResourceProperties()} instead.
+   */
+  @Deprecated
   public ResourceSpec getResourceSpec()
   {
+    // When this method is removed, this class should be constructed solely from resource properties.
     return _resourceSpec;
+  }
+
+  public ResourceProperties getResourceProperties()
+  {
+    return _resourceProperties;
   }
 
   public String getBaseUriTemplate()
@@ -457,16 +206,6 @@ public class Request<T>
     return _method.getHttpMethod().isIdempotent();
   }
 
-  /**
-   * @deprecated Please use {@link #getQueryParamsObjects()} instead
-   * @return
-   */
-  @Deprecated
-  public DataMap getQueryParams()
-  {
-    return QueryParamsUtil.convertToDataMap(_queryParams);
-  }
-
   public Map<String, Object> getQueryParamsObjects()
   {
     return _queryParams;
@@ -488,7 +227,7 @@ public class Request<T>
     {
       return Collections.emptySet();
     }
-    return new HashSet<PathSpec>(fieldsList);
+    return Collections.unmodifiableSet(new HashSet<PathSpec>(fieldsList));
   }
 
   /**
@@ -517,22 +256,7 @@ public class Request<T>
       return false;
     }
 
-    Request<?> other = (Request<?>) obj;
-
-    if (_hasUri && other._hasUri)
-    {
-      // both requests were constructed using the old constructor
-      return areOldFieldsEqual(other) && _uri.equals(other._uri);
-    }
-
-    if (_hasUri || other._hasUri)
-    {
-      // if one of them was constructed using the new while the other was constructed using the old constructor we
-      // assume that they are not equal.
-      return false;
-    }
-
-    return areNewFieldsEqual(other);
+    return areNewFieldsEqual((Request<?>) obj);
   }
 
   /**
@@ -598,42 +322,16 @@ public class Request<T>
     return true;
   }
 
-  @Override
-  public int hashCode()
-  {
-    int hashCode;
-    if (_hasUri)
-    {
-      // request was constructed using an old constructor
-      hashCode = _uri.hashCode();
-      hashCode = (hashCode * 31) + oldHashCode();
-    }
-    else
-    {
-      hashCode = newHashCode();
-    }
-    return hashCode;
-  }
-
-  /**
-   * Computes the hashCode using the old fields
-   * @return
-   */
-  private int oldHashCode()
-  {
-    int result = _method.hashCode();
-    result = 31 * result + (_inputRecord != null? _inputRecord.hashCode() : 0);
-    result = 31 * result + (_headers != null? _headers.hashCode() : 0);
-    return result;
-  }
-
   /**
    * Computes the hashCode using the new fields
    * @return
    */
-  private int newHashCode()
+  @Override
+  public int hashCode()
   {
-    int hashCode = oldHashCode();
+    int hashCode = _method.hashCode();
+    hashCode = 31 * hashCode + (_inputRecord != null? _inputRecord.hashCode() : 0);
+    hashCode = 31 * hashCode + (_headers != null? _headers.hashCode() : 0);
     hashCode = 31 * hashCode + (_baseUriTemplate != null? _baseUriTemplate.hashCode() : 0);
     hashCode = 31 * hashCode + (_pathKeys != null? _pathKeys.hashCode() : 0);
     hashCode = 31 * hashCode + (_resourceSpec != null ? _resourceSpec.hashCode() : 0);
@@ -651,21 +349,29 @@ public class Request<T>
     sb.append("{_headers=").append(_headers);
     sb.append(", _input=").append(_inputRecord);
     sb.append(", _method=").append(_method);
-    if (_hasUri)
-    {
-      // request was constructed using an old constructor
-      sb.append(", _uri=").append(StringUtils.abbreviate(_uri.toString(), 256));
-      sb.append("}");
-    }
-    else
-    {
-      sb.append(", _baseUriTemplate=").append(_baseUriTemplate);
-      sb.append(", _methodName=").append(_methodName);
-      sb.append(", _pathKeys=").append(_pathKeys);
-      sb.append(", _queryParams=").append(_queryParams);
-      sb.append(", _requestOptions=").append(_requestOptions);
-      sb.append('}');
-    }
+    sb.append(", _baseUriTemplate=").append(_baseUriTemplate);
+    sb.append(", _methodName=").append(_methodName);
+    sb.append(", _pathKeys=").append(_pathKeys);
+    sb.append(", _queryParams=").append(_queryParams);
+    sb.append(", _requestOptions=").append(_requestOptions);
+    sb.append('}');
+    return sb.toString();
+  }
+
+  /**
+   * This method produces a string representation of this request by using only the data that cannot have
+   * personally identifiable information(PII) or security sensitive content.
+   * @return A representative string for this request free of PII and security sensitive content.
+   */
+  public String toSecureString()
+  {
+    final StringBuilder sb = new StringBuilder();
+    sb.append(getClass().getName());
+    sb.append("{_method=").append(_method);
+    sb.append(", _baseUriTemplate=").append(_baseUriTemplate);
+    sb.append(", _methodName=").append(_methodName);
+    sb.append(", _requestOptions=").append(_requestOptions);
+    sb.append('}');
     return sb.toString();
   }
 }

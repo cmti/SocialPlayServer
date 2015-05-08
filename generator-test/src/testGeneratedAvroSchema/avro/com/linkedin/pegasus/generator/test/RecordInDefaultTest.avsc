@@ -1,0 +1,9 @@
+{
+  "type" : "record",
+  "name" : "RecordInDefaultTest",
+  "namespace" : "com.linkedin.pegasus.generator.test",
+  "fields" : [ {
+    "name" : "a",
+    "type" : "int"
+  } ]
+}

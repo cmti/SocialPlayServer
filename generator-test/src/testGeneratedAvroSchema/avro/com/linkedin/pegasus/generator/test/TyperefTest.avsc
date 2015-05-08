@@ -1,0 +1,164 @@
+{
+  "type" : "record",
+  "name" : "TyperefTest",
+  "namespace" : "com.linkedin.pegasus.generator.test",
+  "fields" : [ {
+    "name" : "int",
+    "type" : [ "null", "int" ],
+    "default" : null
+  }, {
+    "name" : "int2",
+    "type" : "int"
+  }, {
+    "name" : "long",
+    "type" : [ "null", "long" ],
+    "default" : null
+  }, {
+    "name" : "float",
+    "type" : [ "null", "float" ],
+    "default" : null
+  }, {
+    "name" : "long2",
+    "type" : "long"
+  }, {
+    "name" : "double",
+    "type" : [ "null", "double" ],
+    "default" : null
+  }, {
+    "name" : "double2",
+    "type" : "double"
+  }, {
+    "name" : "boolean",
+    "type" : [ "null", "boolean" ],
+    "default" : null
+  }, {
+    "name" : "boolean2",
+    "type" : "boolean"
+  }, {
+    "name" : "string",
+    "type" : [ "null", "string" ],
+    "default" : null
+  }, {
+    "name" : "string2",
+    "type" : "string"
+  }, {
+    "name" : "bytes",
+    "type" : [ "null", "bytes" ],
+    "default" : null
+  }, {
+    "name" : "bytes2",
+    "type" : "bytes"
+  }, {
+    "name" : "intArray",
+    "type" : [ "null", {
+      "type" : "array",
+      "items" : "int"
+    } ],
+    "default" : null
+  }, {
+    "name" : "intRefArray",
+    "type" : {
+      "type" : "array",
+      "items" : "int"
+    }
+  }, {
+    "name" : "intMap",
+    "type" : [ "null", {
+      "type" : "map",
+      "values" : "int"
+    } ],
+    "default" : null
+  }, {
+    "name" : "intRefMap",
+    "type" : {
+      "type" : "map",
+      "values" : "int"
+    }
+  }, {
+    "name" : "doubleRefArray",
+    "type" : {
+      "type" : "array",
+      "items" : "double"
+    }
+  }, {
+    "name" : "doubleRefMap",
+    "type" : {
+      "type" : "map",
+      "values" : "double"
+    }
+  }, {
+    "name" : "fixed16",
+    "type" : [ "null", {
+      "type" : "fixed",
+      "name" : "Fixed16",
+      "size" : 16
+    } ],
+    "default" : null
+  }, {
+    "name" : "fruits",
+    "type" : [ "null", {
+      "type" : "enum",
+      "name" : "Fruits",
+      "symbols" : [ "APPLE", "ORANGE" ]
+    } ],
+    "default" : null
+  }, {
+    "name" : "bar1",
+    "type" : {
+      "type" : "record",
+      "name" : "RecordBar",
+      "fields" : [ {
+        "name" : "location",
+        "type" : "string"
+      } ]
+    }
+  }, {
+    "name" : "bar2",
+    "type" : "RecordBar"
+  }, {
+    "name" : "barRefMap",
+    "type" : {
+      "type" : "map",
+      "values" : "RecordBar"
+    }
+  }, {
+    "name" : "union",
+    "type" : [ "null", "int", "string" ],
+    "default" : null
+  }, {
+    "name" : "union2",
+    "type" : [ "null", "int", "string" ],
+    "default" : null
+  }, {
+    "name" : "union3",
+    "type" : [ "null", "int", "string" ],
+    "default" : null
+  }, {
+    "name" : "union4",
+    "type" : [ "null", "int", "string" ],
+    "default" : null
+  }, {
+    "name" : "union5",
+    "type" : [ "int", "double", "RecordBar" ]
+  }, {
+    "name" : "point",
+    "type" : [ "null", {
+      "type" : "record",
+      "name" : "Point",
+      "fields" : [ {
+        "name" : "x",
+        "type" : "double"
+      }, {
+        "name" : "y",
+        "type" : "double"
+      } ]
+    } ],
+    "default" : null
+  }, {
+    "name" : "importRef",
+    "type" : "double"
+  }, {
+    "name" : "importRef2",
+    "type" : "double"
+  } ]
+}

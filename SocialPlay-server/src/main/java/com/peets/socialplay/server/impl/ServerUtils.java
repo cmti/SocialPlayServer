@@ -102,42 +102,4 @@ public class ServerUtils {
 		System.out.println("QueryParams: " + sb.toString());
 		return sb.toString();
 	}
-	
-	/**
-	 * utility to form query string from an activation record using reflection
-	 * @param activationRecord
-	 * @return
-	 * @throws IllegalArgumentException
-	 * @throws IllegalAccessException
-	 */
-	public static String formQueryStringFromActivationRecordWithReflection(
-			ActivationRecord activationRecord) throws IllegalArgumentException,
-			IllegalAccessException {
-		Class aClass = activationRecord.getClass();
-		Field[] declaredFields = aClass.getDeclaredFields();
-		Map<String, String> attributeEntries = new HashMap<>();
-
-		for (Field field : declaredFields) {
-			attributeEntries.put(field.getName(),
-					String.valueOf(field.get(activationRecord)));
-		}
-
-		SortedSet<String> sortedLog = new TreeSet<>(attributeEntries.keySet());
-
-		StringBuilder sb = new StringBuilder();
-
-		Iterator<String> it = sortedLog.iterator();
-		while (it.hasNext()) {
-			String key = it.next();
-			sb.append(key);
-			sb.append('=');
-			sb.append(attributeEntries.get(key));
-			if (it.hasNext())
-				sb.append('&');
-		}
-
-		System.out.println(sb.toString());
-
-		return sb.toString();
-	}
 }

@@ -20,6 +20,7 @@
 
 package com.linkedin.restli.client;
 
+
 import com.linkedin.data.template.RecordTemplate;
 import com.linkedin.restli.common.PatchRequest;
 import com.linkedin.restli.common.ResourceSpec;
@@ -34,50 +35,27 @@ import java.util.Map;
 
 
 public class PartialUpdateRequestBuilder<K, V extends RecordTemplate> extends
-    RestfulRequestBuilder<K, V, PartialUpdateRequest<V>>
+    SingleEntityRequestBuilder<K, PatchRequest<V>, PartialUpdateRequest<V>>
 {
-  private K _id;
-  private PatchRequest<V> _input;
-
-  @Deprecated
-  public PartialUpdateRequestBuilder(String baseUriTemplate, Class<V> valueClass, ResourceSpec resourceSpec)
-  {
-    this(baseUriTemplate, valueClass, resourceSpec, RestliRequestOptions.DEFAULT_OPTIONS);
-  }
-
   public PartialUpdateRequestBuilder(String baseUriTemplate,
                                      Class<V> valueClass,
                                      ResourceSpec resourceSpec,
                                      RestliRequestOptions requestOptions)
   {
-    super(baseUriTemplate, resourceSpec, requestOptions);
+    super(baseUriTemplate, null, resourceSpec, requestOptions);
   }
 
+  @Override
   public PartialUpdateRequestBuilder<K, V> id(K id)
   {
-    _id = id;
+    super.id(id);
     return this;
   }
 
+  @Override
   public PartialUpdateRequestBuilder<K, V> input(PatchRequest<V> entity)
   {
-    _input = entity;
-    return this;
-  }
-
-  @Override
-  @Deprecated
-  public PartialUpdateRequestBuilder<K, V> param(String key, Object value)
-  {
-    super.setParam(key, value);
-    return this;
-  }
-
-  @Override
-  @Deprecated
-  public PartialUpdateRequestBuilder<K, V> reqParam(String key, Object value)
-  {
-    super.setReqParam(key, value);
+    super.input(entity);
     return this;
   }
 
@@ -106,14 +84,6 @@ public class PartialUpdateRequestBuilder<K, V extends RecordTemplate> extends
   public PartialUpdateRequestBuilder<K, V> addReqParam(String key, Object value)
   {
     super.addReqParam(key, value);
-    return this;
-  }
-
-  @Override
-  @Deprecated
-  public PartialUpdateRequestBuilder<K, V> header(String key, String value)
-  {
-    super.setHeader(key, value);
     return this;
   }
 
@@ -148,14 +118,13 @@ public class PartialUpdateRequestBuilder<K, V extends RecordTemplate> extends
   @Override
   public PartialUpdateRequest<V> build()
   {
-    return new PartialUpdateRequest<V>(_input,
-                                       _headers,
+    return new PartialUpdateRequest<V>(buildReadOnlyInput(),
+                                       buildReadOnlyHeaders(),
                                        _resourceSpec,
-                                       _queryParams,
+                                       buildReadOnlyQueryParameters(),
                                        getBaseUriTemplate(),
-                                       _pathKeys,
+                                       buildReadOnlyPathKeys(),
                                        getRequestOptions(),
-                                       _id);
+                                       buildReadOnlyId());
   }
-
 }

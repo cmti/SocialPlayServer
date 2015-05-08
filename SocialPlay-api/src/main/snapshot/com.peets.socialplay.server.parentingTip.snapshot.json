@@ -82,24 +82,24 @@
     } ]
   } ],
   "schema" : {
-    "schema" : "com.peets.socialplay.server.ParentingTip",
     "name" : "parentingTip",
-    "doc" : "generated from: com.peets.socialplay.server.impl.ParentingTipResource",
+    "namespace" : "com.peets.socialplay.server",
     "path" : "/parentingTip",
+    "schema" : "com.peets.socialplay.server.ParentingTip",
+    "doc" : "generated from: com.peets.socialplay.server.impl.ParentingTipResource",
     "collection" : {
+      "identifier" : {
+        "name" : "parentingTipId",
+        "type" : "com.peets.socialplay.server.ParentingTipId",
+        "params" : "com.peets.socialplay.server.Account"
+      },
+      "supports" : [ "get" ],
       "methods" : [ {
         "method" : "get"
       } ],
       "entity" : {
         "path" : "/parentingTip/{parentingTipId}"
-      },
-      "supports" : [ "get" ],
-      "identifier" : {
-        "name" : "parentingTipId",
-        "params" : "com.peets.socialplay.server.Account",
-        "type" : "com.peets.socialplay.server.ParentingTipId"
       }
-    },
-    "namespace" : "com.peets.socialplay.server"
+    }
   }
 }

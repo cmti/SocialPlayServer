@@ -19,7 +19,9 @@ package com.linkedin.data.transforms;
 /**
  * Identity transform.  Transforms a value to itself.
  * 
+ * @author "Joe Betz<jbetz@linkedin.com>"
  *
+ * @param <T>
  */
 public class IdentityTransform<T> implements Transform<T, T>
 {

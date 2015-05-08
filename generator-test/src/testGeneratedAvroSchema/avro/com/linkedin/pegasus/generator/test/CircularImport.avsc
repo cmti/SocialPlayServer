@@ -1,0 +1,29 @@
+{
+  "type" : "record",
+  "name" : "CircularImport",
+  "namespace" : "com.linkedin.pegasus.generator.test",
+  "doc" : "Test generation of Java bindings for circular imports",
+  "fields" : [ {
+    "name" : "a",
+    "type" : {
+      "type" : "record",
+      "name" : "CircularImportA",
+      "doc" : "Test generation of Java bindings for circular imports",
+      "fields" : [ {
+        "name" : "link",
+        "type" : [ "CircularImportA", {
+          "type" : "record",
+          "name" : "CircularImportB",
+          "doc" : "Test generation of Java bindings for circular imports",
+          "fields" : [ {
+            "name" : "link",
+            "type" : [ "CircularImportA", "CircularImportB", "null" ]
+          } ]
+        }, "null" ]
+      } ]
+    }
+  }, {
+    "name" : "b",
+    "type" : "CircularImportB"
+  } ]
+}

@@ -46,6 +46,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
+
 
 /**
  * @author Josh Walker
@@ -57,6 +59,7 @@ public class ResourceContextImpl implements ServerResourceContext
   private final MutablePathKeys                     _pathKeys;
   private final RestRequest                         _request;
   private final DataMap                             _parameters;
+  private final Map<String, String>                 _requestHeaders;
   private final Map<String, String>                 _responseHeaders;
   private final Map<Object, RestLiServiceException> _batchKeyErrors;
   private final RequestContext                      _requestContext;
@@ -107,6 +110,9 @@ public class ResourceContextImpl implements ServerResourceContext
   {
     _pathKeys = pathKeys;
     _request = request;
+    _requestHeaders = new TreeMap<String, String>(String.CASE_INSENSITIVE_ORDER);
+    _requestHeaders.putAll(request.getHeaders());
+    _responseHeaders = new TreeMap<String, String>(String.CASE_INSENSITIVE_ORDER);
     _requestContext = requestContext;
 
     _protocolVersion = ProtocolVersionUtil.extractProtocolVersion(request.getHeaders());
@@ -161,7 +167,6 @@ public class ResourceContextImpl implements ServerResourceContext
       _pagingProjectionMask = null;
     }
 
-    _responseHeaders = new HashMap<String, String>();
     _batchKeyErrors = new HashMap<Object, RestLiServiceException>();
 
     _projectionMode = ProjectionMode.getDefault();
@@ -291,7 +296,7 @@ public class ResourceContextImpl implements ServerResourceContext
   @Override
   public Map<String, String> getRequestHeaders()
   {
-    return _request.getHeaders();
+    return _requestHeaders;
   }
 
   /**

@@ -34,16 +34,13 @@
     } ]
   } ],
   "schema" : {
+    "name" : "activation",
+    "namespace" : "com.peets.socialplay.server",
+    "path" : "/activation",
     "schema" : "com.peets.socialplay.server.ActivationRecord",
+    "doc" : "generated from: com.peets.socialplay.server.impl.ActivationResource",
     "association" : {
-      "methods" : [ {
-        "doc" : "get the activation record by a compound key",
-        "method" : "get"
-      } ],
-      "entity" : {
-        "path" : "/activation/{activationId}"
-      },
-      "supports" : [ "get" ],
+      "identifier" : "activationId",
       "assocKeys" : [ {
         "name" : "account",
         "type" : "long"
@@ -54,11 +51,14 @@
         "name" : "verification",
         "type" : "string"
       } ],
-      "identifier" : "activationId"
-    },
-    "name" : "activation",
-    "doc" : "generated from: com.peets.socialplay.server.impl.ActivationResource",
-    "path" : "/activation",
-    "namespace" : "com.peets.socialplay.server"
+      "supports" : [ "get" ],
+      "methods" : [ {
+        "method" : "get",
+        "doc" : "get the activation record by a compound key"
+      } ],
+      "entity" : {
+        "path" : "/activation/{activationId}"
+      }
+    }
   }
 }

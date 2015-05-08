@@ -1,0 +1,7 @@
+{
+  "type" : "record",
+  "name" : "PTList",
+  "namespace" : "com.linkedin.pegasus.generator.test",
+  "fields" : [ ],
+  "pList" : [ 1, 2, 3 ]
+}

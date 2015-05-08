@@ -19,7 +19,9 @@ package com.linkedin.data.transforms;
 /**
  * Always returns the value provided to the transformer on construction.
  * 
+ * @author "Joe Betz<jbetz@linkedin.com>"
  *
+ * @param <T> constant value type
  */
 public class ConstantValueTransform<T> implements Transform<Object,T>
 {

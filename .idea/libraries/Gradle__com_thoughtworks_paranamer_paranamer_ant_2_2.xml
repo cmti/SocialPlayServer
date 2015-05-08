@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="Gradle: com.thoughtworks.paranamer:paranamer-ant:2.2">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.thoughtworks.paranamer/paranamer-ant/2.2/d25e9b3f444183e4b99438edf8855083721049d2/paranamer-ant-2.2.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.thoughtworks.paranamer/paranamer-ant/2.2/73e141c78580375fd054b298b11f466ae9b393b5/paranamer-ant-2.2-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

@@ -20,6 +20,7 @@
 
 package com.linkedin.d2.balancer.zkfs;
 
+
 import com.linkedin.common.callback.FutureCallback;
 import com.linkedin.common.util.None;
 import com.linkedin.d2.balancer.Directory;
@@ -38,6 +39,7 @@ import com.linkedin.d2.balancer.strategies.LoadBalancerStrategy;
 import com.linkedin.d2.balancer.strategies.LoadBalancerStrategyFactory;
 import com.linkedin.d2.balancer.strategies.degrader.DegraderLoadBalancerStrategyFactoryV3;
 import com.linkedin.d2.balancer.util.LoadBalancerUtil;
+import com.linkedin.d2.balancer.util.MapKeyResult;
 import com.linkedin.d2.balancer.util.URIRequest;
 import com.linkedin.d2.balancer.util.partitions.DefaultPartitionAccessor;
 import com.linkedin.d2.discovery.stores.zk.ZKConnection;
@@ -49,16 +51,12 @@ import com.linkedin.r2.message.RequestContext;
 import com.linkedin.r2.transport.common.TransportClientFactory;
 import com.linkedin.r2.transport.common.bridge.client.TransportClient;
 import com.linkedin.r2.transport.http.client.HttpClientFactory;
-import org.testng.Assert;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -68,6 +66,12 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+
+import org.testng.Assert;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 /**
  * @author Steven Ihde
@@ -238,7 +242,7 @@ public class ZKFSTest
       store.start(callback);
       callback.get(30, TimeUnit.SECONDS);
 
-      ServiceProperties props = new ServiceProperties(TEST_SERVICE_NAME, "someCluster", "/somePath", "someStrategy");
+      ServiceProperties props = new ServiceProperties(TEST_SERVICE_NAME, "someCluster", "/somePath", Arrays.asList("someStrategy"));
       store.put(TEST_SERVICE_NAME, props);
 
       FutureCallback<List<String>> serviceCallback = new FutureCallback<List<String>>();
@@ -314,8 +318,8 @@ public class ZKFSTest
                                                              new ServicePropertiesJsonSerializer(),
                                                              ZKFSUtil.servicePath(BASE_PATH));
 
-      ServiceProperties props = new ServiceProperties(TEST_SERVICE_NAME, TEST_CLUSTER_NAME, "/test", "degrader",
-                                                      Collections.<String>emptyList(),
+      ServiceProperties props = new ServiceProperties(TEST_SERVICE_NAME, TEST_CLUSTER_NAME, "/test",
+                                                      Arrays.asList("degrader"),
                                                       Collections.<String, Object> emptyMap(),
                                                       null,
                                                       null,
@@ -357,10 +361,9 @@ public class ZKFSTest
       for (int ii=0; ii<NUM_ITERATIONS; ++ii)
       {
         KeyMapper mapper = balancer.getKeyMapper();
-        @SuppressWarnings("deprecation")
-        Map<URI, Set<Integer>> batches = mapper.mapKeys(URI.create("d2://"+TEST_SERVICE_NAME), keys);
-        Assert.assertEquals(batches.size(), 2);
-        for (Map.Entry<URI, Set<Integer>> oneBatch : batches.entrySet())
+        MapKeyResult<URI, Integer> batches = mapper.mapKeysV2(URI.create("d2://" + TEST_SERVICE_NAME), keys);
+        Assert.assertEquals(batches.getMapResult().size(), 2);
+        for (Map.Entry<URI, Collection<Integer>> oneBatch : batches.getMapResult().entrySet())
         {
           Assert.assertTrue(oneBatch.getKey().toString().startsWith("http://test-host-"));
           Assert.assertTrue(keys.containsAll(oneBatch.getValue()));
@@ -418,8 +421,8 @@ public class ZKFSTest
       callback.get(30, TimeUnit.SECONDS);
 
 
-      ServiceProperties props = new ServiceProperties(TEST_SERVICE_NAME, TEST_CLUSTER_NAME, "/somePath", "degrader",
-                                                      Collections.<String>emptyList(),
+      ServiceProperties props = new ServiceProperties(TEST_SERVICE_NAME, TEST_CLUSTER_NAME, "/somePath",
+                                                      Arrays.asList("degrader"),
                                                       Collections.<String, Object>emptyMap(),
                                                       null,
                                                       null,

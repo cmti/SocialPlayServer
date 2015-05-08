@@ -1,0 +1,9 @@
+{
+  "type" : "record",
+  "name" : "RecordInUnion",
+  "namespace" : "com.linkedin.pegasus.generator.test",
+  "fields" : [ {
+    "name" : "a",
+    "type" : "int"
+  } ]
+}

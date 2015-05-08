@@ -24,6 +24,7 @@ import java.util.Collection;
 /**
  * Accumulates data objects returned by a {@link DataIterator}.
  * 
+ * @author "Joe Betz<jbetz@linkedin.com>"
  */
 public class ValueAccumulator
 {

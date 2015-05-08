@@ -57,7 +57,11 @@ public class FilterUtil
   /**
    * This method answers the question if given mask has all fields
    * marked with positive mask as if it were merged with mask = 1.
+   * <p>
    * Mask was merged with 1 if any of the following is true:
+   * <li>mask equals <code>Integer(1)</code></li>
+   * <li>mask if of type <code>DataMap</code> and contains wildcard,
+   * which is marked as merged with 1 (recursion)</code></li>
    *
    * @param mask the mask to check
    * @return true if mask was merged with 1

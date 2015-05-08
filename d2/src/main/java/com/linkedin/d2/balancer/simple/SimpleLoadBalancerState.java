@@ -27,6 +27,7 @@ import com.linkedin.d2.balancer.properties.AllowedClientPropertyKeys;
 import com.linkedin.d2.balancer.properties.PropertyKeys;
 import com.linkedin.d2.balancer.strategies.degrader.DegraderConfigFactory;
 import com.linkedin.d2.balancer.strategies.degrader.DegraderLoadBalancerStrategyConfig;
+import com.linkedin.internal.common.util.CollectionUtils;
 import com.linkedin.r2.transport.http.client.HttpClientFactory;
 import com.linkedin.util.clock.SystemClock;
 import com.linkedin.util.degrader.DegraderImpl;
@@ -197,7 +198,6 @@ public class SimpleLoadBalancerState implements LoadBalancerState, ClientFactory
    * _trackerClients _serviceStrategies
    */
 
-  @SuppressWarnings("unchecked")
   public SimpleLoadBalancerState(ScheduledExecutorService executorService,
                                  PropertyEventPublisher<UriProperties> uriPublisher,
                                  PropertyEventPublisher<ClusterProperties> clusterPublisher,
@@ -664,7 +664,7 @@ public class SimpleLoadBalancerState implements LoadBalancerState, ClientFactory
                                                            List<String> prioritizedSchemes)
   {
     List<SchemeStrategyPair> cached = _serviceStrategiesCache.get(serviceName);
-    if (cached != null)
+    if ((cached != null) && !cached.isEmpty())
     {
       return cached;
     }
@@ -1287,7 +1287,8 @@ public class SimpleLoadBalancerState implements LoadBalancerState, ClientFactory
     {
       Set<URI> uris = uriProperties.Uris();
       // clients-by-uri map may be edited later by UriPropertiesListener.handlePut
-      newTrackerClients = new ConcurrentHashMap<URI, TrackerClient>((int)Math.ceil(uris.size() / 0.75f), 0.75f, 1);
+      newTrackerClients = new ConcurrentHashMap<URI, TrackerClient>(
+          CollectionUtils.getMapInitialCapacity(uris.size(), 0.75f), 0.75f, 1);
       long trackerClientInterval = getTrackerClientInterval (serviceProperties);
       for (URI uri : uris)
       {
@@ -1400,11 +1401,6 @@ public class SimpleLoadBalancerState implements LoadBalancerState, ClientFactory
           break;
         }
       }
-    }
-    else
-    {
-      factory =
-          _loadBalancerStrategyFactories.get(serviceProperties.getLoadBalancerStrategyName());
     }
     // if we get here without a factory, then something might be wrong, there should always
     // be at least a default strategy in the list that is always available.

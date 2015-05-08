@@ -96,7 +96,7 @@ public class MultivaluedMap
      * Copy constructor for MultivaluedMap
      * @param that MultivaluedMap to copy
      */
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings("unchecked")
     public MultivaluedMap(MultivaluedMap that) {
         for (Map.Entry<String, List<String>> e : that.entrySet()) {
             this.put(e.getKey(), new ArrayList(e.getValue()));
@@ -169,6 +169,8 @@ public class MultivaluedMap
      * associated with the given key
      * @param key the key
      * @param type the type to construct from the Strings associated with key
+     * @param <A> any type with a string constructor
+     * @return a List of items of type /<A/>
      */
     public final <A> List<A> get(String key, Class<A> type) {
         Constructor<A> c = null;
@@ -244,9 +246,12 @@ public class MultivaluedMap
 
     /**
      * Return the first item in the List of items associated with the given
+     * key in this MultivaluedMap as an item of type /<A/>, or null if the
      * key is not in the MultivaluedMap.
      * @param key the key
      * @param type The class of the return type
+     * @param <A> a type with a string constructor
+     * @return an object of type /<A/>
      */
     public final <A> A getFirst(String key, Class<A> type) {
         String value = getFirst(key);
@@ -268,11 +273,14 @@ public class MultivaluedMap
 
     /**
      * Attempt to get the first value associated with the given key in this
+     * MultivaluedMap, cast as an item of type /<A/>.
      * <p>
      * If this key is not in the map, return defaultValue.
      * @param key the key value
      * @param defaultValue the value to return if the key is not in the map.
+     * @param <A> the type of the value that should be returned.  Should
      *           have a string constructor.
+     * @return an object of type /<A/>
      */
     @SuppressWarnings("unchecked")
     public final <A> A getFirst(String key, A defaultValue) {

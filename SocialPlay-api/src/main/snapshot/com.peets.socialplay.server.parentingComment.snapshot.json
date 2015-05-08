@@ -38,28 +38,25 @@
     } ]
   } ],
   "schema" : {
-    "schema" : "com.peets.socialplay.server.ParentingComment",
     "name" : "parentingComment",
-    "doc" : "generated from: com.peets.socialplay.server.impl.ParentingTipCommentResource",
+    "namespace" : "com.peets.socialplay.server",
     "path" : "/parentingComment",
+    "schema" : "com.peets.socialplay.server.ParentingComment",
+    "doc" : "generated from: com.peets.socialplay.server.impl.ParentingTipCommentResource",
     "collection" : {
+      "identifier" : {
+        "name" : "parentingCommentId",
+        "type" : "com.peets.socialplay.server.ParentingTipId",
+        "params" : "com.peets.socialplay.server.ParentingTipId"
+      },
+      "supports" : [ "create", "get" ],
       "methods" : [ {
         "method" : "create"
       }, {
         "method" : "get"
       } ],
-      "entity" : {
-        "path" : "/parentingComment/{parentingCommentId}"
-      },
-      "supports" : [ "create", "get" ],
-      "identifier" : {
-        "name" : "parentingCommentId",
-        "params" : "com.peets.socialplay.server.ParentingTipId",
-        "type" : "com.peets.socialplay.server.ParentingTipId"
-      },
       "actions" : [ {
         "name" : "getCommentsPaged",
-        "returns" : "{ \"type\" : \"array\", \"items\" : \"com.peets.socialplay.server.ParentingComment\" }",
         "parameters" : [ {
           "name" : "tipId",
           "type" : "com.peets.socialplay.server.ParentingTipId"
@@ -75,9 +72,12 @@
         }, {
           "name" : "lastTimestamp",
           "type" : "long"
-        } ]
-      } ]
-    },
-    "namespace" : "com.peets.socialplay.server"
+        } ],
+        "returns" : "{ \"type\" : \"array\", \"items\" : \"com.peets.socialplay.server.ParentingComment\" }"
+      } ],
+      "entity" : {
+        "path" : "/parentingComment/{parentingCommentId}"
+      }
+    }
   }
 }

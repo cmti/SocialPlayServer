@@ -42,41 +42,38 @@
     } ]
   } ],
   "schema" : {
-    "schema" : "com.peets.socialplay.server.SocialPlayContext",
     "name" : "socialPlay",
-    "doc" : "generated from: com.peets.socialplay.server.impl.SocialPlayResource",
+    "namespace" : "com.peets.socialplay.server",
     "path" : "/socialPlay",
+    "schema" : "com.peets.socialplay.server.SocialPlayContext",
+    "doc" : "generated from: com.peets.socialplay.server.impl.SocialPlayResource",
     "collection" : {
-      "methods" : [ {
-        "doc" : "the Create method to create a new SocialPlayContext entry",
-        "method" : "create"
-      }, {
-        "doc" : "retrieve SocialPlayContext by a specified contextId",
-        "method" : "get"
-      } ],
-      "entity" : {
-        "path" : "/socialPlay/{socialPlayId}"
-      },
-      "supports" : [ "create", "get" ],
       "identifier" : {
         "name" : "socialPlayId",
         "type" : "long"
       },
+      "supports" : [ "create", "get" ],
+      "methods" : [ {
+        "method" : "create",
+        "doc" : "the Create method to create a new SocialPlayContext entry"
+      }, {
+        "method" : "get",
+        "doc" : "retrieve SocialPlayContext by a specified contextId"
+      } ],
       "actions" : [ {
         "name" : "findChatRoom",
         "doc" : "action to find a chat room",
         "returns" : "string"
       }, {
         "name" : "findIncomingInvitation",
-        "returns" : "com.peets.socialplay.server.SocialPlayContext",
         "parameters" : [ {
           "name" : "invitee",
           "type" : "long"
-        } ]
+        } ],
+        "returns" : "com.peets.socialplay.server.SocialPlayContext"
       }, {
         "name" : "findParticipantJoined",
         "doc" : "action to figure out whether the invitee joins the specified chat room",
-        "returns" : "boolean",
         "parameters" : [ {
           "name" : "invitor",
           "type" : "long"
@@ -86,22 +83,22 @@
         }, {
           "name" : "roomId",
           "type" : "string"
-        } ]
+        } ],
+        "returns" : "boolean"
       }, {
         "name" : "inviteToChat",
         "doc" : "action to find a chat room",
-        "returns" : "string",
         "parameters" : [ {
           "name" : "invitor",
           "type" : "long"
         }, {
           "name" : "invitee",
           "type" : "long"
-        } ]
+        } ],
+        "returns" : "string"
       }, {
         "name" : "updateParticipantJoined",
         "doc" : "update the participation status",
-        "returns" : "boolean",
         "parameters" : [ {
           "name" : "invitor",
           "type" : "long"
@@ -114,9 +111,12 @@
         }, {
           "name" : "joined",
           "type" : "boolean"
-        } ]
-      } ]
-    },
-    "namespace" : "com.peets.socialplay.server"
+        } ],
+        "returns" : "boolean"
+      } ],
+      "entity" : {
+        "path" : "/socialPlay/{socialPlayId}"
+      }
+    }
   }
 }

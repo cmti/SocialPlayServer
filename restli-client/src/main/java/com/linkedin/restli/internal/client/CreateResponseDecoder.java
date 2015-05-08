@@ -33,6 +33,7 @@ import com.linkedin.restli.internal.common.ResponseUtils;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 
 /**
@@ -78,7 +79,8 @@ public class CreateResponseDecoder<K> extends EmptyResponseDecoder
     final Response<EmptyRecord> rawResponse = super.decodeResponse(restResponse);
 
     // ResponseImpl will make the headers unmodifiable
-    final Map<String, String> modifiableHeaders = new HashMap<String, String>(rawResponse.getHeaders());
+    final Map<String, String> modifiableHeaders = new TreeMap<String, String>(String.CASE_INSENSITIVE_ORDER);
+    modifiableHeaders.putAll(rawResponse.getHeaders());
 
     // remove ID header to prevent user to access the weakly typed ID
     modifiableHeaders.remove(RestConstants.HEADER_ID);
@@ -88,6 +90,7 @@ public class CreateResponseDecoder<K> extends EmptyResponseDecoder
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public CreateResponse<K> wrapResponse(DataMap dataMap, Map<String, String> headers, ProtocolVersion version)
   {
     String id = HeaderUtil.getIdHeaderValue(headers);
@@ -99,7 +102,7 @@ public class CreateResponseDecoder<K> extends EmptyResponseDecoder
     }
     else
     {
-      key = ResponseUtils.convertKey(id, _keyType, _keyParts, _complexKeyType, version);
+      key = (K) ResponseUtils.convertKey(id, _keyType, _keyParts, _complexKeyType, version);
     }
 
     return new CreateResponse<K>(key);

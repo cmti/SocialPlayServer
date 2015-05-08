@@ -82,6 +82,7 @@ public class BatchUpdateResponseDecoder<K> extends RestResponseDecoder<BatchKVRe
 
     for (String key : mergedKeys)
     {
+      // DataMap for UpdateStatus
       final DataMap updateData;
 
       // status field is mandatory
@@ -94,9 +95,13 @@ public class BatchUpdateResponseDecoder<K> extends RestResponseDecoder<BatchKVRe
         updateData = new DataMap();
       }
 
-      final Object errorData = inputErrors.get(key);
+      // DataMap for ErrorResponse
+      final DataMap errorData = (DataMap) inputErrors.get(key);
       if (errorData != null)
       {
+        // The status from ErrorResponse overwrites the one in UpdateResponse. However, results and
+        // errors are not expected to have overlapping key. See BatchUpdateResponseBuilder.
+        updateData.put("status", errorData.get("status"));
         updateData.put("error", errorData);
       }
 

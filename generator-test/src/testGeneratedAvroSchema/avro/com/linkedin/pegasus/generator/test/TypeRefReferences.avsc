@@ -1,0 +1,76 @@
+{
+  "type" : "record",
+  "name" : "TypeRefReferences",
+  "namespace" : "com.linkedin.pegasus.generator.test",
+  "fields" : [ {
+    "name" : "a1",
+    "type" : {
+      "type" : "array",
+      "items" : {
+        "type" : "enum",
+        "name" : "someEnum1",
+        "symbols" : [ "A", "B" ]
+      }
+    }
+  }, {
+    "name" : "a2",
+    "type" : {
+      "type" : "map",
+      "values" : {
+        "type" : "enum",
+        "name" : "someEnum2",
+        "symbols" : [ "A", "B" ]
+      }
+    }
+  }, {
+    "name" : "a3",
+    "type" : [ {
+      "type" : "enum",
+      "name" : "someEnum3",
+      "symbols" : [ "A", "B" ]
+    }, "long", "string" ]
+  }, {
+    "name" : "a4",
+    "type" : {
+      "type" : "map",
+      "values" : {
+        "type" : "array",
+        "items" : {
+          "type" : "map",
+          "values" : {
+            "type" : "enum",
+            "name" : "someEnum4",
+            "symbols" : [ "A", "B" ]
+          }
+        }
+      }
+    }
+  }, {
+    "name" : "items",
+    "type" : {
+      "type" : "array",
+      "items" : "someEnum1"
+    }
+  }, {
+    "name" : "items2",
+    "type" : {
+      "type" : "map",
+      "values" : "someEnum2"
+    }
+  }, {
+    "name" : "union",
+    "type" : [ "someEnum3", "long", "string" ]
+  }, {
+    "name" : "items3",
+    "type" : {
+      "type" : "map",
+      "values" : {
+        "type" : "array",
+        "items" : {
+          "type" : "map",
+          "values" : "someEnum4"
+        }
+      }
+    }
+  } ]
+}

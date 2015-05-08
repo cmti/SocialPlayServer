@@ -3,6 +3,7 @@ dependencies {
   compile project(':r2')
   compile project(':li-jersey-uri')
   compile project(':generator')
+  compile project(':pegasus-common')
   compile project(':restli-common')
   compile project(':restli-client')
   compile project(':restli-server')
@@ -13,8 +14,6 @@ dependencies {
   compile externalDependency.jacksonCore
   compile externalDependency.jacksonDataBind
   compile externalDependency.jdkTools
-  runtime externalDependency.log4j
-  runtime externalDependency.slf4jLog4j12
   testCompile externalDependency.guava
   testCompile externalDependency.testng
   testCompile externalDependency.commonsHttpClient

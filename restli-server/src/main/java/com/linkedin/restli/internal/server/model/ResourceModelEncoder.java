@@ -101,8 +101,8 @@ public class ResourceModelEncoder
     Set<String> supportedFileExtensions();
 
     /**
-     * Registers the source files with the doc provider.  The doc provider should perform any initialization required
-     * handle subsequent requests for classe, method and param docs from these source files.
+     * Registers the source files with the doc provider.  The doc provider should perform any initialization required to
+     * handle subsequent requests for class, method and param docs from these source files.
      *
      * @param filenames provides the source file names to register.
      */
@@ -624,7 +624,6 @@ public class ResourceModelEncoder
   }
 
 
-  @SuppressWarnings("unchecked")
   private ActionSchemaArray createActions(final ResourceModel resourceModel,
                                           final ResourceLevel resourceLevel)
   {

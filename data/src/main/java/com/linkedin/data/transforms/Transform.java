@@ -19,6 +19,7 @@ package com.linkedin.data.transforms;
 /**
  * Simple function type for use with {@link com.linkedin.data.it.Transformer}.
  * 
+ * @author "Joe Betz<jbetz@linkedin.com>"
  * 
  * @param <D> domain type
  * @param <R> range type

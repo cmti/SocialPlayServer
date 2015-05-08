@@ -1,0 +1,127 @@
+{
+  "type" : "record",
+  "name" : "DefaultTest",
+  "namespace" : "com.linkedin.pegasus.generator.test",
+  "doc" : "Test for default values",
+  "fields" : [ {
+    "name" : "intField",
+    "type" : "int",
+    "default" : 1
+  }, {
+    "name" : "longField",
+    "type" : "long",
+    "default" : 9876543210
+  }, {
+    "name" : "floatField",
+    "type" : "float",
+    "default" : 2.5
+  }, {
+    "name" : "doubleField",
+    "type" : "double",
+    "default" : 9.5
+  }, {
+    "name" : "booleanField",
+    "type" : "boolean",
+    "default" : true
+  }, {
+    "name" : "stringField",
+    "type" : "string",
+    "default" : "a string"
+  }, {
+    "name" : "bytesField",
+    "type" : "bytes",
+    "default" : "ÿ\u0000"
+  }, {
+    "name" : "enumField",
+    "type" : {
+      "type" : "enum",
+      "name" : "EnumFruits",
+      "symbols" : [ "APPLE", "BANANA", "GRAPES", "ORANGE", "PINEAPPLE" ],
+      "symbolDocs" : {
+        "APPLE" : "A red, yellow or green fruit.",
+        "BANANA" : "A yellow fruit.",
+        "GRAPES" : "A green or red fruit.",
+        "ORANGE" : "An orange fruit.",
+        "PINEAPPLE" : "A yellow fruit."
+      }
+    },
+    "default" : "APPLE"
+  }, {
+    "name" : "recordField",
+    "type" : {
+      "type" : "record",
+      "name" : "RecordBar",
+      "fields" : [ {
+        "name" : "location",
+        "type" : "string"
+      } ]
+    },
+    "default" : {
+      "location" : "anywhere"
+    }
+  }, {
+    "name" : "fixedField",
+    "type" : {
+      "type" : "fixed",
+      "name" : "FixedMD5",
+      "size" : 16
+    },
+    "default" : "1234567890ABCDEF"
+  }, {
+    "name" : "enumInlineField",
+    "type" : {
+      "type" : "enum",
+      "name" : "EnumInDefaultTest",
+      "symbols" : [ "A", "B", "C" ]
+    },
+    "default" : "A"
+  }, {
+    "name" : "recordInlineField",
+    "type" : {
+      "type" : "record",
+      "name" : "RecordInDefaultTest",
+      "fields" : [ {
+        "name" : "a",
+        "type" : "int"
+      } ]
+    },
+    "default" : {
+      "a" : 1
+    }
+  }, {
+    "name" : "fixedInlineField",
+    "type" : {
+      "type" : "fixed",
+      "name" : "fixedInDefaultTest",
+      "size" : 1
+    },
+    "default" : ""
+  }, {
+    "name" : "arrayField",
+    "type" : {
+      "type" : "array",
+      "items" : "int"
+    },
+    "default" : [ 1, 2, 3 ]
+  }, {
+    "name" : "mapField",
+    "type" : {
+      "type" : "map",
+      "values" : "string"
+    },
+    "default" : {
+      "b" : "B",
+      "a" : "B"
+    }
+  }, {
+    "name" : "unionField",
+    "type" : [ {
+      "type" : "array",
+      "items" : "string"
+    }, {
+      "type" : "map",
+      "values" : "long"
+    }, "int", "string", "EnumFruits", "RecordBar", "null" ],
+    "default" : [ "e1", "e2", "e3" ]
+  } ]
+}

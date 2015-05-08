@@ -19,6 +19,7 @@ package com.linkedin.data.transforms;
 /**
  * Convenience methods for commonly used {@link Transform}s.
  * 
+ * @author "Joe Betz<jbetz@linkedin.com>"
  * 
  */
 public class Transforms

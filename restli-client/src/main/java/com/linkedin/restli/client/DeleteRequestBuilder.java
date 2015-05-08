@@ -32,43 +32,20 @@ import java.util.Map;
  */
 
 public class DeleteRequestBuilder<K, V extends RecordTemplate>
-  extends RestfulRequestBuilder<K, V, DeleteRequest<V>>
+  extends SingleEntityRequestBuilder<K, V, DeleteRequest<V>>
 {
-  private K _id;
-
-  @Deprecated
-  public DeleteRequestBuilder(String baseUriTemplate, Class<V> valueClass, ResourceSpec resourceSpec)
-  {
-    this(baseUriTemplate, valueClass, resourceSpec, RestliRequestOptions.DEFAULT_OPTIONS);
-  }
-
   public DeleteRequestBuilder(String baseUriTemplate,
                               Class<V> valueClass,
                               ResourceSpec resourceSpec,
                               RestliRequestOptions requestOptions)
   {
-    super(baseUriTemplate, resourceSpec, requestOptions);
+    super(baseUriTemplate, valueClass, resourceSpec, requestOptions);
   }
 
+  @Override
   public DeleteRequestBuilder<K, V> id(K id)
   {
-    _id = id;
-    return this;
-  }
-
-  @Override
-  @Deprecated
-  public DeleteRequestBuilder<K, V> param(String key, Object value)
-  {
-    super.setParam(key, value);
-    return this;
-  }
-
-  @Override
-  @Deprecated
-  public DeleteRequestBuilder<K, V> reqParam(String key, Object value)
-  {
-    super.setReqParam(key, value);
+    super.id(id);
     return this;
   }
 
@@ -115,14 +92,6 @@ public class DeleteRequestBuilder<K, V extends RecordTemplate>
   }
 
   @Override
-  @Deprecated
-  public DeleteRequestBuilder<K, V> header(String key, String value)
-  {
-    super.setHeader(key, value);
-    return this;
-  }
-
-  @Override
   public DeleteRequestBuilder<K, V> addHeader(String name, String value)
   {
     super.addHeader(name, value);
@@ -139,13 +108,12 @@ public class DeleteRequestBuilder<K, V extends RecordTemplate>
   @Override
   public DeleteRequest<V> build()
   {
-    return new DeleteRequest<V>(_headers,
+    return new DeleteRequest<V>(buildReadOnlyHeaders(),
                                 _resourceSpec,
-                                _queryParams,
+                                buildReadOnlyQueryParameters(),
                                 getBaseUriTemplate(),
-                                _pathKeys,
+                                buildReadOnlyPathKeys(),
                                 getRequestOptions(),
-                                _id);
+                                buildReadOnlyId());
   }
-
 }

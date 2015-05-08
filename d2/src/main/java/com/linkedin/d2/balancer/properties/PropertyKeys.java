@@ -62,7 +62,6 @@ public class PropertyKeys
   public static final String SERVICE_METADATA_PROPERTIES = "serviceMetadataProperties";
 
   //load balancer specific properties
-  public static final String LB_STRATEGY_NAME = "loadBalancerStrategyName";
   public static final String LB_STRATEGY_LIST = "loadBalancerStrategyList";
   public static final String LB_STRATEGY_PROPERTIES = "loadBalancerStrategyProperties";
 
@@ -81,6 +80,9 @@ public class PropertyKeys
   public static final String HTTP_LB_GLOBAL_STEP_DOWN = "http.loadBalancer.globalStepDown";
   public static final String HTTP_LB_CLUSTER_MIN_CALL_COUNT_HIGH_WATER_MARK = "http.loadBalancer.clusterMinCallCount.highWaterMark";
   public static final String HTTP_LB_CLUSTER_MIN_CALL_COUNT_LOW_WATER_MARK = "http.loadBalancer.clusterMinCallCount.lowWaterMark";
+
+  //used by service metadata properties
+  public static final String SERVICE_FOLLOW_REDIRECTION_MAX_HOP = "followRedirection.maxHop";
 
   //used by cluster properties
   public static final String CLUSTER_NAME = "clusterName";
@@ -107,6 +109,7 @@ public class PropertyKeys
   public static final String HTTP_SSL_CONTEXT = HttpClientFactory.HTTP_SSL_CONTEXT;
   public static final String HTTP_SSL_PARAMS = HttpClientFactory.HTTP_SSL_PARAMS;
   public static final String HTTP_RESPONSE_COMPRESSION_OPERATIONS = HttpClientFactory.HTTP_RESPONSE_COMPRESSION_OPERATIONS;
+  public static final String HTTP_REQUEST_CONTENT_ENCODINGS = HttpClientFactory.HTTP_REQUEST_CONTENT_ENCODINGS;
   public static final String HTTP_QUERY_POST_THRESHOLD = HttpClientFactory.HTTP_QUERY_POST_THRESHOLD;
   public static final String HTTP_POOL_STRATEGY = HttpClientFactory.HTTP_POOL_STRATEGY;
   public static final String HTTP_POOL_MIN_SIZE = HttpClientFactory.HTTP_POOL_MIN_SIZE;

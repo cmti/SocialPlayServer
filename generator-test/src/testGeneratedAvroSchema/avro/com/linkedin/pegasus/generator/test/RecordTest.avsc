@@ -1,0 +1,116 @@
+{
+  "type" : "record",
+  "name" : "RecordTest",
+  "namespace" : "com.linkedin.pegasus.generator.test",
+  "doc" : "Test generation of Java bindings for records",
+  "fields" : [ {
+    "name" : "intField",
+    "type" : "int"
+  }, {
+    "name" : "intOptionalField",
+    "type" : [ "null", "int" ],
+    "default" : null
+  }, {
+    "name" : "intDefaultField",
+    "type" : "int",
+    "default" : 17
+  }, {
+    "name" : "intDefaultOptionalField",
+    "type" : [ "int", "null" ],
+    "default" : 42
+  }, {
+    "name" : "longField",
+    "type" : "long"
+  }, {
+    "name" : "floatField",
+    "type" : "float"
+  }, {
+    "name" : "doubleField",
+    "type" : "double"
+  }, {
+    "name" : "booleanField",
+    "type" : "boolean"
+  }, {
+    "name" : "stringField",
+    "type" : "string"
+  }, {
+    "name" : "bytesField",
+    "type" : "bytes"
+  }, {
+    "name" : "enumField",
+    "type" : {
+      "type" : "enum",
+      "name" : "EnumFruits",
+      "symbols" : [ "APPLE", "BANANA", "GRAPES", "ORANGE", "PINEAPPLE" ],
+      "symbolDocs" : {
+        "APPLE" : "A red, yellow or green fruit.",
+        "BANANA" : "A yellow fruit.",
+        "GRAPES" : "A green or red fruit.",
+        "ORANGE" : "An orange fruit.",
+        "PINEAPPLE" : "A yellow fruit."
+      }
+    }
+  }, {
+    "name" : "recordField",
+    "type" : {
+      "type" : "record",
+      "name" : "RecordBar",
+      "fields" : [ {
+        "name" : "location",
+        "type" : "string"
+      } ]
+    }
+  }, {
+    "name" : "fixedField",
+    "type" : {
+      "type" : "fixed",
+      "name" : "FixedMD5",
+      "size" : 16
+    }
+  }, {
+    "name" : "enumInlineField",
+    "type" : {
+      "type" : "enum",
+      "name" : "EnumInRecord",
+      "symbols" : [ "A", "B", "C" ]
+    }
+  }, {
+    "name" : "recordInlineField",
+    "type" : {
+      "type" : "record",
+      "name" : "RecordInRecord",
+      "fields" : [ {
+        "name" : "a",
+        "type" : "int"
+      } ]
+    }
+  }, {
+    "name" : "fixedInlineField",
+    "type" : {
+      "type" : "fixed",
+      "name" : "FixedInRecord",
+      "size" : 1
+    }
+  }, {
+    "name" : "arrayField",
+    "type" : {
+      "type" : "array",
+      "items" : "int"
+    }
+  }, {
+    "name" : "mapField",
+    "type" : {
+      "type" : "map",
+      "values" : "string"
+    }
+  }, {
+    "name" : "unionField",
+    "type" : [ "int", "string", "EnumFruits", "RecordBar", {
+      "type" : "array",
+      "items" : "string"
+    }, {
+      "type" : "map",
+      "values" : "long"
+    }, "null" ]
+  } ]
+}

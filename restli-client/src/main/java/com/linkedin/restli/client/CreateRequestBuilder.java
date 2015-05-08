@@ -26,48 +26,25 @@ import java.util.Map;
 
 
 /**
+ * This class has been deprecated. Please use {@link CreateIdRequestBuilder} instead.
+ *
  * @author Josh Walker
- * @version $Revision: $
  */
-
 public class CreateRequestBuilder<K, V extends RecordTemplate>
-                extends RestfulRequestBuilder<K, V, CreateRequest<V>>
+                extends SingleEntityRequestBuilder<K, V, CreateRequest<V>>
 {
-  private V _input;
-
-  @Deprecated
-  public CreateRequestBuilder(String baseUriTemplate, Class<V> valueClass, ResourceSpec resourceSpec)
-  {
-    this(baseUriTemplate, valueClass, resourceSpec, RestliRequestOptions.DEFAULT_OPTIONS);
-  }
-
   public CreateRequestBuilder(String baseUriTemplate,
                               Class<V> valueClass,
                               ResourceSpec resourceSpec,
                               RestliRequestOptions requestOptions)
   {
-    super(baseUriTemplate, resourceSpec, requestOptions);
+    super(baseUriTemplate, valueClass, resourceSpec, requestOptions);
   }
 
+  @Override
   public CreateRequestBuilder<K, V> input(V entity)
   {
-    _input = entity;
-    return this;
-  }
-
-  @Override
-  @Deprecated
-  public CreateRequestBuilder<K, V> param(String key, Object value)
-  {
-    super.setParam(key, value);
-    return this;
-  }
-
-  @Override
-  @Deprecated
-  public CreateRequestBuilder<K, V> reqParam(String key, Object value)
-  {
-    super.setReqParam(key, value);
+    super.input(entity);
     return this;
   }
 
@@ -96,14 +73,6 @@ public class CreateRequestBuilder<K, V extends RecordTemplate>
   public CreateRequestBuilder<K, V> addReqParam(String key, Object value)
   {
     super.addReqParam(key, value);
-    return this;
-  }
-
-  @Override
-  @Deprecated
-  public CreateRequestBuilder<K, V> header(String key, String value)
-  {
-    super.setHeader(key, value);
     return this;
   }
 
@@ -147,14 +116,13 @@ public class CreateRequestBuilder<K, V extends RecordTemplate>
     CreateResponseDecoder<K> createResponseDecoder = new CreateResponseDecoder<K>((TypeSpec<K>)_resourceSpec.getKeyType(),
                                                                                   _resourceSpec.getKeyParts(),
                                                                                   _resourceSpec.getComplexKeyType());
-    return new CreateRequest<V>(_input,
-                                _headers,
+    return new CreateRequest<V>(buildReadOnlyInput(),
+                                buildReadOnlyHeaders(),
                                 createResponseDecoder,
                                 _resourceSpec,
-                                _queryParams,
+                                buildReadOnlyQueryParameters(),
                                 getBaseUriTemplate(),
-                                _pathKeys,
+                                buildReadOnlyPathKeys(),
                                 getRequestOptions());
   }
-
 }

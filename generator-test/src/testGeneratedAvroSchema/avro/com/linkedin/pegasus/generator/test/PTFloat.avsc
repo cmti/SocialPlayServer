@@ -1,0 +1,7 @@
+{
+  "type" : "record",
+  "name" : "PTFloat",
+  "namespace" : "com.linkedin.pegasus.generator.test",
+  "fields" : [ ],
+  "pFloat" : 0.5
+}

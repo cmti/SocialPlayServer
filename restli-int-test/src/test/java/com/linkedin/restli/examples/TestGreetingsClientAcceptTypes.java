@@ -18,9 +18,6 @@ package com.linkedin.restli.examples;
 
 
 import com.linkedin.r2.RemoteInvocationException;
-import com.linkedin.r2.transport.common.Client;
-import com.linkedin.r2.transport.common.bridge.client.TransportClientAdapter;
-import com.linkedin.r2.transport.http.client.HttpClientFactory;
 import com.linkedin.restli.client.CreateIdRequest;
 import com.linkedin.restli.client.Request;
 import com.linkedin.restli.client.Response;
@@ -59,9 +56,6 @@ import org.testng.annotations.Test;
 
 public class TestGreetingsClientAcceptTypes extends RestLiIntegrationTest
 {
-  private static final Client CLIENT = new TransportClientAdapter(new HttpClientFactory().getClient(Collections.<String, String>emptyMap()));
-  private static final String URI_PREFIX = "http://localhost:1338/";
-
   @BeforeClass
   public void initClass() throws Exception
   {
@@ -154,6 +148,7 @@ public class TestGreetingsClientAcceptTypes extends RestLiIntegrationTest
     Assert.assertEquals(greeting.getMessage(), "This is a newly created greeting");
   }
 
+  @SuppressWarnings("deprecation")
   @Test(dataProvider = com.linkedin.restli.internal.common.TestConstants.RESTLI_PROTOCOL_1_2_PREFIX + "oldBuildersClientDataDataProvider")
   public void testCreate(RestClient restClient, String expectedContentType, GreetingsBuilders builders) throws RemoteInvocationException
   {
@@ -253,141 +248,142 @@ public class TestGreetingsClientAcceptTypes extends RestLiIntegrationTest
     return result;
   }
 
+  @SuppressWarnings("deprecation")
   @DataProvider(name = com.linkedin.restli.internal.common.TestConstants.RESTLI_PROTOCOL_1_2_PREFIX + "oldBuildersClientDataDataProvider")
   public Object[][] oldBuildersClientDataDataProvider()
   {
     return new Object[][]
       {
-        { new RestClient(CLIENT, URI_PREFIX), "application/json", new GreetingsBuilders() }, // default client
-        { new RestClient(CLIENT, URI_PREFIX), "application/json", new GreetingsBuilders(TestConstants.FORCE_USE_NEXT_OPTIONS) }, // default client
+        { new RestClient(getDefaultTransportClient(), URI_PREFIX), "application/json", new GreetingsBuilders() }, // default client
+        { new RestClient(getDefaultTransportClient(), URI_PREFIX), "application/json", new GreetingsBuilders(TestConstants.FORCE_USE_NEXT_OPTIONS) }, // default client
         {
-          new RestClient(CLIENT,
+          new RestClient(getDefaultTransportClient(),
                          URI_PREFIX,
                          Collections.singletonList(RestClient.AcceptType.PSON)),
           "application/x-pson",
           new GreetingsBuilders()
         },
         {
-          new RestClient(CLIENT,
+          new RestClient(getDefaultTransportClient(),
                          URI_PREFIX,
                          Collections.singletonList(RestClient.AcceptType.PSON)),
           "application/x-pson",
           new GreetingsBuilders(TestConstants.FORCE_USE_NEXT_OPTIONS)
         },
         {
-          new RestClient(CLIENT,
+          new RestClient(getDefaultTransportClient(),
                          URI_PREFIX,
                          Collections.singletonList(RestClient.AcceptType.PSON)),
           "application/x-pson",
           new GreetingsBuilders(TestConstants.FORCE_USE_NEXT_OPTIONS)
         },
         {
-          new RestClient(CLIENT,
+          new RestClient(getDefaultTransportClient(),
                          URI_PREFIX,
                          Collections.singletonList(RestClient.AcceptType.JSON)),
           "application/json",
           new GreetingsBuilders()
         },
         {
-          new RestClient(CLIENT,
+          new RestClient(getDefaultTransportClient(),
                          URI_PREFIX,
                          Collections.singletonList(RestClient.AcceptType.JSON)),
           "application/json",
           new GreetingsBuilders(TestConstants.FORCE_USE_NEXT_OPTIONS)
         },
         {
-          new RestClient(CLIENT, URI_PREFIX,
+          new RestClient(getDefaultTransportClient(), URI_PREFIX,
                          Collections.singletonList(
                            RestClient.AcceptType.ANY)),
           "application/json",
           new GreetingsBuilders()
         },
         {
-          new RestClient(CLIENT, URI_PREFIX,
+          new RestClient(getDefaultTransportClient(), URI_PREFIX,
                          Collections.singletonList(
                            RestClient.AcceptType.ANY)),
           "application/json",
           new GreetingsBuilders(TestConstants.FORCE_USE_NEXT_OPTIONS)
         },
         {
-          new RestClient(CLIENT,
+          new RestClient(getDefaultTransportClient(),
                          URI_PREFIX,
                          Arrays.asList(RestClient.AcceptType.PSON, RestClient.AcceptType.JSON)),
           "application/x-pson",
           new GreetingsBuilders()
         },
         {
-          new RestClient(CLIENT,
+          new RestClient(getDefaultTransportClient(),
                          URI_PREFIX,
                          Arrays.asList(RestClient.AcceptType.PSON, RestClient.AcceptType.JSON)),
           "application/x-pson",
           new GreetingsBuilders(TestConstants.FORCE_USE_NEXT_OPTIONS)
         },
         {
-          new RestClient(CLIENT,
+          new RestClient(getDefaultTransportClient(),
                          URI_PREFIX,
                          Arrays.asList(RestClient.AcceptType.JSON,RestClient.AcceptType.PSON)),
           "application/json",
           new GreetingsBuilders()
         },
         {
-          new RestClient(CLIENT,
+          new RestClient(getDefaultTransportClient(),
                          URI_PREFIX,
                          Arrays.asList(RestClient.AcceptType.JSON,RestClient.AcceptType.PSON)),
           "application/json",
           new GreetingsBuilders(TestConstants.FORCE_USE_NEXT_OPTIONS)
         },
         {
-          new RestClient(CLIENT,
+          new RestClient(getDefaultTransportClient(),
                          URI_PREFIX,
                          Arrays.asList(RestClient.AcceptType.PSON, RestClient.AcceptType.ANY)),
           "application/x-pson",
           new GreetingsBuilders()
         },
         {
-          new RestClient(CLIENT,
+          new RestClient(getDefaultTransportClient(),
                          URI_PREFIX,
                          Arrays.asList(RestClient.AcceptType.PSON, RestClient.AcceptType.ANY)),
           "application/x-pson",
           new GreetingsBuilders(TestConstants.FORCE_USE_NEXT_OPTIONS)
         },
         {
-          new RestClient(CLIENT,
+          new RestClient(getDefaultTransportClient(),
                          URI_PREFIX,
                          Arrays.asList(RestClient.AcceptType.JSON, RestClient.AcceptType.ANY)),
           "application/json",
           new GreetingsBuilders()
         },
         {
-          new RestClient(CLIENT,
+          new RestClient(getDefaultTransportClient(),
                          URI_PREFIX,
                          Arrays.asList(RestClient.AcceptType.JSON, RestClient.AcceptType.ANY)),
           "application/json",
           new GreetingsBuilders(TestConstants.FORCE_USE_NEXT_OPTIONS)
         },
         {
-          new RestClient(CLIENT,
+          new RestClient(getDefaultTransportClient(),
                          URI_PREFIX,
                          Arrays.asList(RestClient.AcceptType.ANY, RestClient.AcceptType.PSON)),
           "application/x-pson",
           new GreetingsBuilders()
         },
         {
-          new RestClient(CLIENT,
+          new RestClient(getDefaultTransportClient(),
                          URI_PREFIX,
                          Arrays.asList(RestClient.AcceptType.ANY, RestClient.AcceptType.PSON)),
           "application/x-pson",
           new GreetingsBuilders(TestConstants.FORCE_USE_NEXT_OPTIONS)
         },
         {
-          new RestClient(CLIENT,
+          new RestClient(getDefaultTransportClient(),
                          URI_PREFIX,
                          Arrays.asList(RestClient.AcceptType.ANY, RestClient.AcceptType.JSON)),
           "application/json",
           new GreetingsBuilders()
         },
         {
-          new RestClient(CLIENT,
+          new RestClient(getDefaultTransportClient(),
                          URI_PREFIX,
                          Arrays.asList(RestClient.AcceptType.ANY, RestClient.AcceptType.JSON)),
           "application/json",
@@ -395,84 +391,84 @@ public class TestGreetingsClientAcceptTypes extends RestLiIntegrationTest
         },
         // accept types and content types
         {
-          new RestClient(CLIENT,
+          new RestClient(getDefaultTransportClient(),
                          URI_PREFIX,
                          RestClient.ContentType.JSON, Collections.<RestClient.AcceptType>emptyList()),
           "application/json",
           new GreetingsBuilders()
         },
         {
-          new RestClient(CLIENT,
+          new RestClient(getDefaultTransportClient(),
                          URI_PREFIX,
                          RestClient.ContentType.JSON, Collections.<RestClient.AcceptType>emptyList()),
           "application/json",
           new GreetingsBuilders(TestConstants.FORCE_USE_NEXT_OPTIONS)
         },
         {
-          new RestClient(CLIENT,
+          new RestClient(getDefaultTransportClient(),
                          URI_PREFIX,
                          RestClient.ContentType.JSON, Collections.singletonList(RestClient.AcceptType.JSON)),
           "application/json",
           new GreetingsBuilders()
         },
         {
-          new RestClient(CLIENT,
+          new RestClient(getDefaultTransportClient(),
                          URI_PREFIX,
                          RestClient.ContentType.JSON, Collections.singletonList(RestClient.AcceptType.JSON)),
           "application/json",
           new GreetingsBuilders(TestConstants.FORCE_USE_NEXT_OPTIONS)
         },
         {
-          new RestClient(CLIENT,
+          new RestClient(getDefaultTransportClient(),
                          URI_PREFIX,
                          RestClient.ContentType.JSON, Collections.singletonList(RestClient.AcceptType.PSON)),
           "application/x-pson",
           new GreetingsBuilders()
         },
         {
-          new RestClient(CLIENT,
+          new RestClient(getDefaultTransportClient(),
                          URI_PREFIX,
                          RestClient.ContentType.JSON, Collections.singletonList(RestClient.AcceptType.PSON)),
           "application/x-pson",
           new GreetingsBuilders(TestConstants.FORCE_USE_NEXT_OPTIONS)
         },
         {
-          new RestClient(CLIENT,
+          new RestClient(getDefaultTransportClient(),
                          URI_PREFIX,
                          RestClient.ContentType.PSON, Collections.<RestClient.AcceptType>emptyList()),
           "application/json",
           new GreetingsBuilders()
         },
         {
-          new RestClient(CLIENT,
+          new RestClient(getDefaultTransportClient(),
                          URI_PREFIX,
                          RestClient.ContentType.PSON, Collections.<RestClient.AcceptType>emptyList()),
           "application/json",
           new GreetingsBuilders(TestConstants.FORCE_USE_NEXT_OPTIONS)
         },
         {
-          new RestClient(CLIENT,
+          new RestClient(getDefaultTransportClient(),
                          URI_PREFIX,
                          RestClient.ContentType.PSON, Collections.singletonList(RestClient.AcceptType.JSON)),
           "application/json",
           new GreetingsBuilders()
         },
         {
-          new RestClient(CLIENT,
+          new RestClient(getDefaultTransportClient(),
                          URI_PREFIX,
                          RestClient.ContentType.PSON, Collections.singletonList(RestClient.AcceptType.JSON)),
           "application/json",
           new GreetingsBuilders(TestConstants.FORCE_USE_NEXT_OPTIONS)
         },
         {
-          new RestClient(CLIENT,
+          new RestClient(getDefaultTransportClient(),
                          URI_PREFIX,
                          RestClient.ContentType.PSON, Collections.singletonList(RestClient.AcceptType.PSON)),
           "application/x-pson",
           new GreetingsBuilders()
         },
         {
-          new RestClient(CLIENT,
+          new RestClient(getDefaultTransportClient(),
                          URI_PREFIX,
                          RestClient.ContentType.PSON, Collections.singletonList(RestClient.AcceptType.PSON)),
           "application/x-pson",
@@ -481,141 +477,142 @@ public class TestGreetingsClientAcceptTypes extends RestLiIntegrationTest
       };
   }
 
+  @SuppressWarnings("deprecation")
   @DataProvider(name = com.linkedin.restli.internal.common.TestConstants.RESTLI_PROTOCOL_1_2_PREFIX + "newBuildersClientDataDataProvider")
   public Object[][] newBuildersClientDataDataProvider()
   {
     return new Object[][]
       {
-        { new RestClient(CLIENT, URI_PREFIX), "application/json", new GreetingsRequestBuilders() }, // default client
-        { new RestClient(CLIENT, URI_PREFIX), "application/json", new GreetingsRequestBuilders(TestConstants.FORCE_USE_NEXT_OPTIONS) }, // default client
+        { new RestClient(getDefaultTransportClient(), URI_PREFIX), "application/json", new GreetingsRequestBuilders() }, // default client
+        { new RestClient(getDefaultTransportClient(), URI_PREFIX), "application/json", new GreetingsRequestBuilders(TestConstants.FORCE_USE_NEXT_OPTIONS) }, // default client
         {
-          new RestClient(CLIENT,
+          new RestClient(getDefaultTransportClient(),
                          URI_PREFIX,
                          Collections.singletonList(RestClient.AcceptType.PSON)),
           "application/x-pson",
           new GreetingsRequestBuilders()
         },
         {
-          new RestClient(CLIENT,
+          new RestClient(getDefaultTransportClient(),
                          URI_PREFIX,
                          Collections.singletonList(RestClient.AcceptType.PSON)),
           "application/x-pson",
           new GreetingsRequestBuilders(TestConstants.FORCE_USE_NEXT_OPTIONS)
         },
         {
-          new RestClient(CLIENT,
+          new RestClient(getDefaultTransportClient(),
                          URI_PREFIX,
                          Collections.singletonList(RestClient.AcceptType.PSON)),
           "application/x-pson",
           new GreetingsRequestBuilders(TestConstants.FORCE_USE_NEXT_OPTIONS)
         },
         {
-          new RestClient(CLIENT,
+          new RestClient(getDefaultTransportClient(),
                          URI_PREFIX,
                          Collections.singletonList(RestClient.AcceptType.JSON)),
           "application/json",
           new GreetingsRequestBuilders()
         },
         {
-          new RestClient(CLIENT,
+          new RestClient(getDefaultTransportClient(),
                          URI_PREFIX,
                          Collections.singletonList(RestClient.AcceptType.JSON)),
           "application/json",
           new GreetingsRequestBuilders(TestConstants.FORCE_USE_NEXT_OPTIONS)
         },
         {
-          new RestClient(CLIENT, URI_PREFIX,
+          new RestClient(getDefaultTransportClient(), URI_PREFIX,
                          Collections.singletonList(
                            RestClient.AcceptType.ANY)),
           "application/json",
           new GreetingsRequestBuilders()
         },
         {
-          new RestClient(CLIENT, URI_PREFIX,
+          new RestClient(getDefaultTransportClient(), URI_PREFIX,
                          Collections.singletonList(
                            RestClient.AcceptType.ANY)),
           "application/json",
           new GreetingsRequestBuilders(TestConstants.FORCE_USE_NEXT_OPTIONS)
         },
         {
-          new RestClient(CLIENT,
+          new RestClient(getDefaultTransportClient(),
                          URI_PREFIX,
                          Arrays.asList(RestClient.AcceptType.PSON, RestClient.AcceptType.JSON)),
           "application/x-pson",
           new GreetingsRequestBuilders()
         },
         {
-          new RestClient(CLIENT,
+          new RestClient(getDefaultTransportClient(),
                          URI_PREFIX,
                          Arrays.asList(RestClient.AcceptType.PSON, RestClient.AcceptType.JSON)),
           "application/x-pson",
           new GreetingsRequestBuilders(TestConstants.FORCE_USE_NEXT_OPTIONS)
         },
         {
-          new RestClient(CLIENT,
+          new RestClient(getDefaultTransportClient(),
                          URI_PREFIX,
                          Arrays.asList(RestClient.AcceptType.JSON,RestClient.AcceptType.PSON)),
           "application/json",
           new GreetingsRequestBuilders()
         },
         {
-          new RestClient(CLIENT,
+          new RestClient(getDefaultTransportClient(),
                          URI_PREFIX,
                          Arrays.asList(RestClient.AcceptType.JSON,RestClient.AcceptType.PSON)),
           "application/json",
           new GreetingsRequestBuilders(TestConstants.FORCE_USE_NEXT_OPTIONS)
         },
         {
-          new RestClient(CLIENT,
+          new RestClient(getDefaultTransportClient(),
                          URI_PREFIX,
                          Arrays.asList(RestClient.AcceptType.PSON, RestClient.AcceptType.ANY)),
           "application/x-pson",
           new GreetingsRequestBuilders()
         },
         {
-          new RestClient(CLIENT,
+          new RestClient(getDefaultTransportClient(),
                          URI_PREFIX,
                          Arrays.asList(RestClient.AcceptType.PSON, RestClient.AcceptType.ANY)),
           "application/x-pson",
           new GreetingsRequestBuilders(TestConstants.FORCE_USE_NEXT_OPTIONS)
         },
         {
-          new RestClient(CLIENT,
+          new RestClient(getDefaultTransportClient(),
                          URI_PREFIX,
                          Arrays.asList(RestClient.AcceptType.JSON, RestClient.AcceptType.ANY)),
           "application/json",
           new GreetingsRequestBuilders()
         },
         {
-          new RestClient(CLIENT,
+          new RestClient(getDefaultTransportClient(),
                          URI_PREFIX,
                          Arrays.asList(RestClient.AcceptType.JSON, RestClient.AcceptType.ANY)),
           "application/json",
           new GreetingsRequestBuilders(TestConstants.FORCE_USE_NEXT_OPTIONS)
         },
         {
-          new RestClient(CLIENT,
+          new RestClient(getDefaultTransportClient(),
                          URI_PREFIX,
                          Arrays.asList(RestClient.AcceptType.ANY, RestClient.AcceptType.PSON)),
           "application/x-pson",
           new GreetingsRequestBuilders()
         },
         {
-          new RestClient(CLIENT,
+          new RestClient(getDefaultTransportClient(),
                          URI_PREFIX,
                          Arrays.asList(RestClient.AcceptType.ANY, RestClient.AcceptType.PSON)),
           "application/x-pson",
           new GreetingsRequestBuilders(TestConstants.FORCE_USE_NEXT_OPTIONS)
         },
         {
-          new RestClient(CLIENT,
+          new RestClient(getDefaultTransportClient(),
                          URI_PREFIX,
                          Arrays.asList(RestClient.AcceptType.ANY, RestClient.AcceptType.JSON)),
           "application/json",
           new GreetingsRequestBuilders()
         },
         {
-          new RestClient(CLIENT,
+          new RestClient(getDefaultTransportClient(),
                          URI_PREFIX,
                          Arrays.asList(RestClient.AcceptType.ANY, RestClient.AcceptType.JSON)),
           "application/json",
@@ -623,84 +620,84 @@ public class TestGreetingsClientAcceptTypes extends RestLiIntegrationTest
         },
         // accept types and content types
         {
-          new RestClient(CLIENT,
+          new RestClient(getDefaultTransportClient(),
                          URI_PREFIX,
                          RestClient.ContentType.JSON, Collections.<RestClient.AcceptType>emptyList()),
           "application/json",
           new GreetingsRequestBuilders()
         },
         {
-          new RestClient(CLIENT,
+          new RestClient(getDefaultTransportClient(),
                          URI_PREFIX,
                          RestClient.ContentType.JSON, Collections.<RestClient.AcceptType>emptyList()),
           "application/json",
           new GreetingsRequestBuilders(TestConstants.FORCE_USE_NEXT_OPTIONS)
         },
         {
-          new RestClient(CLIENT,
+          new RestClient(getDefaultTransportClient(),
                          URI_PREFIX,
                          RestClient.ContentType.JSON, Collections.singletonList(RestClient.AcceptType.JSON)),
           "application/json",
           new GreetingsRequestBuilders()
         },
         {
-          new RestClient(CLIENT,
+          new RestClient(getDefaultTransportClient(),
                          URI_PREFIX,
                          RestClient.ContentType.JSON, Collections.singletonList(RestClient.AcceptType.JSON)),
           "application/json",
           new GreetingsRequestBuilders(TestConstants.FORCE_USE_NEXT_OPTIONS)
         },
         {
-          new RestClient(CLIENT,
+          new RestClient(getDefaultTransportClient(),
                          URI_PREFIX,
                          RestClient.ContentType.JSON, Collections.singletonList(RestClient.AcceptType.PSON)),
           "application/x-pson",
           new GreetingsRequestBuilders()
         },
         {
-          new RestClient(CLIENT,
+          new RestClient(getDefaultTransportClient(),
                          URI_PREFIX,
                          RestClient.ContentType.JSON, Collections.singletonList(RestClient.AcceptType.PSON)),
           "application/x-pson",
           new GreetingsRequestBuilders(TestConstants.FORCE_USE_NEXT_OPTIONS)
         },
         {
-          new RestClient(CLIENT,
+          new RestClient(getDefaultTransportClient(),
                          URI_PREFIX,
                          RestClient.ContentType.PSON, Collections.<RestClient.AcceptType>emptyList()),
           "application/json",
           new GreetingsRequestBuilders()
         },
         {
-          new RestClient(CLIENT,
+          new RestClient(getDefaultTransportClient(),
                          URI_PREFIX,
                          RestClient.ContentType.PSON, Collections.<RestClient.AcceptType>emptyList()),
           "application/json",
           new GreetingsRequestBuilders(TestConstants.FORCE_USE_NEXT_OPTIONS)
         },
         {
-          new RestClient(CLIENT,
+          new RestClient(getDefaultTransportClient(),
                          URI_PREFIX,
                          RestClient.ContentType.PSON, Collections.singletonList(RestClient.AcceptType.JSON)),
           "application/json",
           new GreetingsRequestBuilders()
         },
         {
-          new RestClient(CLIENT,
+          new RestClient(getDefaultTransportClient(),
                          URI_PREFIX,
                          RestClient.ContentType.PSON, Collections.singletonList(RestClient.AcceptType.JSON)),
           "application/json",
           new GreetingsRequestBuilders(TestConstants.FORCE_USE_NEXT_OPTIONS)
         },
         {
-          new RestClient(CLIENT,
+          new RestClient(getDefaultTransportClient(),
                          URI_PREFIX,
                          RestClient.ContentType.PSON, Collections.singletonList(RestClient.AcceptType.PSON)),
           "application/x-pson",
           new GreetingsRequestBuilders()
         },
         {
-          new RestClient(CLIENT,
+          new RestClient(getDefaultTransportClient(),
                          URI_PREFIX,
                          RestClient.ContentType.PSON, Collections.singletonList(RestClient.AcceptType.PSON)),
           "application/x-pson",

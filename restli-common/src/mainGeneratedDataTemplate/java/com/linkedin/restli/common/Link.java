@@ -16,17 +16,16 @@ import com.linkedin.data.template.SetMode;
  * A atom:link-inspired link
  * 
  */
-@Generated(value = "com.linkedin.pegasus.generator.PegasusDataTemplateGenerator", comments = "LinkedIn Data Template. Generated from /Users/jianli/git/SocialPlayServer/restli-common/src/main/pegasus/com/linkedin/restli/common/Link.pdsc.", date = "Fri Apr 17 15:52:47 PDT 2015")
+@Generated(value = "com.linkedin.pegasus.generator.PegasusDataTemplateGenerator", comments = "LinkedIn Data Template. Generated from /Users/jianli/git/SocialPlayServer/restli-common/src/main/pegasus/com/linkedin/restli/common/Link.pdsc.", date = "Thu May 07 23:46:42 PDT 2015")
 public class Link
     extends RecordTemplate
 {
 
     private final static Link.Fields _fields = new Link.Fields();
-    private final static RecordDataSchema SCHEMA = ((RecordDataSchema) DataTemplateUtil.parseSchema("{\"type\":\"record\",\"name\":\"Link\",\"namespace\":\"com.linkedin.restli.common\",\"doc\":\"A atom:link-inspired link\",\"fields\":[{\"name\":\"rel\",\"type\":\"string\",\"doc\":\"The link relation e.g. 'self' or 'next'\"},{\"name\":\"href\",\"type\":\"string\",\"doc\":\"The link URI\"},{\"name\":\"type\",\"type\":\"string\",\"doc\":\"The type (media type) of the resource\"},{\"name\":\"title\",\"type\":\"string\",\"doc\":\"The title of the link\"}]}"));
+    private final static RecordDataSchema SCHEMA = ((RecordDataSchema) DataTemplateUtil.parseSchema("{\"type\":\"record\",\"name\":\"Link\",\"namespace\":\"com.linkedin.restli.common\",\"doc\":\"A atom:link-inspired link\",\"fields\":[{\"name\":\"rel\",\"type\":\"string\",\"doc\":\"The link relation e.g. 'self' or 'next'\"},{\"name\":\"href\",\"type\":\"string\",\"doc\":\"The link URI\"},{\"name\":\"type\",\"type\":\"string\",\"doc\":\"The type (media type) of the resource\"}]}"));
     private final static RecordDataSchema.Field FIELD_Rel = SCHEMA.getField("rel");
     private final static RecordDataSchema.Field FIELD_Href = SCHEMA.getField("href");
     private final static RecordDataSchema.Field FIELD_Type = SCHEMA.getField("type");
-    private final static RecordDataSchema.Field FIELD_Title = SCHEMA.getField("title");
 
     public Link() {
         super(new DataMap(), SCHEMA);
@@ -208,62 +207,6 @@ public class Link
         return this;
     }
 
-    /**
-     * Existence checker for title
-     * 
-     * @see Fields#title
-     */
-    public boolean hasTitle() {
-        return contains(FIELD_Title);
-    }
-
-    /**
-     * Remover for title
-     * 
-     * @see Fields#title
-     */
-    public void removeTitle() {
-        remove(FIELD_Title);
-    }
-
-    /**
-     * Getter for title
-     * 
-     * @see Fields#title
-     */
-    public String getTitle(GetMode mode) {
-        return obtainDirect(FIELD_Title, String.class, mode);
-    }
-
-    /**
-     * Getter for title
-     * 
-     * @see Fields#title
-     */
-    public String getTitle() {
-        return getTitle(GetMode.STRICT);
-    }
-
-    /**
-     * Setter for title
-     * 
-     * @see Fields#title
-     */
-    public Link setTitle(String value, SetMode mode) {
-        putDirect(FIELD_Title, String.class, String.class, value, mode);
-        return this;
-    }
-
-    /**
-     * Setter for title
-     * 
-     * @see Fields#title
-     */
-    public Link setTitle(String value) {
-        putDirect(FIELD_Title, String.class, String.class, value, SetMode.DISALLOW_NULL);
-        return this;
-    }
-
     @Override
     public Link clone()
         throws CloneNotSupportedException
@@ -313,14 +256,6 @@ public class Link
          */
         public PathSpec type() {
             return new PathSpec(getPathComponents(), "type");
-        }
-
-        /**
-         * The title of the link
-         * 
-         */
-        public PathSpec title() {
-            return new PathSpec(getPathComponents(), "title");
         }
 
     }

@@ -1,0 +1,43 @@
+{
+  "type" : "record",
+  "name" : "AnyRecordClient",
+  "namespace" : "com.linkedin.pegasus.generator.test",
+  "fields" : [ {
+    "name" : "required",
+    "type" : {
+      "name" : "AvroAnyRecord",
+      "type" : "record",
+      "fields" : [ {
+        "name" : "type",
+        "type" : "string"
+      }, {
+        "name" : "value",
+        "type" : "string"
+      } ],
+      "namespace" : "com.linkedin.pegasus.generator.test.avro"
+    }
+  }, {
+    "name" : "optional",
+    "type" : [ "null", "com.linkedin.pegasus.generator.test.avro.AvroAnyRecord" ],
+    "default" : null
+  }, {
+    "name" : "array",
+    "type" : {
+      "type" : "array",
+      "items" : "com.linkedin.pegasus.generator.test.avro.AvroAnyRecord"
+    }
+  }, {
+    "name" : "map",
+    "type" : {
+      "type" : "map",
+      "values" : "com.linkedin.pegasus.generator.test.avro.AvroAnyRecord"
+    }
+  }, {
+    "name" : "union",
+    "type" : [ "string", "com.linkedin.pegasus.generator.test.avro.AvroAnyRecord" ]
+  }, {
+    "name" : "unionOptional",
+    "type" : [ "null", "string", "com.linkedin.pegasus.generator.test.avro.AvroAnyRecord" ],
+    "default" : null
+  } ]
+}

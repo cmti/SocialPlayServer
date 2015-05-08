@@ -59,24 +59,9 @@ import com.linkedin.r2.message.RequestContext;
 import com.linkedin.r2.message.rest.RestRequest;
 import com.linkedin.r2.message.rest.RestRequestBuilder;
 import com.linkedin.r2.message.rest.RestResponse;
-import com.linkedin.r2.message.rpc.RpcRequest;
-import com.linkedin.r2.message.rpc.RpcRequestBuilder;
-import com.linkedin.r2.message.rpc.RpcResponse;
 import com.linkedin.r2.transport.common.TransportClientFactory;
 import com.linkedin.r2.transport.http.client.HttpClientFactory;
 import com.linkedin.r2.util.NamedThreadFactory;
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.GnuParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
-import org.apache.commons.io.FileUtils;
-import org.apache.zookeeper.Watcher.Event.KeeperState;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import sun.jvmstat.monitor.HostIdentifier;
-import sun.jvmstat.monitor.MonitoredHost;
 
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectInstance;
@@ -101,6 +86,19 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.GnuParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+import org.apache.commons.io.FileUtils;
+import org.apache.zookeeper.Watcher.Event.KeeperState;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import sun.jvmstat.monitor.HostIdentifier;
+import sun.jvmstat.monitor.MonitoredHost;
 
 
 public class LoadBalancerClientCli
@@ -376,7 +374,6 @@ public class LoadBalancerClientCli
     return d2conf.configure();
   }
 
-  @SuppressWarnings("deprecation")
   public String getSchema(ZKConnection zkclient,
                         String zkserver,
                         String d2path,
@@ -396,19 +393,9 @@ public class LoadBalancerClientCli
 
       try
       {
-        if (! requestType.equalsIgnoreCase("rest"))
-        {
-          RpcRequest req =
-            new RpcRequestBuilder(uri).setEntity("".getBytes("UTF-8")).build();
-          Future<RpcResponse> response = client.rpcRequest(req);
-          responseString = response.get().getEntity().asString("UTF-8");
-        }
-        else
-        {
-          RestRequest restRequest = new RestRequestBuilder(uri).setEntity("".getBytes("UTF-8")).build();
-          Future<RestResponse> response = client.restRequest(restRequest, new RequestContext());
-          responseString = response.get().getEntity().asString("UTF-8");
-        }
+        RestRequest restRequest = new RestRequestBuilder(uri).setEntity("".getBytes("UTF-8")).build();
+        Future<RestResponse> response = client.restRequest(restRequest, new RequestContext());
+        responseString = response.get().getEntity().asString("UTF-8");
       }
       finally
       {
@@ -477,7 +464,6 @@ public class LoadBalancerClientCli
     return sendRequest(client, _zkclient, _zkConnectionString, _d2path, cluster, service, "", request, requestType, false);
   }
 
-  @SuppressWarnings("deprecation")
   public String sendRequest(DynamicClient client,
                             ZKConnection zkclient,
                             String zkserver,
@@ -495,19 +481,9 @@ public class LoadBalancerClientCli
 
       try
       {
-        if (! requestType.equalsIgnoreCase("rest"))
-        {
-          RpcRequest req =
-            new RpcRequestBuilder(uri).setEntity(request.getBytes("UTF-8")).build();
-          Future<RpcResponse> response = client.rpcRequest(req);
-          responseString = response.get().getEntity().asString("UTF-8");
-        }
-        else
-        {
-          RestRequest restRequest = new RestRequestBuilder(uri).setEntity(request.getBytes("UTF-8")).build();
-          Future<RestResponse> response = client.restRequest(restRequest, new RequestContext());
-          responseString = response.get().getEntity().asString("UTF-8");
-        }
+        RestRequest restRequest = new RestRequestBuilder(uri).setEntity(request.getBytes("UTF-8")).build();
+        Future<RestResponse> response = client.restRequest(restRequest, new RequestContext());
+        responseString = response.get().getEntity().asString("UTF-8");
       }
       finally
       {

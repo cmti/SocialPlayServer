@@ -18,28 +18,9 @@
 package com.linkedin.r2.transport.http.server;
 
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Enumeration;
-import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicReference;
-
-import javax.mail.MessagingException;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.linkedin.data.ByteString;
 import com.linkedin.r2.filter.R2Constants;
 import com.linkedin.r2.message.RequestContext;
-import com.linkedin.r2.message.rest.QueryTunnelUtil;
 import com.linkedin.r2.message.rest.RestException;
 import com.linkedin.r2.message.rest.RestRequest;
 import com.linkedin.r2.message.rest.RestRequestBuilder;
@@ -49,6 +30,26 @@ import com.linkedin.r2.transport.common.WireAttributeHelper;
 import com.linkedin.r2.transport.common.bridge.common.TransportCallback;
 import com.linkedin.r2.transport.common.bridge.common.TransportResponse;
 import com.linkedin.r2.transport.common.bridge.common.TransportResponseImpl;
+import com.linkedin.r2.transport.http.common.HttpConstants;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Enumeration;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicReference;
+import javax.mail.MessagingException;
+import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 /**
  * @author Steven Ihde
@@ -61,33 +62,14 @@ public abstract class AbstractR2Servlet extends HttpServlet
   private static final Logger _log = LoggerFactory.getLogger(AbstractR2Servlet.class);
   private static final long   serialVersionUID = 0L;
 
-  /**
-   * @deprecated This constructor is deprecated as support for async servlet support
-   * is provided through {@link AbstractAsyncR2Servlet} class.
-   */
-  @Deprecated
-  public AbstractR2Servlet(boolean useContinuations, int timeOut, int timeOutDelta)
-  {
-    if (useContinuations)
-    {
-      throw new UnsupportedOperationException("Asynchronous continuations not supported");
-    }
-  }
-
-  /**
-   * Construct a new instance using synchronous servlet support.
-   */
-  public AbstractR2Servlet()
-  {
-    this(false, -1, -1);
-  }
-
   protected abstract HttpDispatcher getDispatcher();
 
   @Override
   protected void service(final HttpServletRequest req, final HttpServletResponse resp)
           throws ServletException, IOException
   {
+    RequestContext requestContext = readRequestContext(req);
+
     RestRequest restRequest;
 
     try
@@ -99,13 +81,6 @@ public abstract class AbstractR2Servlet extends HttpServlet
       writeToServletError(resp, RestStatus.BAD_REQUEST, e.toString());
       return;
     }
-    catch (MessagingException e)
-    {
-      writeToServletError(resp, RestStatus.BAD_REQUEST, e.toString());
-      return;
-    }
-
-    RequestContext requestContext = readRequestContext(req);
 
     final AtomicReference<TransportResponse<RestResponse>> result =
         new AtomicReference<TransportResponse<RestResponse>>();
@@ -171,6 +146,12 @@ public abstract class AbstractR2Servlet extends HttpServlet
       // TODO multi-valued headers
       resp.setHeader(e.getKey(), e.getValue());
     }
+
+    for (String cookie : restResponse.getCookies())
+    {
+      resp.addHeader(HttpConstants.RESPONSE_COOKIE_HEADER_NAME, cookie);
+    }
+
     final ByteString entity = restResponse.getEntity();
     entity.write(resp.getOutputStream());
 
@@ -186,8 +167,7 @@ public abstract class AbstractR2Servlet extends HttpServlet
 
   protected RestRequest readFromServletRequest(HttpServletRequest req) throws IOException,
       ServletException,
-      URISyntaxException,
-      MessagingException
+      URISyntaxException
   {
     StringBuilder sb = new StringBuilder();
     sb.append(extractPathInfo(req));
@@ -205,23 +185,29 @@ public abstract class AbstractR2Servlet extends HttpServlet
 
     for (Enumeration<String> headerNames = req.getHeaderNames(); headerNames.hasMoreElements();)
     {
-      // TODO multi-valued headers
       String headerName = headerNames.nextElement();
-      rb.setHeader(headerName, req.getHeader(headerName));
+      if (headerName.equalsIgnoreCase(HttpConstants.REQUEST_COOKIE_HEADER_NAME))
+      {
+        for (Enumeration<String> cookies = req.getHeaders(headerName); cookies.hasMoreElements();)
+        {
+          rb.addCookie(cookies.nextElement());
+        }
+      }
+      else
+      {
+        for (Enumeration<String> headerValues = req.getHeaders(headerName); headerValues.hasMoreElements();)
+        {
+          rb.addHeaderValue(headerName, headerValues.nextElement());
+        }
+      }
     }
+
     int length = req.getContentLength();
     if (length >= 0)
     {
-      InputStream in = req.getInputStream();
-      byte[] buf = new byte[length];
-      int offset = 0;
-      for (int r; offset < length && (r = in.read(buf, offset, length - offset)) != -1; offset += r)
-      {
-      }
-
-      rb.setEntity(buf);
+      rb.setEntity(ByteString.read(req.getInputStream(), length));
     }
-    return QueryTunnelUtil.decode(rb.build());
+    return rb.build();
   }
 
   /**

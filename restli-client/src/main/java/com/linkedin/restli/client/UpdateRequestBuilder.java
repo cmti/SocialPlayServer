@@ -14,11 +14,8 @@
    limitations under the License.
 */
 
-/**
- * $Id: $
- */
-
 package com.linkedin.restli.client;
+
 
 import com.linkedin.data.template.RecordTemplate;
 import com.linkedin.restli.common.ResourceSpec;
@@ -26,57 +23,28 @@ import com.linkedin.restli.common.ResourceSpec;
 import java.util.Map;
 
 
-/**
- * @author Josh Walker
- * @version $Revision: $
- */
-
-
 public class UpdateRequestBuilder<K, V extends RecordTemplate> extends
-    RestfulRequestBuilder<K, V, UpdateRequest<V>>
+    SingleEntityRequestBuilder<K, V, UpdateRequest<V>>
 {
-  private V _input;
-  private K _id;
-
-  @Deprecated
-  public UpdateRequestBuilder(String baseUriTemplate, Class<V> valueClass, ResourceSpec resourceSpec)
-  {
-    this(baseUriTemplate, valueClass, resourceSpec, RestliRequestOptions.DEFAULT_OPTIONS);
-  }
-
   public UpdateRequestBuilder(String baseUriTemplate,
                               Class<V> valueClass,
                               ResourceSpec resourceSpec,
                               RestliRequestOptions requestOptions)
   {
-    super(baseUriTemplate, resourceSpec, requestOptions);
+    super(baseUriTemplate, valueClass, resourceSpec, requestOptions);
   }
 
+  @Override
   public UpdateRequestBuilder<K, V> id(K id)
   {
-    _id = id;
+    super.id(id);
     return this;
   }
 
+  @Override
   public UpdateRequestBuilder<K, V> input(V entity)
   {
-    _input = entity;
-    return this;
-  }
-
-  @Override
-  @Deprecated
-  public UpdateRequestBuilder<K, V> param(String key, Object value)
-  {
-    super.setParam(key, value);
-    return this;
-  }
-
-  @Override
-  @Deprecated
-  public UpdateRequestBuilder<K, V> reqParam(String key, Object value)
-  {
-    super.setReqParam(key, value);
+    super.input(entity);
     return this;
   }
 
@@ -105,14 +73,6 @@ public class UpdateRequestBuilder<K, V extends RecordTemplate> extends
   public UpdateRequestBuilder<K, V> addReqParam(String key, Object value)
   {
     super.addReqParam(key, value);
-    return this;
-  }
-
-  @Override
-  @Deprecated
-  public UpdateRequestBuilder<K, V> header(String key, String value)
-  {
-    super.setHeader(key, value);
     return this;
   }
 
@@ -147,14 +107,13 @@ public class UpdateRequestBuilder<K, V extends RecordTemplate> extends
   @Override
   public UpdateRequest<V> build()
   {
-    return new UpdateRequest<V>(_input,
-                                _headers,
+    return new UpdateRequest<V>(buildReadOnlyInput(),
+                                buildReadOnlyHeaders(),
                                 _resourceSpec,
-                                _queryParams,
+                                buildReadOnlyQueryParameters(),
                                 getBaseUriTemplate(),
-                                _pathKeys,
+                                buildReadOnlyPathKeys(),
                                 getRequestOptions(),
-                                _id);
+                                buildReadOnlyId());
   }
-
 }

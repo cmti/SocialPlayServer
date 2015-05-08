@@ -21,6 +21,7 @@ import com.linkedin.data.element.DataElement;
 /**
  * Counts Data objects returned by a {@link DataIterator}.
  * 
+ * @author "Joe Betz<jbetz@linkedin.com>"
  */
 public class Counter
 {

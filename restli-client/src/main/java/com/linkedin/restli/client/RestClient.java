@@ -26,6 +26,7 @@ import com.linkedin.data.codec.JacksonDataCodec;
 import com.linkedin.data.codec.PsonDataCodec;
 import com.linkedin.data.template.RecordTemplate;
 import com.linkedin.r2.filter.R2Constants;
+import com.linkedin.r2.filter.CompressionOption;
 import com.linkedin.r2.message.RequestContext;
 import com.linkedin.r2.message.rest.RestRequest;
 import com.linkedin.r2.message.rest.RestRequestBuilder;
@@ -52,6 +53,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+
 
 /**
  * Subset of Jersey's REST client, omitting things we probably won't use for internal API calls +
@@ -121,11 +123,19 @@ public class RestClient
     this(client, uriPrefix, DEFAULT_CONTENT_TYPE, DEFAULT_ACCEPT_TYPES);
   }
 
+  /**
+   * @deprecated please use {@link RestliRequestOptions} to configure accept types.
+   */
+  @Deprecated
   public RestClient(Client client, String uriPrefix, List<AcceptType> acceptTypes)
   {
     this(client, uriPrefix, DEFAULT_CONTENT_TYPE, acceptTypes);
   }
 
+  /**
+   * @deprecated please use {@link RestliRequestOptions} to configure content type and accept types.
+   */
+  @Deprecated
   public RestClient(Client client, String uriPrefix, ContentType contentType, List<AcceptType> acceptTypes)
   {
     _client = client;
@@ -226,48 +236,31 @@ public class RestClient
     sendRestRequest(request, requestContext, new RestLiCallbackAdapter<T>(request.getResponseDecoder(), callback));
   }
 
-/**
+  /**
    * Sends a type-bound REST request using a {@link CallbackAdapter}.
    *
    * @param request to send
    * @param requestContext context for the request
    * @param callback to call on request completion
    */
-  @SuppressWarnings("deprecation")
   public <T> void sendRestRequest(final Request<T> request,
                                   RequestContext requestContext,
                                   Callback<RestResponse> callback)
   {
     RecordTemplate input = request.getInputRecord();
-    ProtocolVersion protocolVersion;
-
-    URI requestUri;
-    boolean hasPrefix;
-
-    if (request.hasUri())
-    {
-      // if someone has manually crafted a request with a URI we want to use that. This if check will be removed when
-      // we remove the getUri() method. In this case hasPrefix is false because the old constructor assumed no prefix
-      // and prepended a prefix in this class. In this case we use the baseline protocol version.
-      protocolVersion = AllProtocolVersions.RESTLI_PROTOCOL_1_0_0.getProtocolVersion();
-      requestUri = request.getUri();
-      hasPrefix = false;
-    }
-    else
-    {
-      protocolVersion = getProtocolVersionForService(request);
-      requestUri = RestliUriBuilderUtil.createUriBuilder(request, _uriPrefix, protocolVersion).build();
-      hasPrefix = true;
-    }
+    ProtocolVersion protocolVersion = getProtocolVersionForService(request);
+    URI requestUri = RestliUriBuilderUtil.createUriBuilder(request, _uriPrefix, protocolVersion).build();
 
     sendRequestImpl(requestContext,
                     requestUri,
-                    hasPrefix,
                     request.getMethod(),
                     input != null ? RequestBodyTransformer.transform(request, protocolVersion) : null,
                     request.getHeaders(),
                     request.getMethodName(),
                     protocolVersion,
+                    request.getRequestOptions().getRequestCompressionOverride(),
+                    request.getRequestOptions().getContentType(),
+                    request.getRequestOptions().getAcceptTypes(),
                     callback);
   }
 
@@ -382,25 +375,37 @@ public class RestClient
     }
   }
 
-  private void addAcceptHeaders(RestRequestBuilder builder)
+  // We handle accept types based on the following precedence order:
+  // 1. Request header
+  // 2. RestLiRequestOptions
+  // 3. RestClient configuration
+  private void addAcceptHeaders(RestRequestBuilder builder, List<AcceptType> acceptTypes)
   {
-    if(!_acceptTypes.isEmpty() && builder.getHeader(RestConstants.HEADER_ACCEPT) == null)
+    if (builder.getHeader(RestConstants.HEADER_ACCEPT) == null)
     {
-      builder.setHeader(RestConstants.HEADER_ACCEPT, createAcceptHeader());
+      List<AcceptType> types = _acceptTypes;
+      if (acceptTypes != null && !acceptTypes.isEmpty())
+      {
+        types = acceptTypes;
+      }
+      if (types != null && !types.isEmpty())
+      {
+        builder.setHeader(RestConstants.HEADER_ACCEPT, createAcceptHeader(types));
+      }
     }
   }
 
-  private String createAcceptHeader()
+  private String createAcceptHeader(List<AcceptType> acceptTypes)
   {
-    if (_acceptTypes.size() == 1)
+    if (acceptTypes.size() == 1)
     {
-      return _acceptTypes.get(0).getHeaderKey();
+      return acceptTypes.get(0).getHeaderKey();
     }
 
     // general case
     StringBuilder acceptHeader = new StringBuilder();
     double currQ = 1.0;
-    Iterator<AcceptType> iterator = _acceptTypes.iterator();
+    Iterator<AcceptType> iterator = acceptTypes.iterator();
     while(iterator.hasNext())
     {
       acceptHeader.append(iterator.next().getHeaderKey());
@@ -414,7 +419,12 @@ public class RestClient
     return acceptHeader.toString();
   }
 
-  private void addEntityAndContentTypeHeaders(RestRequestBuilder builder, DataMap dataMap)
+
+  // Request content type resolution follows similar precedence order to accept type:
+  // 1. Request header
+  // 2. RestLiRequestOption
+  // 3. RestClient configuration
+  private void addEntityAndContentTypeHeaders(RestRequestBuilder builder, DataMap dataMap, ContentType contentType)
     throws IOException
   {
     if (dataMap != null)
@@ -424,32 +434,42 @@ public class RestClient
       ContentType type;
       if(header == null)
       {
-        type = _contentType;
+        if (contentType != null)
+        {
+          type = contentType;
+        }
+        else if (_contentType != null)
+        {
+          type = _contentType;
+        }
+        else {
+          type = DEFAULT_CONTENT_TYPE;
+        }
         builder.setHeader(RestConstants.HEADER_CONTENT_TYPE, type.getHeaderKey());
       }
       else
       {
-        javax.mail.internet.ContentType contentType;
+        javax.mail.internet.ContentType headerContentType;
         try
         {
-          contentType = new javax.mail.internet.ContentType(header);
+          headerContentType = new javax.mail.internet.ContentType(header);
         }
         catch (ParseException e)
         {
           throw new IllegalStateException("Unable to parse Content-Type: " + header);
         }
 
-        if (contentType.getBaseType().equalsIgnoreCase(RestConstants.HEADER_VALUE_APPLICATION_JSON))
+        if (headerContentType.getBaseType().equalsIgnoreCase(RestConstants.HEADER_VALUE_APPLICATION_JSON))
         {
           type = ContentType.JSON;
         }
-        else if (contentType.getBaseType().equalsIgnoreCase(RestConstants.HEADER_VALUE_APPLICATION_PSON))
+        else if (headerContentType.getBaseType().equalsIgnoreCase(RestConstants.HEADER_VALUE_APPLICATION_PSON))
         {
           type = ContentType.PSON;
         }
         else
         {
-          throw new IllegalStateException("Unknown Content-Type: " + contentType.toString());
+          throw new IllegalStateException("Unknown Content-Type: " + headerContentType.toString());
         }
       }
 
@@ -567,10 +587,12 @@ public class RestClient
    *
    * @param requestContext context for the request
    * @param uri for resource
-   * @param hasPrefix
    * @param method to perform
    * @param dataMap request body entity
    * @param protocolVersion the version of the Rest.li protocol used to build this request
+   * @param requestCompressionOverride request compression override options
+   * @param contentType request content type
+   * @param acceptTypes list of response accept types
    * @param callback to call on request completion. In the event of an error, the callback
    *                 will receive a {@link com.linkedin.r2.RemoteInvocationException}. If a valid
    *                 error response was received from the remote server, the callback will receive
@@ -578,19 +600,22 @@ public class RestClient
    */
   private void sendRequestImpl(RequestContext requestContext,
                                URI uri,
-                               boolean hasPrefix,
                                ResourceMethod method,
                                DataMap dataMap,
                                Map<String, String> headers,
                                String methodName,
                                ProtocolVersion protocolVersion,
+                               CompressionOption requestCompressionOverride,
+                               ContentType contentType,
+                               List<AcceptType> acceptTypes,
                                Callback<RestResponse> callback)
   {
     try
     {
-      RestRequest request = buildRequest(uri, hasPrefix, method, dataMap, headers, protocolVersion);
+      RestRequest request = buildRequest(uri, method, dataMap, headers, protocolVersion, contentType, acceptTypes);
       String operation = OperationNameGenerator.generate(method, methodName);
       requestContext.putLocalAttr(R2Constants.OPERATION, operation);
+      requestContext.putLocalAttr(R2Constants.REQUEST_COMPRESSION_OVERRIDE, requestCompressionOverride);
       _client.restRequest(request, requestContext, callback);
     }
     catch (Exception e)
@@ -603,30 +628,19 @@ public class RestClient
   // This throws Exception to remind the caller to deal with arbitrary exceptions including RuntimeException
   // in a way appropriate for the public method that was originally invoked.
   private RestRequest buildRequest(URI uri,
-                                   boolean hasPrefix,
                                    ResourceMethod method,
                                    DataMap dataMap,
                                    Map<String, String> headers,
-                                   ProtocolVersion protocolVersion) throws Exception
+                                   ProtocolVersion protocolVersion,
+                                   ContentType contentType,
+                                   List<AcceptType> acceptTypes) throws Exception
   {
-    if (!hasPrefix)
-    {
-      try
-      {
-        uri = new URI(_uriPrefix + uri.toString());
-      }
-      catch (URISyntaxException e)
-      {
-        throw new IllegalArgumentException(e);
-      }
-    }
-
     RestRequestBuilder requestBuilder = new RestRequestBuilder(uri).setMethod(
             method.getHttpMethod().toString());
 
     requestBuilder.setHeaders(headers);
-    addAcceptHeaders(requestBuilder);
-    addEntityAndContentTypeHeaders(requestBuilder, dataMap);
+    addAcceptHeaders(requestBuilder, acceptTypes);
+    addEntityAndContentTypeHeaders(requestBuilder, dataMap, contentType);
     addProtocolVersionHeader(requestBuilder, protocolVersion);
 
     if (method.getHttpMethod() == HttpMethod.POST)

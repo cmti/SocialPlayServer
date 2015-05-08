@@ -26,12 +26,6 @@ import com.linkedin.restli.common.OptionsResponse;
  */
 public class OptionsRequestBuilder extends AbstractRequestBuilder<Void, OptionsResponse, OptionsRequest>
 {
-  @Deprecated
-  public OptionsRequestBuilder(String baseUriTemplate)
-  {
-    this(baseUriTemplate, RestliRequestOptions.DEFAULT_OPTIONS);
-  }
-
   public OptionsRequestBuilder(String baseUriTemplate, RestliRequestOptions requestOptions)
   {
     super(baseUriTemplate, null, requestOptions);
@@ -40,11 +34,11 @@ public class OptionsRequestBuilder extends AbstractRequestBuilder<Void, OptionsR
   @Override
   public OptionsRequest build()
   {
-    return new OptionsRequest(_headers,
-                              _queryParams,
+    return new OptionsRequest(buildReadOnlyHeaders(),
+                              buildReadOnlyQueryParameters(),
                               _resourceSpec,
                               getBaseUriTemplate(),
-                              _pathKeys,
+                              buildReadOnlyPathKeys(),
                               getRequestOptions());
   }
 }

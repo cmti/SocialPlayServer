@@ -18,24 +18,25 @@ package com.linkedin.restli.examples;
 
 
 import com.linkedin.r2.RemoteInvocationException;
-import com.linkedin.r2.transport.common.Client;
-import com.linkedin.r2.transport.common.bridge.client.TransportClientAdapter;
-import com.linkedin.r2.transport.http.client.HttpClientFactory;
 import com.linkedin.restli.client.ErrorHandlingBehavior;
 import com.linkedin.restli.client.Request;
 import com.linkedin.restli.client.Response;
 import com.linkedin.restli.client.ResponseFuture;
-import com.linkedin.restli.client.RestClient;
 import com.linkedin.restli.client.RestLiResponseException;
 import com.linkedin.restli.common.EmptyRecord;
 import com.linkedin.restli.common.HttpStatus;
+import com.linkedin.restli.common.IdResponse;
 import com.linkedin.restli.examples.greetings.api.Greeting;
 import com.linkedin.restli.examples.greetings.api.Tone;
 import com.linkedin.restli.examples.greetings.client.Exceptions3Builders;
 import com.linkedin.restli.examples.greetings.client.Exceptions3RequestBuilders;
+import com.linkedin.restli.examples.greetings.server.ExceptionsResource3;
+import com.linkedin.restli.server.filter.FilterRequestContext;
+import com.linkedin.restli.server.filter.RequestFilter;
 import com.linkedin.restli.test.util.RootBuilderWrapper;
 
-import java.util.Collections;
+import java.util.Arrays;
+import java.util.Map;
 
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
@@ -46,20 +47,50 @@ import org.testng.annotations.Test;
 
 public class TestExceptionsResource3 extends RestLiIntegrationTest
 {
-  private static final Client CLIENT = new TransportClientAdapter(new HttpClientFactory().getClient(Collections.<String, String>emptyMap()));
-  private static final String URI_PREFIX = "http://localhost:1338/";
-  private static final RestClient REST_CLIENT = new RestClient(CLIENT, URI_PREFIX);
-
   @BeforeClass
   public void initClass() throws Exception
   {
-    super.init();
+    class ChangeHeaderFilter1 implements RequestFilter
+    {
+      @Override
+      public void onRequest(FilterRequestContext requestContext)
+      {
+        Map<String, String> headers = requestContext.getRequestHeaders();
+        // Add new headers
+        headers.put(ExceptionsResource3.TEST1_HEADER, ExceptionsResource3.TEST1_VALUE);
+        headers.put(ExceptionsResource3.TEST2_HEADER, ExceptionsResource3.TEST1_VALUE);
+      }
+    }
+
+    class ChangeHeaderFilter2 implements RequestFilter
+    {
+      @Override
+      public void onRequest(FilterRequestContext requestContext)
+      {
+        Map<String, String> headers = requestContext.getRequestHeaders();
+        Assert.assertEquals(headers.get(ExceptionsResource3.TEST1_HEADER), ExceptionsResource3.TEST1_VALUE);
+        Assert.assertEquals(headers.get(ExceptionsResource3.TEST2_HEADER), ExceptionsResource3.TEST1_VALUE);
+        // Modify existing header
+        headers.put(ExceptionsResource3.TEST2_HEADER, ExceptionsResource3.TEST2_VALUE);
+      }
+    }
+    super.init(Arrays.asList(new ChangeHeaderFilter1(), new ChangeHeaderFilter2()), null);
   }
 
   @AfterClass
   public void shutDown() throws Exception
   {
     super.shutdown();
+  }
+
+  // Test that Rest.li request filters can change request headers
+  @Test
+  public void testChangeRequestHeaderFromFilter() throws RemoteInvocationException
+  {
+    Greeting greeting = new Greeting().setId(1L).setMessage("Hello").setTone(Tone.FRIENDLY);
+    Request<IdResponse<Long>> createRequest = new Exceptions3RequestBuilders().create().input(greeting).build();
+    Response<IdResponse<Long>> response = getClient().sendRequest(createRequest).getResponse();
+    Assert.assertEquals(response.getStatus(), HttpStatus.S_201_CREATED.getCode());
   }
 
   @Test(dataProvider = com.linkedin.restli.internal.common.TestConstants.RESTLI_PROTOCOL_1_2_PREFIX + "exceptionHandlingModesDataProvider")
@@ -75,11 +106,11 @@ public class TestExceptionsResource3 extends RestLiIntegrationTest
 
       if (explicit)
       {
-        future = REST_CLIENT.sendRequest(readRequest, errorHandlingBehavior);
+        future = getClient().sendRequest(readRequest, errorHandlingBehavior);
       }
       else
       {
-        future = REST_CLIENT.sendRequest(readRequest);
+        future = getClient().sendRequest(readRequest);
       }
 
       response = future.getResponse();
@@ -130,11 +161,11 @@ public class TestExceptionsResource3 extends RestLiIntegrationTest
 
       if (explicit)
       {
-        future = REST_CLIENT.sendRequest(request, errorHandlingBehavior);
+        future = getClient().sendRequest(request, errorHandlingBehavior);
       }
       else
       {
-        future = REST_CLIENT.sendRequest(request);
+        future = getClient().sendRequest(request);
       }
 
       response = future.getResponse();

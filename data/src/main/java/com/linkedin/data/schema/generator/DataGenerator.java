@@ -23,6 +23,7 @@ import com.linkedin.data.schema.DataSchema;
 /**
  * Generates data that conforms to a given schema.
  *
+ * @author jbetz@linkedin.com
  */
 public interface DataGenerator
 {
@@ -32,6 +33,7 @@ public interface DataGenerator
    *             The name may be provided by the caller to indicate the name of the field or named reference
    *             that identifies the contents of the generated data.  Generators are encouraged to use this where
    *             it adds clarity.  E.g. map keys might be generated with the field name included,
+   *             e.g. { "<nameHint>Key1": value1, "<nameHint>Key2": value2 }.
    *             Generators MAY choose to ignore the field name.
    * @param dataSchema The data schema to use to generate the data.
    * @return generated data.

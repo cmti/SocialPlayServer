@@ -16,7 +16,7 @@ import com.linkedin.data.template.SetMode;
  * Custom annotation for idl
  * 
  */
-@Generated(value = "com.linkedin.pegasus.generator.PegasusDataTemplateGenerator", comments = "LinkedIn Data Template. Generated from /Users/jianli/git/SocialPlayServer/restli-common/src/main/pegasus/com/linkedin/restli/restspec/CustomAnnotationSchema.pdsc.", date = "Fri Apr 17 15:52:47 PDT 2015")
+@Generated(value = "com.linkedin.pegasus.generator.PegasusDataTemplateGenerator", comments = "LinkedIn Data Template. Generated from /Users/jianli/git/SocialPlayServer/restli-common/src/main/pegasus/com/linkedin/restli/restspec/CustomAnnotationSchema.pdsc.", date = "Thu May 07 23:46:42 PDT 2015")
 public class CustomAnnotationSchema
     extends RecordTemplate
 {
