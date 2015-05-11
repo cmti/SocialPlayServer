@@ -60,7 +60,7 @@ ALTER TABLE events ADD UNIQUE INDEX (timestamp, user_id);
 
 CREATE TABLE `gcm_registration` (
   `user_id` int(8) NOT NULL,
-  `registration_id` varchar(100) NOT NULL,
+  `registration_id` varchar(400) NOT NULL,
   `timestamp` bigint NOT NULL,
   PRIMARY KEY (`user_id`, `registration_id`),
   FOREIGN KEY(user_id) REFERENCES users(user_id)

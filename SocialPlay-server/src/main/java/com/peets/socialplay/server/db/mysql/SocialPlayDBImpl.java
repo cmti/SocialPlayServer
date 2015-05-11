@@ -146,7 +146,7 @@ public class SocialPlayDBImpl implements SocialPlayDB {
 				updateUser.setString(1, verification);
 				updateUser
 						.setString(2, DBUtilities.identityTypeToString(iType));
-				updateUser.setString(3, activated ? "y" : "n");
+				updateUser.setString(3, activated ? "y" : (iType == IdentityType.FB ? "y" : "n"));
 				updateUser.setString(4, userName);
 				updateUser.setString(5, identity);
 				updateUser.executeUpdate();
