@@ -58,6 +58,16 @@
         "type" : "com.peets.socialplay.server.Account"
       } ],
       "returns" : "com.peets.socialplay.server.Account"
+    }, {
+      "name" : "registerToGCM",
+      "parameters" : [ {
+        "name" : "accountId",
+        "type" : "long"
+      }, {
+        "name" : "registrationId",
+        "type" : "string"
+      } ],
+      "returns" : "boolean"
     } ],
     "entity" : {
       "path" : "/registration/{registrationId}"
