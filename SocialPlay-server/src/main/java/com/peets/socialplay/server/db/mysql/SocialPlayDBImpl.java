@@ -744,4 +744,40 @@ public class SocialPlayDBImpl implements SocialPlayDB {
 
 		return null;
 	}
+
+	@Override
+	public Boolean registerToGCM(long accountId, String registrationId) {
+		PreparedStatement insertUser = null;
+
+		String insertString = "insert into gcm_registration values (?, ?, utc_timestamp())";
+
+		try {
+			conn.setAutoCommit(false);
+			insertUser = conn.prepareStatement(insertString);
+
+			insertUser.setLong(1, accountId);
+			insertUser.setString(2, registrationId);
+			insertUser.executeUpdate();
+			conn.commit();
+
+			return true;
+		} catch (SQLException ex) {
+			System.out.println("SQLException: " + ex.getMessage());
+			System.out.println("SQLState: " + ex.getSQLState());
+			System.out.println("VendorError: " + ex.getErrorCode());
+		} finally {
+			try {
+				conn.setAutoCommit(true);
+				if (insertUser != null) {
+					insertUser.close();
+				}
+			} catch (SQLException ex) {
+				System.out.println("SQLException: " + ex.getMessage());
+				System.out.println("SQLState: " + ex.getSQLState());
+				System.out.println("VendorError: " + ex.getErrorCode());
+			}
+		}
+
+		return false;
+	}
 }

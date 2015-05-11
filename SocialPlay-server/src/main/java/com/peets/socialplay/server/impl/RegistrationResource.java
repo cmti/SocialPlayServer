@@ -293,4 +293,16 @@ public class RegistrationResource extends
 		else
 			return result;		
 	}
+
+	@Action(name = "registerToGCM", resourceLevel = ResourceLevel.COLLECTION)
+	public Boolean registerToGCM(
+			@ActionParam("accountId") Long accountId,
+			@ActionParam("registrationId") String registrationId) {
+		if(accountExists(accountId))
+		{
+			return ServerUtils.initService(dataService).registerToGCM(accountId, registrationId);
+		}
+
+		return false;
+	}
 }

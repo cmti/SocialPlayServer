@@ -120,4 +120,9 @@ public class SocialPlayDataServiceImpl implements SocialPlayDataService{
 
 		return db.createComment(entry);
 	}
+
+	@Override
+	public Boolean registerToGCM(long accountId, String registrationId) {
+		return db.registerToGCM(accountId, registrationId);
+	}
 }

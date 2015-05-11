@@ -5,6 +5,7 @@ DROP TABLE IF EXISTS `parenting_tips_history`;
 DROP TABLE IF EXISTS `parenting_tips_comments`;
 DROP TABLE IF EXISTS `parenting_tips`;
 DROP TABLE IF EXISTS `parenting_resources`;
+DROP TABLE IF EXISTS `gcm_registration`;
 DROP TABLE IF EXISTS `events`;
 DROP TABLE IF EXISTS `friends`;
 DROP TABLE IF EXISTS `chat_invitation`;
@@ -23,7 +24,7 @@ CREATE TABLE `users` (
 ) 
 AUTO_INCREMENT=1234567;
 ALTER TABLE users ADD UNIQUE INDEX (user_hash);
-insert into users (user_hash, user_type, user_status, user_name, identity, lastaccesstime) values ('zllo5/Rd6gzaZhKAUC3VSa4fDH/WD0EgvI0e99UuV1A=', 'p', 'n', 'povi test', '4089876543', NOW());
+insert into users (user_hash, user_type, user_status, user_name, identity, lastaccesstime) values ('zllo5/Rd6gzaZhKAUC3VSa4fDH/WD0EgvI0e99UuV1A=', 'p', 'y', 'povi test', '4089876543', NOW());
 
 CREATE TABLE `friends` (
   `invitor_id` int(8) NOT NULL,
@@ -56,6 +57,14 @@ CREATE TABLE `events` (
 )
 AUTO_INCREMENT=10000001;
 ALTER TABLE events ADD UNIQUE INDEX (timestamp, user_id);
+
+CREATE TABLE `gcm_registration` (
+  `user_id` int(8) NOT NULL,
+  `registration_id` varchar(100) NOT NULL,
+  `timestamp` bigint NOT NULL,
+  PRIMARY KEY (`user_id`, `registration_id`),
+  FOREIGN KEY(user_id) REFERENCES users(user_id)
+);
 
 CREATE TABLE `parenting_resources` (
   `resource_id` int NOT NULL AUTO_INCREMENT,
