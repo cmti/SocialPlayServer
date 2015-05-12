@@ -1,5 +1,6 @@
 package com.peets.socialplay.server.ds;
 
+import com.peets.socialplay.server.Settings;
 import com.peets.socialplay.server.db.SocialPlayDB;
 import com.peets.socialplay.server.Account;
 import com.peets.socialplay.server.ActivationRecord;
@@ -124,5 +125,15 @@ public class SocialPlayDataServiceImpl implements SocialPlayDataService{
 	@Override
 	public Boolean registerToGCM(long accountId, String registrationId) {
 		return db.registerToGCM(accountId, registrationId);
+	}
+
+	@Override
+	public Settings getSettings(long accountId) {
+		return db.getSettings(accountId);
+	}
+
+	@Override
+	public boolean createSettings(Settings entity) {
+		return db.createSettings(entity);
 	}
 }

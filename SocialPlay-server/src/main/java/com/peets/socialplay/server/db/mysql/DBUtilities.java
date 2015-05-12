@@ -3,13 +3,16 @@ package com.peets.socialplay.server.db.mysql;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Time;
 
+import com.peets.socialplay.server.Day;
 import com.peets.socialplay.server.EventType;
 import com.peets.socialplay.server.IdentityType;
 
 public class DBUtilities {
 	private static Connection conn = null;
 	private static int port = 3306;		// default port for mysql
+	private static final String SEPARATOR = ":";
 
 	/**
 	 * create a DB connection to mysql
@@ -115,5 +118,60 @@ public class DBUtilities {
 		default:
 			return null;
 		}
+	}
+
+	public static short dayToNumber(Day day)
+	{
+		switch (day)
+		{
+			case MONDAY:	return 1;
+			case TUESDAY:	return 2;
+			case WEDNESDAY:	return 3;
+			case THURSDAY:	return 4;
+			case FRIDAY:	return 5;
+			case SATURDAY:	return 6;
+			case SUNDAY:	return 7;
+			case EVERYDAY:	return 8;
+			case WORKDAY:	return 9;
+		}
+
+		return 0;
+	}
+
+	public static Day numberToDay(short number)
+	{
+		switch (number)
+		{
+			case 1:	return Day.MONDAY;
+			case 2:	return Day.TUESDAY;
+			case 3:	return Day.WEDNESDAY;
+			case 4: return Day.THURSDAY;
+			case 5:	return Day.FRIDAY;
+			case 6:	return Day.SATURDAY;
+			case 7:	return Day.SUNDAY;
+			case 8:	return Day.EVERYDAY;
+			case 9:	return Day.WORKDAY;
+		}
+
+		return Day.$UNKNOWN;
+	}
+
+	public static Time stringToTime(String schedule)
+	{
+		if(schedule == null ||schedule.isEmpty())
+			return null;
+
+		String[] parts = schedule.split(SEPARATOR);
+		if(parts.length != 3)
+			return null;
+
+		int hour = Integer.parseInt(parts[0]);
+		int minute = Integer.parseInt(parts[1]);
+		int second = Integer.parseInt(parts[2]);
+
+		if(hour<0 || hour > 23 || minute < 0 || minute > 59 || second < 0 || second > 59)
+			return null;
+
+		return new Time(hour, minute, second);
 	}
 }

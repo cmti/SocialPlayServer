@@ -4,15 +4,20 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Time;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.linkedin.data.template.StringArray;
 import com.peets.socialplay.server.ActivationRecord;
+import com.peets.socialplay.server.DaySchedule;
+import com.peets.socialplay.server.DayScheduleArray;
 import com.peets.socialplay.server.Event;
 import com.peets.socialplay.server.IdentityType;
 import com.peets.socialplay.server.ParentingComment;
 import com.peets.socialplay.server.ParentingTip;
 import com.peets.socialplay.server.ParentingTipId;
+import com.peets.socialplay.server.Settings;
 import com.peets.socialplay.server.SocialPlayContext;
 import com.peets.socialplay.server.Account;
 import com.peets.socialplay.server.db.SocialPlayDB;
@@ -770,6 +775,89 @@ public class SocialPlayDBImpl implements SocialPlayDB {
 				conn.setAutoCommit(true);
 				if (insertUser != null) {
 					insertUser.close();
+				}
+			} catch (SQLException ex) {
+				System.out.println("SQLException: " + ex.getMessage());
+				System.out.println("SQLState: " + ex.getSQLState());
+				System.out.println("VendorError: " + ex.getErrorCode());
+			}
+		}
+
+		return false;
+	}
+
+	@Override
+	public Settings getSettings(long accountId) {
+		PreparedStatement selectSettings = null;
+
+		String selectString = "select day, schedule from parenting_notification_schedule where user_id = ?";
+
+		try {
+			selectSettings = conn.prepareStatement(selectString);
+
+			selectSettings.setLong(1, accountId);
+			ResultSet rs = selectSettings.executeQuery();
+			while (rs.next()) {
+				Settings settings = new Settings();
+				settings.setUserId(accountId);
+				DaySchedule daySchedule = new DaySchedule();
+				daySchedule.setDay(DBUtilities.numberToDay(rs.getShort(1)));
+				StringArray stringArray = new StringArray(1);
+				stringArray.add(rs.getTime(2).toString());
+				daySchedule.setSchedules(stringArray);
+				DayScheduleArray dayScheduleArray= new DayScheduleArray(1);
+				dayScheduleArray.add(daySchedule);
+				settings.setSchedules(dayScheduleArray);
+
+				return settings;
+			}
+		} catch (SQLException ex) {
+			System.out.println("SQLException: " + ex.getMessage());
+			System.out.println("SQLState: " + ex.getSQLState());
+			System.out.println("VendorError: " + ex.getErrorCode());
+		} finally {
+			try {
+				if (selectSettings != null) {
+					selectSettings.close();
+				}
+			} catch (SQLException ex) {
+				System.out.println("SQLException: " + ex.getMessage());
+				System.out.println("SQLState: " + ex.getSQLState());
+				System.out.println("VendorError: " + ex.getErrorCode());
+			}
+		}
+
+		return new Settings();
+	}
+
+	@Override
+	public boolean createSettings(Settings entity) {
+		PreparedStatement insertSettings = null;
+
+		String insertString = "insert into parenting_notification_schedule (user_id, day, schedule) values (?, ?, ?)";
+
+		try {
+			conn.setAutoCommit(false);
+			insertSettings = conn.prepareStatement(insertString);
+			DayScheduleArray dayScheduleArray = entity.getSchedules();
+			DaySchedule[] daySchedules = (DaySchedule[]) dayScheduleArray.toArray(new DaySchedule[dayScheduleArray.size()]);
+
+			insertSettings.setLong(1, entity.getUserId());
+			insertSettings.setShort(2, DBUtilities.dayToNumber(daySchedules[0].getDay()));
+			insertSettings.setTime(3, DBUtilities.stringToTime(daySchedules[0].getSchedules().get(0)));
+			insertSettings.executeUpdate();
+			conn.commit();
+
+			return true;
+		} catch (SQLException ex) {
+			System.out.println("SQLException: " + ex.getMessage());
+			System.out.println("SQLState: " + ex.getSQLState());
+			System.out.println("VendorError: " + ex.getErrorCode());
+		} finally {
+			try {
+				conn.setAutoCommit(true);
+				if (insertSettings != null) {
+					insertSettings.close();
 				}
 			} catch (SQLException ex) {
 				System.out.println("SQLException: " + ex.getMessage());

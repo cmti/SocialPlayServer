@@ -9,6 +9,7 @@ import com.peets.socialplay.server.IdentityType;
 import com.peets.socialplay.server.ParentingComment;
 import com.peets.socialplay.server.ParentingTip;
 import com.peets.socialplay.server.ParentingTipId;
+import com.peets.socialplay.server.Settings;
 import com.peets.socialplay.server.SocialPlayContext;
 import com.peets.socialplay.server.Account;
 
@@ -31,4 +32,6 @@ public interface SocialPlayDB {
 	public ParentingComment[] getComments(ParentingTipId tipId, Long timestamp, Integer count, Boolean chronicleOrder, Long lastTimestamp);
 	public Long createComment(ParentingComment entry);
 	public Boolean registerToGCM(long accountId, String registrationId);
+	public Settings getSettings(long accountId);
+	public boolean createSettings(Settings entity);
 }
