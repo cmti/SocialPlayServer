@@ -1,0 +1,22 @@
+{
+  "name" : "settings",
+  "namespace" : "com.peets.socialplay.server",
+  "path" : "/settings",
+  "schema" : "com.peets.socialplay.server.Settings",
+  "doc" : "generated from: com.peets.socialplay.server.impl.SettingsResource",
+  "collection" : {
+    "identifier" : {
+      "name" : "settingsId",
+      "type" : "long"
+    },
+    "supports" : [ "create", "get" ],
+    "methods" : [ {
+      "method" : "create"
+    }, {
+      "method" : "get"
+    } ],
+    "entity" : {
+      "path" : "/settings/{settingsId}"
+    }
+  }
+}
