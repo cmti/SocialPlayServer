@@ -14,6 +14,10 @@
     "methods" : [ {
       "method" : "get"
     } ],
+    "actions" : [ {
+      "name" : "getTip",
+      "returns" : "com.peets.socialplay.server.ParentingTip"
+    } ],
     "entity" : {
       "path" : "/parentingTip/{parentingTipId}"
     }

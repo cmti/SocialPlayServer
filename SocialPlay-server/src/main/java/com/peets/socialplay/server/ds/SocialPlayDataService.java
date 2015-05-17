@@ -24,6 +24,7 @@ public interface SocialPlayDataService {
 	public Account[] findOnlineFriends(long accountId);
 	public Long insertEvent(Event event);
 	public ParentingTip getTip(ParentingTipId tipId, Long accountId);
+	public ParentingTip getRandomTip();
 	public ParentingComment[] getComments(ParentingTipId tipId, Long timestamp, Integer count, Boolean chronicleOrder, Long lastTimestamp);
 	public Long createComment(ParentingComment entry);
 	public Boolean registerToGCM(long accountId, String registrationId);

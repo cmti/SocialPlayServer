@@ -110,6 +110,12 @@ public class SocialPlayDataServiceImpl implements SocialPlayDataService{
 	}
 
 	@Override
+	public ParentingTip getRandomTip()
+	{
+		return db.getRandomTip();
+	}
+
+	@Override
 	public ParentingComment[] getComments(ParentingTipId tipId, Long timestamp,
 			Integer count, Boolean chronicleOrder, Long lastTimestamp) {
 

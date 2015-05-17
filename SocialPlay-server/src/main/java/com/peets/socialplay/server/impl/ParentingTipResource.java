@@ -4,6 +4,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.linkedin.restli.common.ComplexResourceKey;
+import com.linkedin.restli.server.ResourceLevel;
+import com.linkedin.restli.server.annotations.Action;
+import com.linkedin.restli.server.annotations.ActionParam;
 import com.linkedin.restli.server.annotations.RestLiCollection;
 import com.linkedin.restli.server.resources.ComplexKeyResourceTemplate;
 import com.peets.socialplay.server.Account;
@@ -21,5 +24,10 @@ public class ParentingTipResource extends
 	@Override
 	public ParentingTip get(ComplexResourceKey<ParentingTipId, Account> tipId) {
 		return ServerUtils.initService(dataService).getTip(tipId.getKey(), tipId.getParams().getAccountId());
+	}
+
+	@Action(name = "getTip", resourceLevel = ResourceLevel.COLLECTION)
+	public ParentingTip getTip() {
+		return ServerUtils.initService(dataService).getRandomTip();
 	}
 }

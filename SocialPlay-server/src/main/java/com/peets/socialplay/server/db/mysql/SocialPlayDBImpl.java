@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.sql.Time;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import com.linkedin.data.template.StringArray;
 import com.peets.socialplay.server.ActivationRecord;
@@ -26,6 +27,8 @@ public class SocialPlayDBImpl implements SocialPlayDB {
 
 	private Connection conn;
 	private final String SELECT_LAST_ID = "SELECT LAST_INSERT_ID()";
+	private static final int TOTAL_TIPS = 48;
+	private static Random random = new Random();
 
 	public SocialPlayDBImpl(String dbUrl, String dbName, String userName,
 			String password) {
@@ -661,6 +664,42 @@ public class SocialPlayDBImpl implements SocialPlayDB {
 			}
 		}
 		
+		return new ParentingTip();
+	}
+
+	@Override
+	public ParentingTip getRandomTip() {
+		PreparedStatement selectUser = null;
+
+		String selectString = "select content from parenting_tips where resource_id = 1 and tip_id = ?";
+
+		try {
+			selectUser = conn.prepareStatement(selectString);
+
+			int tipId = random.nextInt(TOTAL_TIPS) + 1;
+			selectUser.setInt(1, tipId);
+			ResultSet rs = selectUser.executeQuery();
+			while (rs.next()) {
+				ParentingTip tip = new ParentingTip();
+				tip.setTipDetail(rs.getString(1)).setTipId(new ParentingTipId().setTipResourceId(1).setTipSequenceId(tipId));
+				return tip;
+			}
+		} catch (SQLException ex) {
+			System.out.println("SQLException: " + ex.getMessage());
+			System.out.println("SQLState: " + ex.getSQLState());
+			System.out.println("VendorError: " + ex.getErrorCode());
+		} finally {
+			try {
+				if (selectUser != null) {
+					selectUser.close();
+				}
+			} catch (SQLException ex) {
+				System.out.println("SQLException: " + ex.getMessage());
+				System.out.println("SQLState: " + ex.getSQLState());
+				System.out.println("VendorError: " + ex.getErrorCode());
+			}
+		}
+
 		return new ParentingTip();
 	}
 
