@@ -30,8 +30,8 @@ CREATE TABLE `friends` (
   `invitor_id` int(8) NOT NULL,
   `invitee_id` int(8) NOT NULL,
   PRIMARY KEY (`invitor_id`, `invitee_id`),
-  FOREIGN KEY(invitor_id) REFERENCES users(user_id),
-  FOREIGN KEY(invitee_id) REFERENCES users(user_id)
+  CONSTRAINT `fk_invitor_id` FOREIGN KEY (`invitor_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_invitee_id` FOREIGN KEY (`invitee_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE `chat_invitation` (
@@ -41,8 +41,8 @@ CREATE TABLE `chat_invitation` (
   `started` varchar(1) NOT NULL,
   `invite_time` bigint NOT NULL,
   PRIMARY KEY (`invitor_id`, `invitee_id`),
-  FOREIGN KEY(invitor_id) REFERENCES users(user_id),
-  FOREIGN KEY(invitee_id) REFERENCES users(user_id)
+  CONSTRAINT `fk_chat_invitor_id` FOREIGN KEY (`invitor_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_chat_invitee_id` FOREIGN KEY (`invitee_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE `events` (
@@ -53,7 +53,7 @@ CREATE TABLE `events` (
   `duration` int NOT NULL,
   `eventdetails` varchar(400) NOT NULL,
   PRIMARY KEY(`event_id`),
-  FOREIGN KEY(user_id) REFERENCES users(user_id)
+  CONSTRAINT `fk_events_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE
 )
 AUTO_INCREMENT=10000001;
 ALTER TABLE events ADD UNIQUE INDEX (timestamp, user_id);
@@ -63,7 +63,7 @@ CREATE TABLE `gcm_registration` (
   `registration_id` varchar(400) NOT NULL,
   `timestamp` bigint NOT NULL,
   PRIMARY KEY (`user_id`, `registration_id`),
-  FOREIGN KEY(user_id) REFERENCES users(user_id)
+  CONSTRAINT `fk_gcm_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE `parenting_resources` (
@@ -83,7 +83,7 @@ CREATE TABLE `parenting_tips` (
   `tip_type` varchar(1) NOT NULL,
   `tip_status` varchar(1) NOT NULL,
   PRIMARY KEY (`resource_id`, `tip_id`),
-  FOREIGN KEY(resource_id) REFERENCES parenting_resources(resource_id)
+  CONSTRAINT `fk_resource_id` FOREIGN KEY (`resource_id`) REFERENCES `parenting_resources` (`resource_id`) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 insert into parenting_tips values (1, 1, 'What was your first thought when you work up today?', 'q', 'y');
@@ -143,8 +143,8 @@ CREATE TABLE `parenting_tips_comments` (
   `tip_id` int NOT NULL,
   `comments` varchar(400) NOT NULL,
   PRIMARY KEY (`comment_id`),
-  FOREIGN KEY(resource_id) REFERENCES parenting_resources(resource_id),
-  FOREIGN KEY(user_id) REFERENCES users(user_id)
+  CONSTRAINT `fk_comments_resource_id` FOREIGN KEY (`resource_id`) REFERENCES `parenting_resources` (`resource_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_comments_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE
 )
 AUTO_INCREMENT=10001;
 
@@ -154,8 +154,8 @@ CREATE TABLE `parenting_tips_history` (
   `resource_id` int NOT NULL,
   `tip_id` int NOT NULL,
   PRIMARY KEY (`user_id`, `timestamp`),
-  FOREIGN KEY(resource_id) REFERENCES parenting_resources(resource_id),
-  FOREIGN KEY(user_id) REFERENCES users(user_id)
+  CONSTRAINT `fk_history_resource_id` FOREIGN KEY (`resource_id`) REFERENCES `parenting_resources` (`resource_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_history_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE `parenting_notification_schedule` (
@@ -163,19 +163,19 @@ CREATE TABLE `parenting_notification_schedule` (
   `day` smallint NOT NULL,
   `schedule` time NOT NULL,
   PRIMARY KEY (`user_id`, `day`),
-  FOREIGN KEY(user_id) REFERENCES users(user_id)
+  CONSTRAINT `fk_schedule_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE `parenting_reminder_schedule` (
   `user_id` int(8) NOT NULL,
   `schedule` time NOT NULL,
   PRIMARY KEY (`user_id`, `schedule`),
-  FOREIGN KEY(user_id) REFERENCES users(user_id)
+  CONSTRAINT `fk_reminder_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE `parenting_settings` (
   `user_id` int(8) NOT NULL,
   `timeZone` varchar(10) NOT NULL,
   PRIMARY KEY (`user_id`, `timeZone`),
-  FOREIGN KEY(user_id) REFERENCES users(user_id)
+  CONSTRAINT `fk_settings_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE
 );
